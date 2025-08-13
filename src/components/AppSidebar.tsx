@@ -1,4 +1,3 @@
-import { useState } from "react"
 import { 
   Home, 
   Leaf, 
@@ -46,8 +45,6 @@ export function AppSidebar() {
   const isCollapsed = state === "collapsed"
 
   const isActive = (path: string) => currentPath === path
-  const getNavCls = ({ isActive }: { isActive: boolean }) =>
-    isActive ? "bg-sidebar-accent text-sidebar-primary font-medium" : "hover:bg-sidebar-accent/50"
 
   return (
     <Sidebar
@@ -86,7 +83,9 @@ export function AppSidebar() {
                     <NavLink 
                       to={item.url} 
                       end 
-                      className={getNavCls}
+                      className={({ isActive }) =>
+                        isActive ? "bg-sidebar-accent text-sidebar-primary font-medium" : "hover:bg-sidebar-accent/50"
+                      }
                     >
                       <item.icon className="h-5 w-5 ml-3" />
                       {!isCollapsed && <span className="text-right">{item.title}</span>}
@@ -109,7 +108,9 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink 
                       to={item.url} 
-                      className={getNavCls}
+                      className={({ isActive }) =>
+                        isActive ? "bg-sidebar-accent text-sidebar-primary font-medium" : "hover:bg-sidebar-accent/50"
+                      }
                     >
                       <item.icon className="h-5 w-5 ml-3" />
                       {!isCollapsed && <span className="text-right">{item.title}</span>}
