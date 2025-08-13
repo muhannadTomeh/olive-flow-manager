@@ -1,0 +1,134 @@
+import { useState } from "react"
+import { 
+  Home, 
+  Leaf, 
+  Factory, 
+  Package, 
+  BarChart3, 
+  Users,
+  Settings,
+  Bell
+} from "lucide-react"
+import { NavLink, useLocation } from "react-router-dom"
+
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarHeader,
+  SidebarFooter,
+  useSidebar,
+} from "@/components/ui/sidebar"
+
+const items = [
+  { title: "الرئيسية", url: "/", icon: Home },
+  { title: "إدارة المحاصيل", url: "/crops", icon: Leaf },
+  { title: "إدارة الإنتاج", url: "/production", icon: Factory },
+  { title: "إدارة المخزون", url: "/inventory", icon: Package },
+  { title: "التقارير", url: "/reports", icon: BarChart3 },
+  { title: "العملاء والموردين", url: "/contacts", icon: Users },
+]
+
+const settingsItems = [
+  { title: "الإعدادات", url: "/settings", icon: Settings },
+  { title: "التنبيهات", url: "/notifications", icon: Bell },
+]
+
+export function AppSidebar() {
+  const { state } = useSidebar()
+  const location = useLocation()
+  const currentPath = location.pathname
+  const isCollapsed = state === "collapsed"
+
+  const isActive = (path: string) => currentPath === path
+  const getNavCls = ({ isActive }: { isActive: boolean }) =>
+    isActive ? "bg-sidebar-accent text-sidebar-primary font-medium" : "hover:bg-sidebar-accent/50"
+
+  return (
+    <Sidebar
+      className={isCollapsed ? "w-14" : "w-64"}
+      collapsible="icon"
+    >
+      <SidebarHeader className="p-4 border-b border-sidebar-border">
+        {!isCollapsed && (
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 olive-gradient rounded-lg flex items-center justify-center">
+              <Leaf className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-sidebar-primary">معصرة الزيتون</h2>
+              <p className="text-sm text-sidebar-foreground/70">نظام الإدارة</p>
+            </div>
+          </div>
+        )}
+        {isCollapsed && (
+          <div className="w-8 h-8 olive-gradient rounded-lg flex items-center justify-center mx-auto">
+            <Leaf className="h-5 w-5 text-white" />
+          </div>
+        )}
+      </SidebarHeader>
+
+      <SidebarContent className="p-2">
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-sidebar-foreground/60 text-sm font-medium px-2 mb-2">
+            {!isCollapsed && "القائمة الرئيسية"}
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {items.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink 
+                      to={item.url} 
+                      end 
+                      className={getNavCls}
+                    >
+                      <item.icon className="h-5 w-5 ml-3" />
+                      {!isCollapsed && <span className="text-right">{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup className="mt-4">
+          <SidebarGroupLabel className="text-sidebar-foreground/60 text-sm font-medium px-2 mb-2">
+            {!isCollapsed && "إعدادات"}
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {settingsItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink 
+                      to={item.url} 
+                      className={getNavCls}
+                    >
+                      <item.icon className="h-5 w-5 ml-3" />
+                      {!isCollapsed && <span className="text-right">{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+
+      <SidebarFooter className="p-4 border-t border-sidebar-border">
+        {!isCollapsed && (
+          <div className="text-center text-xs text-sidebar-foreground/50">
+            نظام إدارة معاصر الزيتون v1.0
+          </div>
+        )}
+      </SidebarFooter>
+    </Sidebar>
+  )
+}
