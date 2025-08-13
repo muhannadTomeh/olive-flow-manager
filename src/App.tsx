@@ -7,6 +7,12 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppSidebar } from "@/components/AppSidebar";
 import Dashboard from "./pages/Dashboard";
 import Crops from "./pages/Crops";
+import Production from "./pages/Production";
+import Inventory from "./pages/Inventory";
+import Reports from "./pages/Reports";
+import Contacts from "./pages/Contacts";
+import Settings from "./pages/Settings";
+import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,12 +37,12 @@ const App = () => (
                 <Routes>
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/crops" element={<Crops />} />
-                  <Route path="/production" element={<div className="p-6"><h1 className="text-2xl font-bold">إدارة الإنتاج</h1><p className="text-muted-foreground">قريباً...</p></div>} />
-                  <Route path="/inventory" element={<div className="p-6"><h1 className="text-2xl font-bold">إدارة المخزون</h1><p className="text-muted-foreground">قريباً...</p></div>} />
-                  <Route path="/reports" element={<div className="p-6"><h1 className="text-2xl font-bold">التقارير</h1><p className="text-muted-foreground">قريباً...</p></div>} />
-                  <Route path="/contacts" element={<div className="p-6"><h1 className="text-2xl font-bold">العملاء والموردين</h1><p className="text-muted-foreground">قريباً...</p></div>} />
-                  <Route path="/settings" element={<div className="p-6"><h1 className="text-2xl font-bold">الإعدادات</h1><p className="text-muted-foreground">قريباً...</p></div>} />
-                  <Route path="/notifications" element={<div className="p-6"><h1 className="text-2xl font-bold">التنبيهات</h1><p className="text-muted-foreground">قريباً...</p></div>} />
+                  <Route path="/production" element={<Production />} />
+                  <Route path="/inventory" element={<Inventory />} />
+                  <Route path="/reports" element={<Reports />} />
+                  <Route path="/contacts" element={<Contacts />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/notifications" element={<Notifications />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </main>
