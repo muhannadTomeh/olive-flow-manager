@@ -37,7 +37,6 @@ const App = () => (
                   <Route path="/contacts" element={<div className="p-6"><h1 className="text-2xl font-bold">العملاء والموردين</h1><p className="text-muted-foreground">قريباً...</p></div>} />
                   <Route path="/settings" element={<div className="p-6"><h1 className="text-2xl font-bold">الإعدادات</h1><p className="text-muted-foreground">قريباً...</p></div>} />
                   <Route path="/notifications" element={<div className="p-6"><h1 className="text-2xl font-bold">التنبيهات</h1><p className="text-muted-foreground">قريباً...</p></div>} />
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </main>
