@@ -48,6 +48,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar
+      side="right"
       className={isCollapsed ? "w-14" : "w-64"}
       collapsible="icon"
     >

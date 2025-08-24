@@ -24,14 +24,13 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <SidebarProvider>
-          <div className="min-h-screen flex w-full bg-background">
-            <AppSidebar />
+          <div className="min-h-screen flex w-full bg-background" dir="rtl">
             <div className="flex-1 flex flex-col min-w-0">
-              <header className="h-14 border-b border-border bg-background/95 backdrop-blur-sm flex items-center px-4 sticky top-0 z-10">
-                <SidebarTrigger />
-                <div className="mr-4">
+              <header className="h-14 border-b border-border bg-background/95 backdrop-blur-sm flex items-center justify-between px-4 sticky top-0 z-10">
+                <div className="flex items-center gap-4">
                   <h1 className="text-lg font-semibold text-foreground">نظام إدارة معاصر الزيتون</h1>
                 </div>
+                <SidebarTrigger />
               </header>
               <main className="flex-1 overflow-auto p-6">
                 <Routes>
@@ -47,6 +46,7 @@ const App = () => (
                 </Routes>
               </main>
             </div>
+            <AppSidebar />
           </div>
         </SidebarProvider>
       </BrowserRouter>
