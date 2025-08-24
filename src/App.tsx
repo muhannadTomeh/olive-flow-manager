@@ -24,16 +24,16 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <SidebarProvider>
-          <div className="min-h-screen flex w-full">
+          <div className="min-h-screen flex w-full bg-background">
             <AppSidebar />
-            <div className="flex-1 flex flex-col">
-              <header className="h-14 border-b border-border bg-background flex items-center px-4">
+            <div className="flex-1 flex flex-col min-w-0">
+              <header className="h-14 border-b border-border bg-background/95 backdrop-blur-sm flex items-center px-4 sticky top-0 z-10">
                 <SidebarTrigger />
                 <div className="mr-4">
-                  <h1 className="text-lg font-semibold">نظام إدارة معاصر الزيتون</h1>
+                  <h1 className="text-lg font-semibold text-foreground">نظام إدارة معاصر الزيتون</h1>
                 </div>
               </header>
-              <main className="flex-1 overflow-auto">
+              <main className="flex-1 overflow-auto p-6">
                 <Routes>
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/crops" element={<Crops />} />
