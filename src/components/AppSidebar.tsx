@@ -48,7 +48,7 @@ export function AppSidebar() {
   return (
     <Sidebar
       side="right"
-      className="peer/sidebar fixed top-0 right-0 z-50 h-screen border-l border-border bg-sidebar data-[state=collapsed]:w-14 data-[state=expanded]:w-64 transition-all duration-300"
+      className={isCollapsed ? "w-14" : "w-64"}
       collapsible="icon"
     >
       <SidebarHeader className="p-4 border-b border-sidebar-border">
