@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -24,9 +25,10 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <SidebarProvider>
-          <div className="min-h-screen flex w-full bg-background" dir="rtl">
-            <div className="flex-1 flex flex-col min-w-0">
-              <header className="h-14 border-b border-border bg-background/95 backdrop-blur-sm flex items-center justify-between px-4 sticky top-0 z-10">
+          <div className="min-h-screen w-full bg-background" dir="rtl">
+            <AppSidebar />
+            <div className="flex flex-col min-h-screen transition-all duration-300 ease-in-out mr-0 md:mr-64 peer-data-[state=collapsed]/sidebar:md:mr-14">
+              <header className="h-14 border-b border-border bg-background/95 backdrop-blur-sm flex items-center justify-between px-4 sticky top-0 z-40">
                 <div className="flex items-center gap-4">
                   <h1 className="text-lg font-semibold text-foreground">نظام إدارة معاصر الزيتون</h1>
                 </div>
@@ -46,7 +48,6 @@ const App = () => (
                 </Routes>
               </main>
             </div>
-            <AppSidebar />
           </div>
         </SidebarProvider>
       </BrowserRouter>
