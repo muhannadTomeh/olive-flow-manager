@@ -7,11 +7,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppSidebar } from "@/components/AppSidebar";
 import Dashboard from "./pages/Dashboard";
-import Crops from "./pages/Crops";
-import Production from "./pages/Production";
-import Inventory from "./pages/Inventory";
+import Queue from "./pages/Queue";
+import Invoices from "./pages/Invoices";
+import Customers from "./pages/Customers";
+import Workers from "./pages/Workers";
+import OilTrading from "./pages/OilTrading";
+import Expenses from "./pages/Expenses";
 import Reports from "./pages/Reports";
-import Contacts from "./pages/Contacts";
 import Settings from "./pages/Settings";
 import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
@@ -37,11 +39,13 @@ const App = () => (
               <main className="flex-1 overflow-auto p-6">
                 <Routes>
                   <Route path="/" element={<Dashboard />} />
-                  <Route path="/crops" element={<Crops />} />
-                  <Route path="/production" element={<Production />} />
-                  <Route path="/inventory" element={<Inventory />} />
+                  <Route path="/queue" element={<Queue />} />
+                  <Route path="/invoices" element={<Invoices />} />
+                  <Route path="/customers" element={<Customers />} />
+                  <Route path="/workers" element={<Workers />} />
+                  <Route path="/oil-trading" element={<OilTrading />} />
+                  <Route path="/expenses" element={<Expenses />} />
                   <Route path="/reports" element={<Reports />} />
-                  <Route path="/contacts" element={<Contacts />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/notifications" element={<Notifications />} />
                   <Route path="*" element={<NotFound />} />

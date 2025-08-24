@@ -1,13 +1,16 @@
 
 import { 
-  Home, 
-  Leaf, 
-  Factory, 
-  Package, 
-  BarChart3, 
-  Users,
+  LayoutDashboard, 
+  Users, 
+  FileText, 
+  UserCheck,
+  ShoppingCart,
+  Sprout,
+  Receipt,
   Settings,
-  Bell
+  Bell,
+  Clock,
+  Leaf
 } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 
@@ -26,17 +29,19 @@ import {
 } from "@/components/ui/sidebar"
 
 const items = [
-  { title: "الرئيسية", url: "/", icon: Home },
-  { title: "إدارة المحاصيل", url: "/crops", icon: Leaf },
-  { title: "إدارة الإنتاج", url: "/production", icon: Factory },
-  { title: "إدارة المخزون", url: "/inventory", icon: Package },
-  { title: "التقارير", url: "/reports", icon: BarChart3 },
-  { title: "العملاء والموردين", url: "/contacts", icon: Users },
+  { title: "لوحة التحكم", url: "/", icon: LayoutDashboard },
+  { title: "الطابور", url: "/queue", icon: Clock },
+  { title: "الفواتير", url: "/invoices", icon: Receipt },
+  { title: "الزبائن", url: "/customers", icon: Users },
+  { title: "العمال", url: "/workers", icon: UserCheck },
+  { title: "بيع/شراء الزيت", url: "/oil-trading", icon: ShoppingCart },
+  { title: "المصاريف", url: "/expenses", icon: Sprout },
+  { title: "التقارير", url: "/reports", icon: FileText },
 ]
 
 const settingsItems = [
   { title: "الإعدادات", url: "/settings", icon: Settings },
-  { title: "التنبيهات", url: "/notifications", icon: Bell },
+  { title: "الإشعارات", url: "/notifications", icon: Bell },
 ]
 
 export function AppSidebar() {
