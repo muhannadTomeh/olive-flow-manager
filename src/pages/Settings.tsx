@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
-import { Badge } from "@/components/ui/badge"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Settings as SettingsIcon, User, Bell, Shield, Database, Palette, Globe, Save, Trash2, Download, Upload } from "lucide-react"
 import { useState } from "react"
@@ -26,11 +25,21 @@ export default function Settings() {
   const [theme, setTheme] = useState("light")
   const [language, setLanguage] = useState("ar")
 
+  // إعدادات المعصرة
+  const [pressSettings, setPressSettings] = useState({
+    returnPercent: "6",
+    oilSellPrice: "25",
+    oilBuyPrice: "23",
+    cashReturnCost: "1.5",
+    plasticContainerPrice: "10",
+    metalContainerPrice: "15"
+  })
+
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6" dir="rtl">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">الإعدادات</h2>
-        <div className="flex items-center space-x-2 space-x-reverse">
+        <div className="flex items-center gap-2">
           <Button className="shadow-soft transition-smooth hover:shadow-olive">
             <Save className="ml-2 h-4 w-4" />
             حفظ التغييرات
@@ -38,15 +47,112 @@ export default function Settings() {
         </div>
       </div>
 
-      <Tabs defaultValue="profile" className="space-y-4">
+      <Tabs defaultValue="press" className="space-y-4">
         <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="press">إعدادات المعصرة</TabsTrigger>
           <TabsTrigger value="profile">الملف الشخصي</TabsTrigger>
           <TabsTrigger value="company">بيانات الشركة</TabsTrigger>
           <TabsTrigger value="notifications">التنبيهات</TabsTrigger>
           <TabsTrigger value="appearance">المظهر</TabsTrigger>
-          <TabsTrigger value="security">الأمان</TabsTrigger>
           <TabsTrigger value="backup">النسخ الاحتياطي</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="press" className="space-y-4">
+          <Card className="shadow-soft transition-smooth hover:shadow-olive">
+            <CardHeader>
+              <CardTitle>إعدادات المعصرة والثوابت</CardTitle>
+              <CardDescription>
+                الثوابت المستخدمة في حساب الفواتير وطرق الدفع
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="returnPercent">نسبة الرد (%)</Label>
+                  <Input
+                    id="returnPercent"
+                    type="number"
+                    value={pressSettings.returnPercent}
+                    onChange={(e) => setPressSettings(prev => ({ ...prev, returnPercent: e.target.value }))}
+                    placeholder="أدخل نسبة الرد"
+                    min="0"
+                    step="0.1"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="cashReturnCost">تكلفة الرد نقداً (شيكل/كغم)</Label>
+                  <Input
+                    id="cashReturnCost"
+                    type="number"
+                    value={pressSettings.cashReturnCost}
+                    onChange={(e) => setPressSettings(prev => ({ ...prev, cashReturnCost: e.target.value }))}
+                    placeholder="أدخل تكلفة الرد نقداً"
+                    min="0"
+                    step="0.1"
+                  />
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="oilSellPrice">سعر بيع الزيت (شيكل/كغم)</Label>
+                  <Input
+                    id="oilSellPrice"
+                    type="number"
+                    value={pressSettings.oilSellPrice}
+                    onChange={(e) => setPressSettings(prev => ({ ...prev, oilSellPrice: e.target.value }))}
+                    placeholder="أدخل سعر بيع الزيت"
+                    min="0"
+                    step="0.1"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="oilBuyPrice">سعر شراء الزيت (شيكل/كغم)</Label>
+                  <Input
+                    id="oilBuyPrice"
+                    type="number"
+                    value={pressSettings.oilBuyPrice}
+                    onChange={(e) => setPressSettings(prev => ({ ...prev, oilBuyPrice: e.target.value }))}
+                    placeholder="أدخل سعر شراء الزيت"
+                    min="0"
+                    step="0.1"
+                  />
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="plasticContainerPrice">سعر التنكة البلاستيكية (شيكل)</Label>
+                  <Input
+                    id="plasticContainerPrice"
+                    type="number"
+                    value={pressSettings.plasticContainerPrice}
+                    onChange={(e) => setPressSettings(prev => ({ ...prev, plasticContainerPrice: e.target.value }))}
+                    placeholder="أدخل سعر التنكة البلاستيكية"
+                    min="0"
+                    step="0.1"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="metalContainerPrice">سعر التنكة الحديدية (شيكل)</Label>
+                  <Input
+                    id="metalContainerPrice"
+                    type="number"
+                    value={pressSettings.metalContainerPrice}
+                    onChange={(e) => setPressSettings(prev => ({ ...prev, metalContainerPrice: e.target.value }))}
+                    placeholder="أدخل سعر التنكة الحديدية"
+                    min="0"
+                    step="0.1"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="profile" className="space-y-4">
           <Card className="shadow-soft transition-smooth hover:shadow-olive">
@@ -75,22 +181,22 @@ export default function Settings() {
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">الاسم الأول</Label>
-                  <Input id="firstName" defaultValue="محمد" />
+                  <Input id="firstName" defaultValue="محمد" placeholder="أدخل الاسم الأول" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName">الاسم الأخير</Label>
-                  <Input id="lastName" defaultValue="أحمد" />
+                  <Input id="lastName" defaultValue="أحمد" placeholder="أدخل الاسم الأخير" />
                 </div>
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="email">البريد الإلكتروني</Label>
-                  <Input id="email" type="email" defaultValue="mohamed@example.com" />
+                  <Input id="email" type="email" defaultValue="mohamed@example.com" placeholder="أدخل البريد الإلكتروني" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone">رقم الهاتف</Label>
-                  <Input id="phone" defaultValue="+970-123-456789" />
+                  <Input id="phone" defaultValue="+970-123-456789" placeholder="أدخل رقم الهاتف" />
                 </div>
               </div>
 
@@ -98,7 +204,7 @@ export default function Settings() {
                 <Label htmlFor="position">المنصب</Label>
                 <Select defaultValue="manager">
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="اختر المنصب" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="manager">مدير</SelectItem>
@@ -132,18 +238,18 @@ export default function Settings() {
             <CardContent className="space-y-6">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="companyName">اسم الشركة</Label>
-                  <Input id="companyName" defaultValue="معصرة الزيتون الفلسطينية" />
+                  <Label htmlFor="companyName">اسم المعصرة</Label>
+                  <Input id="companyName" defaultValue="معصرة الزيتون الفلسطينية" placeholder="أدخل اسم المعصرة" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="license">رقم الترخيص</Label>
-                  <Input id="license" defaultValue="LIC-2024-001" />
+                  <Input id="license" defaultValue="LIC-2024-001" placeholder="أدخل رقم الترخيص" />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="address">العنوان</Label>
-                <Textarea id="address" defaultValue="رام الله، فلسطين - شارع الإرسال - مجمع الزيتون" />
+                <Textarea id="address" defaultValue="رام الله، فلسطين - شارع الإرسال - مجمع الزيتون" placeholder="أدخل العنوان الكامل" />
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
@@ -153,15 +259,15 @@ export default function Settings() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="tax">الرقم الضريبي</Label>
-                  <Input id="tax" defaultValue="TAX-123456789" />
+                  <Input id="tax" defaultValue="TAX-123456789" placeholder="أدخل الرقم الضريبي" />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">وصف الشركة</Label>
+                <Label htmlFor="description">وصف المعصرة</Label>
                 <Textarea 
                   id="description" 
-                  placeholder="وصف مختصر عن الشركة..."
+                  placeholder="وصف مختصر عن المعصرة..."
                   defaultValue="معصرة حديثة لإنتاج زيت الزيتون البكر الممتاز بأعلى معايير الجودة"
                 />
               </div>
@@ -172,19 +278,19 @@ export default function Settings() {
                 <h3 className="text-lg font-medium">إعدادات الإنتاج</h3>
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="capacity">السعة اليومية (لتر)</Label>
-                    <Input id="capacity" type="number" defaultValue="2000" />
+                    <Label htmlFor="capacity">السعة اليومية (كغم)</Label>
+                    <Input id="capacity" type="number" defaultValue="2000" placeholder="أدخل السعة اليومية" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="lines">عدد خطوط الإنتاج</Label>
-                    <Input id="lines" type="number" defaultValue="3" />
+                    <Input id="lines" type="number" defaultValue="3" placeholder="أدخل عدد الخطوط" />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="currency">العملة الافتراضية</Label>
                   <Select defaultValue="ils">
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="اختر العملة" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="ils">شيكل إسرائيلي (₪)</SelectItem>
@@ -265,7 +371,7 @@ export default function Settings() {
                     <div className="space-y-0.5">
                       <Label>تنبيهات المخزون المنخفض</Label>
                       <p className="text-sm text-muted-foreground">
-                        تنبيه عند انخفاض مستوى المخزون
+                        تنبيه عند انخفاض مستوى مخزون الزيت
                       </p>
                     </div>
                     <Switch 
@@ -279,7 +385,7 @@ export default function Settings() {
                     <div className="space-y-0.5">
                       <Label>تنبيهات الجودة</Label>
                       <p className="text-sm text-muted-foreground">
-                        تنبيه عند مشاكل في الجودة
+                        تنبيه عند مشاكل في جودة الإنتاج
                       </p>
                     </div>
                     <Switch 
@@ -293,7 +399,7 @@ export default function Settings() {
                     <div className="space-y-0.5">
                       <Label>تحديثات الطلبات</Label>
                       <p className="text-sm text-muted-foreground">
-                        تنبيه عند تحديث حالة الطلبات
+                        تنبيه عند تحديث حالة الفواتير
                       </p>
                     </div>
                     <Switch 
@@ -324,7 +430,7 @@ export default function Settings() {
                   <Label>سمة الألوان</Label>
                   <Select value={theme} onValueChange={setTheme}>
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="اختر السمة" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="light">فاتح</SelectItem>
@@ -343,7 +449,7 @@ export default function Settings() {
                   <Label>اللغة</Label>
                   <Select value={language} onValueChange={setLanguage}>
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="اختر اللغة" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="ar">العربية</SelectItem>
@@ -356,7 +462,7 @@ export default function Settings() {
                   <Label>المنطقة الزمنية</Label>
                   <Select defaultValue="asia/gaza">
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="اختر المنطقة الزمنية" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="asia/gaza">آسيا/غزة</SelectItem>
@@ -369,7 +475,7 @@ export default function Settings() {
                   <Label>تنسيق التاريخ</Label>
                   <Select defaultValue="dd/mm/yyyy">
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="اختر تنسيق التاريخ" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="dd/mm/yyyy">يوم/شهر/سنة</SelectItem>
@@ -383,209 +489,87 @@ export default function Settings() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="security" className="space-y-4">
-          <Card className="shadow-soft transition-smooth hover:shadow-olive">
-            <CardHeader>
-              <CardTitle>الأمان وكلمة المرور</CardTitle>
-              <CardDescription>
-                إدارة إعدادات الأمان وتغيير كلمة المرور
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">تغيير كلمة المرور</h3>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="currentPassword">كلمة المرور الحالية</Label>
-                    <Input id="currentPassword" type="password" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="newPassword">كلمة المرور الجديدة</Label>
-                    <Input id="newPassword" type="password" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="confirmPassword">تأكيد كلمة المرور</Label>
-                    <Input id="confirmPassword" type="password" />
-                  </div>
-                  <Button>تحديث كلمة المرور</Button>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">إعدادات الأمان</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>المصادقة الثنائية</Label>
-                      <p className="text-sm text-muted-foreground">
-                        طبقة حماية إضافية لحسابك
-                      </p>
-                    </div>
-                    <Badge variant="outline">غير مفعل</Badge>
-                  </div>
-                  <Button variant="outline">تفعيل المصادقة الثنائية</Button>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">الجلسات النشطة</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <p className="font-medium">Windows PC - Chrome</p>
-                      <p className="text-sm text-muted-foreground">
-                        رام الله، فلسطين • الجلسة الحالية
-                      </p>
-                    </div>
-                    <Badge>نشط</Badge>
-                  </div>
-                  <div className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <p className="font-medium">iPhone - Safari</p>
-                      <p className="text-sm text-muted-foreground">
-                        نابلس، فلسطين • آخر نشاط قبل ساعتين
-                      </p>
-                    </div>
-                    <Button variant="outline" size="sm">إنهاء الجلسة</Button>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
         <TabsContent value="backup" className="space-y-4">
           <Card className="shadow-soft transition-smooth hover:shadow-olive">
             <CardHeader>
-              <CardTitle>النسخ الاحتياطي واستعادة البيانات</CardTitle>
+              <CardTitle>النسخ الاحتياطي والاستعادة</CardTitle>
               <CardDescription>
-                إدارة النسخ الاحتياطي للبيانات واستعادتها
+                إدارة النسخ الاحتياطية للبيانات
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">النسخ الاحتياطي التلقائي</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>النسخ الاحتياطي اليومي</Label>
-                      <p className="text-sm text-muted-foreground">
-                        نسخة احتياطية تلقائية كل يوم في الساعة 2:00 ص
-                      </p>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>وقت النسخ الاحتياطي</Label>
-                    <Select defaultValue="02:00">
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="00:00">12:00 ص</SelectItem>
-                        <SelectItem value="02:00">2:00 ص</SelectItem>
-                        <SelectItem value="04:00">4:00 ص</SelectItem>
-                        <SelectItem value="06:00">6:00 ص</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">النسخ الاحتياطي اليدوي</h3>
-                <div className="flex gap-2">
-                  <Button className="flex-1">
-                    <Download className="ml-2 h-4 w-4" />
-                    إنشاء نسخة احتياطية
-                  </Button>
-                  <Button variant="outline" className="flex-1">
-                    <Upload className="ml-2 h-4 w-4" />
-                    استعادة من نسخة احتياطية
-                  </Button>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">النسخ الاحتياطية الأخيرة</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 border rounded-lg">
+              <div className="grid gap-4 md:grid-cols-2">
+                <Card className="border-2 border-dashed">
+                  <CardContent className="p-6 text-center space-y-4">
+                    <Download className="h-12 w-12 mx-auto text-muted-foreground" />
                     <div>
-                      <p className="font-medium">نسخة احتياطية تلقائية</p>
+                      <h3 className="font-medium">تصدير البيانات</h3>
                       <p className="text-sm text-muted-foreground">
-                        2024-01-15 02:00 ص • حجم: 156 ميجابايت
+                        تحميل نسخة احتياطية من جميع البيانات
                       </p>
                     </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
-                        <Download className="h-4 w-4" />
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        استعادة
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <Button variant="outline" className="w-full">
+                      <Download className="ml-2 h-4 w-4" />
+                      تصدير الآن
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-2 border-dashed">
+                  <CardContent className="p-6 text-center space-y-4">
+                    <Upload className="h-12 w-12 mx-auto text-muted-foreground" />
                     <div>
-                      <p className="font-medium">نسخة احتياطية يدوية</p>
+                      <h3 className="font-medium">استيراد البيانات</h3>
                       <p className="text-sm text-muted-foreground">
-                        2024-01-10 10:30 ص • حجم: 148 ميجابايت
+                        استعادة البيانات من نسخة احتياطية
                       </p>
                     </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
-                        <Download className="h-4 w-4" />
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        استعادة
-                      </Button>
-                    </div>
-                  </div>
-                </div>
+                    <Button variant="outline" className="w-full">
+                      <Upload className="ml-2 h-4 w-4" />
+                      استيراد ملف
+                    </Button>
+                  </CardContent>
+                </Card>
               </div>
 
               <Separator />
 
               <div className="space-y-4">
                 <h3 className="text-lg font-medium text-destructive">منطقة الخطر</h3>
-                <div className="space-y-3">
-                  <div className="p-4 border border-destructive rounded-lg">
-                    <h4 className="font-medium text-destructive">حذف جميع البيانات</h4>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      حذف جميع البيانات نهائياً. هذا الإجراء لا يمكن التراجع عنه.
-                    </p>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="destructive" className="mt-3">
-                          <Trash2 className="ml-2 h-4 w-4" />
-                          حذف جميع البيانات
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>هل أنت متأكد؟</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            سيتم حذف جميع البيانات نهائياً ولن يمكن استعادتها. تأكد من وجود نسخة احتياطية قبل المتابعة.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>إلغاء</AlertDialogCancel>
-                          <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                            حذف نهائي
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                </div>
+                <Card className="border-destructive">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium">حذف جميع البيانات</h4>
+                        <p className="text-sm text-muted-foreground">
+                          هذا الإجراء لا يمكن التراجع عنه
+                        </p>
+                      </div>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="destructive">
+                            <Trash2 className="ml-2 h-4 w-4" />
+                            حذف الكل
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>هل أنت متأكد؟</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              سيتم حذف جميع البيانات بشكل دائم. هذا الإجراء لا يمكن التراجع عنه.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                            <AlertDialogAction className="bg-destructive text-destructive-foreground">
+                              حذف نهائياً
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </CardContent>
           </Card>

@@ -4,8 +4,6 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Separator } from "@/components/ui/separator"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Bell, BellOff, CheckCircle, AlertTriangle, Info, X, Search, Filter, Trash2, Settings, Archive } from "lucide-react"
 import { useState } from "react"
@@ -15,57 +13,57 @@ const notifications = [
   {
     id: 1,
     type: "warning",
-    title: "مخزون منخفض: ملصقات المنتج",
-    message: "المخزون الحالي: 180 قطعة. الحد الأدنى: 200 قطعة",
+    title: "مخزون منخفض: الزيت",
+    message: "المخزون الحالي: 50 كغم. الحد الأدنى: 100 كغم",
     timestamp: "منذ 5 دقائق",
     isRead: false,
     priority: "high",
-    action: "إعادة طلب",
+    action: "مراجعة المخزون",
     category: "inventory"
   },
   {
     id: 2,
     type: "success",
-    title: "اكتملت دفعة الإنتاج B2024-001",
-    message: "تم إنتاج 425 لتر من زيت الزيتون البكر الممتاز بجودة ممتازة",
+    title: "اكتملت فاتورة الزبون أحمد محمد",
+    message: "تم إنتاج 45 كغم من زيت الزيتون البكر الممتاز",
     timestamp: "منذ ساعة",
     isRead: false,
     priority: "medium",
-    action: "عرض التفاصيل",
+    action: "عرض الفاتورة",
     category: "production"
   },
   {
     id: 3,
     type: "info",
-    title: "طلب جديد من شركة الأردن للتجارة",
-    message: "طلب رقم #1234 بقيمة 15,500 شيكل",
+    title: "زبون جديد في الطابور",
+    message: "الزبون محمود عبدالله أضيف إلى الطابور",
     timestamp: "منذ ساعتين",
     isRead: true,
     priority: "medium",
-    action: "عرض الطلب",
+    action: "عرض الطابور",
     category: "orders"
   },
   {
     id: 4,
     type: "error",
-    title: "عطل في خط الإنتاج الثاني",
-    message: "توقف الخط بسبب ارتفاع درجة الحرارة. يحتاج لصيانة فورية",
+    title: "تنبيه: مصروف كبير",
+    message: "تم تسجيل مصروف بقيمة 500 شيكل للصيانة",
     timestamp: "منذ 3 ساعات",
     isRead: true,
     priority: "urgent",
-    action: "اتصال بالصيانة",
+    action: "مراجعة المصاريف",
     category: "maintenance"
   },
   {
     id: 5,
     type: "warning",
-    title: "انتهاء صلاحية منتج قريباً",
-    message: "زيتون مخلل - الدفعة P2024-001 ستنتهي صلاحيتها خلال 30 يوم",
+    title: "رصيد عامل مستحق",
+    message: "العامل محمد أحمد لديه رصيد مستحق 200 شيكل",
     timestamp: "أمس",
     isRead: true,
     priority: "medium",
-    action: "مراجعة المخزون",
-    category: "quality"
+    action: "دفع الرصيد",
+    category: "workers"
   }
 ]
 
@@ -92,7 +90,7 @@ const reports = [
   {
     id: 1,
     title: "تقرير الإنتاج الأسبوعي جاهز",
-    message: "تقرير الأسبوع 15-21 يناير 2024",
+    message: "تقرير الأسبوع الحالي",
     type: "report",
     timestamp: "منذ يوم",
     isRead: false,
@@ -101,7 +99,7 @@ const reports = [
   {
     id: 2,
     title: "تقرير المبيعات الشهري",
-    message: "تقرير شهر ديسمبر 2023",
+    message: "تقرير الشهر الحالي",
     type: "report",
     timestamp: "منذ 3 أيام",
     isRead: true,
@@ -115,7 +113,7 @@ function getNotificationIcon(type: string) {
     case "warning": return <AlertTriangle className="h-5 w-5 text-yellow-500" />
     case "error": return <AlertTriangle className="h-5 w-5 text-red-500" />
     case "info": return <Info className="h-5 w-5 text-blue-500" />
-    default: return <Bell className="h-5 w-5 text-gray-500" />
+    default: return <Bell className="h-5 w-5 text-muted-foreground" />
   }
 }
 
@@ -139,6 +137,18 @@ function getPriorityText(priority: string) {
   }
 }
 
+function getCategoryText(category: string) {
+  switch (category) {
+    case "inventory": return "المخزون"
+    case "production": return "الإنتاج"
+    case "orders": return "الطابور"
+    case "maintenance": return "المصاريف"
+    case "workers": return "العمال"
+    case "quality": return "الجودة"
+    default: return category
+  }
+}
+
 export default function Notifications() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
@@ -155,20 +165,20 @@ export default function Notifications() {
   const unreadCount = notifications.filter(n => !n.isRead).length
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6" dir="rtl">
       <div className="flex items-center justify-between space-y-2">
         <div className="flex items-center gap-3">
-          <h2 className="text-3xl font-bold tracking-tight">التنبيهات</h2>
+          <h2 className="text-3xl font-bold tracking-tight">الإشعارات</h2>
           {unreadCount > 0 && (
             <Badge variant="destructive" className="animate-pulse">
               {unreadCount} جديد
             </Badge>
           )}
         </div>
-        <div className="flex items-center space-x-2 space-x-reverse">
+        <div className="flex items-center gap-2">
           <Button variant="outline">
             <Settings className="ml-2 h-4 w-4" />
-            إعدادات التنبيهات
+            إعدادات الإشعارات
           </Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
@@ -179,9 +189,9 @@ export default function Notifications() {
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>تحديد جميع التنبيهات كمقروءة؟</AlertDialogTitle>
+                <AlertDialogTitle>تحديد جميع الإشعارات كمقروءة؟</AlertDialogTitle>
                 <AlertDialogDescription>
-                  سيتم تحديد جميع التنبيهات الحالية كمقروءة. هل تريد المتابعة؟
+                  سيتم تحديد جميع الإشعارات الحالية كمقروءة. هل تريد المتابعة؟
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -195,17 +205,17 @@ export default function Notifications() {
 
       <Tabs defaultValue="all" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="all">جميع التنبيهات</TabsTrigger>
-          <TabsTrigger value="system">تنبيهات النظام</TabsTrigger>
+          <TabsTrigger value="all">جميع الإشعارات</TabsTrigger>
+          <TabsTrigger value="system">إشعارات النظام</TabsTrigger>
           <TabsTrigger value="reports">التقارير</TabsTrigger>
         </TabsList>
 
         <TabsContent value="all" className="space-y-4">
-          <div className="flex items-center space-x-2 space-x-reverse">
+          <div className="flex items-center gap-2">
             <div className="relative flex-1">
               <Search className="absolute right-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="البحث في التنبيهات..."
+                placeholder="البحث في الإشعارات..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pr-8"
@@ -214,22 +224,22 @@ export default function Notifications() {
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
               <SelectTrigger className="w-[180px]">
                 <Filter className="h-4 w-4 ml-2" />
-                <SelectValue />
+                <SelectValue placeholder="اختر الفئة" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">جميع الفئات</SelectItem>
                 <SelectItem value="inventory">المخزون</SelectItem>
                 <SelectItem value="production">الإنتاج</SelectItem>
-                <SelectItem value="orders">الطلبات</SelectItem>
-                <SelectItem value="maintenance">الصيانة</SelectItem>
-                <SelectItem value="quality">الجودة</SelectItem>
+                <SelectItem value="orders">الطابور</SelectItem>
+                <SelectItem value="maintenance">المصاريف</SelectItem>
+                <SelectItem value="workers">العمال</SelectItem>
               </SelectContent>
             </Select>
             <Button 
               variant={showUnreadOnly ? "default" : "outline"}
               onClick={() => setShowUnreadOnly(!showUnreadOnly)}
             >
-              {showUnreadOnly ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
+              {showUnreadOnly ? <Bell className="h-4 w-4 ml-1" /> : <BellOff className="h-4 w-4 ml-1" />}
               غير مقروء فقط
             </Button>
           </div>
@@ -239,7 +249,7 @@ export default function Notifications() {
               <Card 
                 key={notification.id} 
                 className={`shadow-soft transition-smooth hover:shadow-olive ${
-                  !notification.isRead ? 'border-l-4 border-l-primary bg-primary/5' : ''
+                  !notification.isRead ? 'border-r-4 border-r-primary bg-primary/5' : ''
                 }`}
               >
                 <CardContent className="p-4">
@@ -264,7 +274,7 @@ export default function Notifications() {
                         <div className="flex items-center gap-4 text-xs text-muted-foreground">
                           <span>{notification.timestamp}</span>
                           <Badge variant="outline" className="text-xs">
-                            {notification.category}
+                            {getCategoryText(notification.category)}
                           </Badge>
                         </div>
                       </div>
@@ -287,9 +297,9 @@ export default function Notifications() {
             <Card className="shadow-soft">
               <CardContent className="p-8 text-center">
                 <Bell className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">لا توجد تنبيهات</h3>
+                <h3 className="text-lg font-medium mb-2">لا توجد إشعارات</h3>
                 <p className="text-muted-foreground">
-                  {showUnreadOnly ? "جميع التنبيهات مقروءة" : "لا توجد تنبيهات تطابق معايير البحث"}
+                  {showUnreadOnly ? "جميع الإشعارات مقروءة" : "لا توجد إشعارات تطابق معايير البحث"}
                 </p>
               </CardContent>
             </Card>
@@ -299,7 +309,7 @@ export default function Notifications() {
         <TabsContent value="system" className="space-y-4">
           <Card className="shadow-soft transition-smooth hover:shadow-olive">
             <CardHeader>
-              <CardTitle>تنبيهات النظام</CardTitle>
+              <CardTitle>إشعارات النظام</CardTitle>
               <CardDescription>
                 تحديثات النظام والصيانة المجدولة
               </CardDescription>
