@@ -2,7 +2,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Area, AreaChart } from 'recharts'
 import { Download, FileText, TrendingUp, TrendingDown, DollarSign, Calendar, Users, Package } from "lucide-react"
@@ -18,11 +17,11 @@ const monthlyProduction = [
 ]
 
 const salesByCustomer = [
-  { name: 'شركة الأردن للتجارة', sales: 234500, percentage: 28.5 },
-  { name: 'مؤسسة النور التجارية', sales: 189200, percentage: 23.1 },
-  { name: 'شركة البركة للأغذية', sales: 156800, percentage: 19.1 },
-  { name: 'مجموعة الهدى التجارية', sales: 123400, percentage: 15.0 },
-  { name: 'عملاء آخرون', sales: 117100, percentage: 14.3 }
+  { name: 'أحمد محمد', sales: 234500, percentage: 28.5 },
+  { name: 'فاطمة أحمد', sales: 189200, percentage: 23.1 },
+  { name: 'محمود عبدالله', sales: 156800, percentage: 19.1 },
+  { name: 'خالد يوسف', sales: 123400, percentage: 15.0 },
+  { name: 'زبائن آخرون', sales: 117100, percentage: 14.3 }
 ]
 
 const qualityTrends = [
@@ -35,34 +34,34 @@ const qualityTrends = [
 ]
 
 const expenseBreakdown = [
-  { category: 'المواد الخام', amount: 450000, percentage: 42 },
-  { category: 'الرواتب', amount: 280000, percentage: 26 },
-  { category: 'الكهرباء والوقود', amount: 120000, percentage: 11 },
-  { category: 'الصيانة', amount: 85000, percentage: 8 },
-  { category: 'التعبئة والتغليف', amount: 75000, percentage: 7 },
-  { category: 'أخرى', amount: 65000, percentage: 6 }
+  { category: 'أجور العمال', amount: 280000, percentage: 42 },
+  { category: 'صيانة المعدات', amount: 120000, percentage: 18 },
+  { category: 'فواتير الكهرباء', amount: 85000, percentage: 13 },
+  { category: 'مواد التشغيل', amount: 75000, percentage: 11 },
+  { category: 'مصاريف يومية', amount: 65000, percentage: 10 },
+  { category: 'أخرى', amount: 40000, percentage: 6 }
 ]
 
 const topProducts = [
-  { product: 'زيت زيتون بكر ممتاز 500مل', quantity: 8450, revenue: 380250 },
-  { product: 'زيت زيتون بكر ممتاز 1لتر', quantity: 6200, revenue: 310000 },
-  { product: 'زيت زيتون درجة أولى 500مل', quantity: 5800, revenue: 232000 },
-  { product: 'زيتون أخضر مخلل', quantity: 3400, revenue: 68000 },
-  { product: 'زيت زيتون مع الأعشاب', quantity: 2100, revenue: 105000 }
+  { product: 'زيت زيتون بكر ممتاز', quantity: 8450, revenue: 380250 },
+  { product: 'زيت زيتون درجة أولى', quantity: 6200, revenue: 310000 },
+  { product: 'زيت زيتون عادي', quantity: 5800, revenue: 232000 },
+  { product: 'تفل الزيتون', quantity: 3400, revenue: 68000 },
+  { product: 'منتجات أخرى', quantity: 2100, revenue: 105000 }
 ]
 
-const colors = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4']
+const colors = ['hsl(var(--primary))', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4']
 
 export default function Reports() {
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6" dir="rtl">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">التقارير والتحليلات</h2>
-        <div className="flex items-center space-x-2 space-x-reverse">
+        <div className="flex items-center gap-2">
           <Select defaultValue="current-month">
             <SelectTrigger className="w-[180px]">
               <Calendar className="h-4 w-4 ml-2" />
-              <SelectValue />
+              <SelectValue placeholder="اختر الفترة" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="current-month">الشهر الحالي</SelectItem>
@@ -95,10 +94,10 @@ export default function Reports() {
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">₪ 4,836,500</div>
+                <div className="text-2xl font-bold">48,365 ش</div>
                 <p className="text-xs text-muted-foreground flex items-center">
                   <TrendingUp className="h-3 w-3 text-green-500 ml-1" />
-                  +15.2% من الربع الماضي
+                  +15.2% من الشهر الماضي
                 </p>
               </CardContent>
             </Card>
@@ -108,23 +107,23 @@ export default function Reports() {
                 <Package className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">107,320 لتر</div>
+                <div className="text-2xl font-bold">1,073 كغم</div>
                 <p className="text-xs text-muted-foreground flex items-center">
                   <TrendingUp className="h-3 w-3 text-green-500 ml-1" />
-                  +8.7% من الربع الماضي
+                  +8.7% من الشهر الماضي
                 </p>
               </CardContent>
             </Card>
             <Card className="shadow-soft transition-smooth hover:shadow-olive">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">العملاء النشطون</CardTitle>
+                <CardTitle className="text-sm font-medium">عدد الزبائن</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">127</div>
                 <p className="text-xs text-muted-foreground flex items-center">
                   <TrendingUp className="h-3 w-3 text-green-500 ml-1" />
-                  +12 عميل جديد
+                  +12 زبون جديد
                 </p>
               </CardContent>
             </Card>
@@ -148,13 +147,13 @@ export default function Reports() {
               <CardHeader>
                 <CardTitle>الإنتاج والإيرادات الشهرية</CardTitle>
               </CardHeader>
-              <CardContent className="pl-2">
+              <CardContent className="pr-2">
                 <ResponsiveContainer width="100%" height={350}>
                   <AreaChart data={monthlyProduction}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" />
                     <YAxis yAxisId="left" />
-                    <YAxis yAxisId="right" orientation="right" />
+                    <YAxis yAxisId="right" orientation="left" />
                     <Area 
                       yAxisId="left"
                       type="monotone" 
@@ -177,7 +176,7 @@ export default function Reports() {
             </Card>
             <Card className="col-span-3 shadow-soft transition-smooth hover:shadow-olive">
               <CardHeader>
-                <CardTitle>توزيع المبيعات حسب العميل</CardTitle>
+                <CardTitle>توزيع المبيعات حسب الزبون</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={350}>
@@ -253,7 +252,7 @@ export default function Reports() {
                             {efficiency}%
                           </span>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="w-full bg-muted rounded-full h-2">
                           <div 
                             className={`h-2 rounded-full ${
                               parseFloat(efficiency) >= 100 ? 'bg-green-500' : 'bg-yellow-500'
@@ -292,9 +291,9 @@ export default function Reports() {
                   {topProducts.map((product, index) => (
                     <TableRow key={index}>
                       <TableCell className="font-medium">{product.product}</TableCell>
-                      <TableCell>{product.quantity.toLocaleString()}</TableCell>
-                      <TableCell>₪ {product.revenue.toLocaleString()}</TableCell>
-                      <TableCell>₪ {(product.revenue / product.quantity).toFixed(2)}</TableCell>
+                      <TableCell>{product.quantity.toLocaleString()} كغم</TableCell>
+                      <TableCell>{product.revenue.toLocaleString()} ش</TableCell>
+                      <TableCell>{(product.revenue / product.quantity).toFixed(2)} ش/كغم</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -304,7 +303,7 @@ export default function Reports() {
 
           <Card className="shadow-soft transition-smooth hover:shadow-olive">
             <CardHeader>
-              <CardTitle>تفاصيل العملاء الرئيسيين</CardTitle>
+              <CardTitle>تفاصيل الزبائن الرئيسيين</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -316,9 +315,9 @@ export default function Reports() {
                         {customer.percentage}% من إجمالي المبيعات
                       </p>
                     </div>
-                    <div className="text-right">
-                      <p className="font-bold">₪ {customer.sales.toLocaleString()}</p>
-                      <p className="text-sm text-muted-foreground">هذا الربع</p>
+                    <div className="text-left">
+                      <p className="font-bold">{customer.sales.toLocaleString()} ش</p>
+                      <p className="text-sm text-muted-foreground">هذا الموسم</p>
                     </div>
                   </div>
                 ))}
@@ -331,7 +330,7 @@ export default function Reports() {
           <div className="grid gap-4 md:grid-cols-2">
             <Card className="shadow-soft transition-smooth hover:shadow-olive">
               <CardHeader>
-                <CardTitle>توزيع المصروفات</CardTitle>
+                <CardTitle>توزيع المصاريف</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -361,7 +360,7 @@ export default function Reports() {
                         />
                         <span>{expense.category}</span>
                       </div>
-                      <span className="font-medium">₪ {expense.amount.toLocaleString()}</span>
+                      <span className="font-medium">{expense.amount.toLocaleString()} ش</span>
                     </div>
                   ))}
                 </div>
@@ -370,24 +369,20 @@ export default function Reports() {
 
             <Card className="shadow-soft transition-smooth hover:shadow-olive">
               <CardHeader>
-                <CardTitle>الملخص المالي</CardTitle>
+                <CardTitle>ملخص مالي</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-                  <span className="font-medium">إجمالي الإيرادات</span>
-                  <span className="text-green-600 font-bold">₪ 4,836,500</span>
+                <div className="flex justify-between items-center p-4 bg-green-50 rounded-lg border border-green-200">
+                  <span className="font-medium text-green-800">إجمالي الإيرادات</span>
+                  <span className="text-2xl font-bold text-green-600">48,365 ش</span>
                 </div>
-                <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
-                  <span className="font-medium">إجمالي المصروفات</span>
-                  <span className="text-red-600 font-bold">₪ 3,265,000</span>
+                <div className="flex justify-between items-center p-4 bg-red-50 rounded-lg border border-red-200">
+                  <span className="font-medium text-red-800">إجمالي المصاريف</span>
+                  <span className="text-2xl font-bold text-red-600">32,650 ش</span>
                 </div>
-                <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                  <span className="font-medium">صافي الربح</span>
-                  <span className="text-blue-600 font-bold">₪ 1,571,500</span>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
-                  <span className="font-medium">هامش الربح</span>
-                  <span className="text-purple-600 font-bold">32.5%</span>
+                <div className="flex justify-between items-center p-4 bg-primary/10 rounded-lg border border-primary/20">
+                  <span className="font-medium text-primary">صافي الربح</span>
+                  <span className="text-2xl font-bold text-primary">15,715 ش</span>
                 </div>
               </CardContent>
             </Card>
@@ -397,54 +392,38 @@ export default function Reports() {
         <TabsContent value="quality" className="space-y-4">
           <Card className="shadow-soft transition-smooth hover:shadow-olive">
             <CardHeader>
-              <CardTitle>اتجاهات الجودة الشهرية</CardTitle>
+              <CardTitle>توزيع جودة الإنتاج</CardTitle>
               <CardDescription>
-                تطور نسب الجودة على مدار الأشهر الماضية
+                نسب جودة الزيت المنتج حسب الشهر
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={350}>
-                <AreaChart data={qualityTrends}>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={qualityTrends}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="month" />
                   <YAxis />
-                  <Area type="monotone" dataKey="excellent" stackId="1" stroke="#22c55e" fill="#22c55e" />
-                  <Area type="monotone" dataKey="good" stackId="1" stroke="#3b82f6" fill="#3b82f6" />
-                  <Area type="monotone" dataKey="acceptable" stackId="1" stroke="#f59e0b" fill="#f59e0b" />
-                </AreaChart>
+                  <Bar dataKey="excellent" stackId="a" fill="hsl(var(--primary))" name="ممتاز" />
+                  <Bar dataKey="good" stackId="a" fill="#3b82f6" name="جيد" />
+                  <Bar dataKey="acceptable" stackId="a" fill="#f59e0b" name="مقبول" />
+                </BarChart>
               </ResponsiveContainer>
+              <div className="flex justify-center gap-6 mt-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-primary" />
+                  <span className="text-sm">ممتاز</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-blue-500" />
+                  <span className="text-sm">جيد</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-amber-500" />
+                  <span className="text-sm">مقبول</span>
+                </div>
+              </div>
             </CardContent>
           </Card>
-
-          <div className="grid gap-4 md:grid-cols-3">
-            <Card className="shadow-soft transition-smooth hover:shadow-olive">
-              <CardHeader>
-                <CardTitle>الجودة الممتازة</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-green-600">78%</div>
-                <p className="text-sm text-muted-foreground">+5% من الشهر الماضي</p>
-              </CardContent>
-            </Card>
-            <Card className="shadow-soft transition-smooth hover:shadow-olive">
-              <CardHeader>
-                <CardTitle>الجودة الجيدة</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-blue-600">18%</div>
-                <p className="text-sm text-muted-foreground">-3% من الشهر الماضي</p>
-              </CardContent>
-            </Card>
-            <Card className="shadow-soft transition-smooth hover:shadow-olive">
-              <CardHeader>
-                <CardTitle>الجودة المقبولة</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-yellow-600">4%</div>
-                <p className="text-sm text-muted-foreground">-2% من الشهر الماضي</p>
-              </CardContent>
-            </Card>
-          </div>
         </TabsContent>
       </Tabs>
     </div>

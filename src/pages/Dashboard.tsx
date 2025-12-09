@@ -8,37 +8,35 @@ import {
   Calendar,
   AlertTriangle,
   Users,
-  DollarSign
+  DollarSign,
+  Clock
 } from "lucide-react"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 
 const productionData = [
-  { month: 'يناير', amount: 1200 },
-  { month: 'فبراير', amount: 1100 },
-  { month: 'مارس', amount: 1400 },
-  { month: 'أبريل', amount: 1300 },
-  { month: 'مايو', amount: 1600 },
-  { month: 'يونيو', amount: 1800 },
+  { month: 'أسبوع 1', amount: 120 },
+  { month: 'أسبوع 2', amount: 150 },
+  { month: 'أسبوع 3', amount: 180 },
+  { month: 'أسبوع 4', amount: 200 },
 ]
 
-const qualityData = [
-  { name: 'ممتاز', value: 45, color: 'hsl(90 45% 25%)' },
-  { name: 'جيد جداً', value: 35, color: 'hsl(80 40% 35%)' },
-  { name: 'جيد', value: 15, color: 'hsl(70 35% 45%)' },
-  { name: 'متوسط', value: 5, color: 'hsl(60 30% 55%)' },
+const paymentMethodsData = [
+  { name: 'دفع بالزيت', value: 45, color: 'hsl(90 45% 25%)' },
+  { name: 'دفع نقدي', value: 35, color: 'hsl(200 70% 50%)' },
+  { name: 'دفع مختلط', value: 20, color: 'hsl(40 90% 50%)' },
 ]
 
 const recentActivities = [
-  { id: 1, activity: 'تم استلام 500 كيلو زيتون من المزرعة الشرقية', time: 'قبل ساعتين', type: 'receive' },
-  { id: 2, activity: 'انتهاء عملية عصر الدفعة رقم 145', time: 'قبل 4 ساعات', type: 'production' },
-  { id: 3, activity: 'شحن 200 لتر زيت للعميل أحمد محمد', time: 'أمس', type: 'shipment' },
-  { id: 4, activity: 'فحص جودة لدفعة زيت جديدة', time: 'أمس', type: 'quality' },
+  { id: 1, activity: 'تم إنشاء فاتورة جديدة للزبون أحمد محمد', time: 'قبل 10 دقائق', type: 'invoice' },
+  { id: 2, activity: 'تم إضافة زبون جديد إلى الطابور', time: 'قبل 30 دقيقة', type: 'queue' },
+  { id: 3, activity: 'تم تسجيل مصروف صيانة بقيمة 150 شيكل', time: 'قبل ساعة', type: 'expense' },
+  { id: 4, activity: 'تم بيع 20 كغم زيت', time: 'قبل ساعتين', type: 'sale' },
 ]
 
 export default function Dashboard() {
   return (
     <div className="p-6 space-y-6" dir="rtl">
-      {/* Header */}
+      {/* العنوان */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-primary">لوحة التحكم</h1>
@@ -49,49 +47,49 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* البطاقات الإحصائية */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <DashboardCard
-          title="إجمالي الإنتاج اليومي"
-          value="450 لتر"
-          description="زيت زيتون طازج"
-          icon={Factory}
-          trend={{ value: 12, isPositive: true }}
+          title="الزبائن في الطابور"
+          value="5"
+          description="زبون ينتظر"
+          icon={Clock}
+          trend={{ value: 2, isPositive: true }}
         />
         <DashboardCard
-          title="المخزون الحالي"
-          value="2,350 لتر"
-          description="في المخازن"
+          title="مخزون الزيت"
+          value="250 كغم"
+          description="متوفر في المخزن"
           icon={Package}
           trend={{ value: -5, isPositive: false }}
         />
         <DashboardCard
-          title="الزيتون المتاح"
-          value="1,200 كيلو"
-          description="جاهز للعصر"
-          icon={Leaf}
-          trend={{ value: 8, isPositive: true }}
+          title="الكاش المتوفر"
+          value="15,000 ش"
+          description="الرصيد الحالي"
+          icon={DollarSign}
+          trend={{ value: 12, isPositive: true }}
         />
         <DashboardCard
-          title="المبيعات الشهرية"
-          value="85,500 ر.س"
-          description="إجمالي المبيعات"
-          icon={DollarSign}
+          title="فواتير اليوم"
+          value="8"
+          description="تم إنجازها"
+          icon={Factory}
           trend={{ value: 15, isPositive: true }}
         />
       </div>
 
-      {/* Charts Row */}
+      {/* الرسوم البيانية */}
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Production Chart */}
+        {/* الإنتاج الأسبوعي */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
-              الإنتاج الشهري
+              الإنتاج الأسبوعي
             </CardTitle>
             <CardDescription>
-              كمية الزيت المنتج خلال الأشهر الستة الماضية (باللتر)
+              كمية الزيت المنتج خلال الأسابيع الأخيرة (بالكيلوغرام)
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -107,22 +105,22 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Quality Distribution */}
+        {/* توزيع طرق الدفع */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Leaf className="h-5 w-5" />
-              توزيع جودة الزيت
+              توزيع طرق الدفع
             </CardTitle>
             <CardDescription>
-              تصنيف جودة الإنتاج الحالي
+              نسب طرق الدفع المستخدمة من قبل الزبائن
             </CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
-                  data={qualityData}
+                  data={paymentMethodsData}
                   cx="50%"
                   cy="50%"
                   innerRadius={60}
@@ -130,15 +128,15 @@ export default function Dashboard() {
                   paddingAngle={5}
                   dataKey="value"
                 >
-                  {qualityData.map((entry, index) => (
+                  {paymentMethodsData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
                 <Tooltip />
               </PieChart>
             </ResponsiveContainer>
-            <div className="grid grid-cols-2 gap-2 mt-4">
-              {qualityData.map((item, index) => (
+            <div className="grid grid-cols-3 gap-2 mt-4">
+              {paymentMethodsData.map((item, index) => (
                 <div key={index} className="flex items-center gap-2">
                   <div 
                     className="w-3 h-3 rounded-full" 
@@ -152,9 +150,9 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      {/* Recent Activities and Alerts */}
+      {/* الأنشطة الأخيرة والتنبيهات */}
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Recent Activities */}
+        {/* الأنشطة الأخيرة */}
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -167,10 +165,10 @@ export default function Dashboard() {
               {recentActivities.map((activity) => (
                 <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
                   <div className={`w-2 h-2 rounded-full mt-2 ${
-                    activity.type === 'receive' ? 'bg-blue-500' :
-                    activity.type === 'production' ? 'bg-green-500' :
-                    activity.type === 'shipment' ? 'bg-orange-500' :
-                    'bg-purple-500'
+                    activity.type === 'invoice' ? 'bg-blue-500' :
+                    activity.type === 'queue' ? 'bg-green-500' :
+                    activity.type === 'expense' ? 'bg-red-500' :
+                    'bg-orange-500'
                   }`} />
                   <div className="flex-1">
                     <p className="text-sm font-medium">{activity.activity}</p>
@@ -182,7 +180,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Quick Stats & Alerts */}
+        {/* التنبيهات والملاحظات */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -196,15 +194,15 @@ export default function Dashboard() {
                 <AlertTriangle className="h-4 w-4 text-yellow-600" />
                 <span className="text-sm font-medium text-yellow-800">انخفاض المخزون</span>
               </div>
-              <p className="text-xs text-yellow-700 mt-1">المخزون أقل من الحد الأدنى</p>
+              <p className="text-xs text-yellow-700 mt-1">مخزون الزيت أقل من الحد الأدنى</p>
             </div>
 
             <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
               <div className="flex items-center gap-2">
                 <Factory className="h-4 w-4 text-green-600" />
-                <span className="text-sm font-medium text-green-800">الإنتاج جيد</span>
+                <span className="text-sm font-medium text-green-800">أداء جيد</span>
               </div>
-              <p className="text-xs text-green-700 mt-1">تحقيق الهدف المطلوب</p>
+              <p className="text-xs text-green-700 mt-1">تحقيق الهدف اليومي للإنتاج</p>
             </div>
 
             <div className="space-y-2">
@@ -212,11 +210,11 @@ export default function Dashboard() {
               <div className="grid grid-cols-2 gap-2 text-center">
                 <div className="p-2 bg-muted rounded">
                   <div className="text-lg font-bold">15</div>
-                  <div className="text-xs text-muted-foreground">عميل نشط</div>
+                  <div className="text-xs text-muted-foreground">زبون اليوم</div>
                 </div>
                 <div className="p-2 bg-muted rounded">
                   <div className="text-lg font-bold">3</div>
-                  <div className="text-xs text-muted-foreground">طلبات معلقة</div>
+                  <div className="text-xs text-muted-foreground">عمال نشطين</div>
                 </div>
               </div>
             </div>
