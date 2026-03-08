@@ -213,7 +213,7 @@ const OilTrading = () => {
         </Card>
       </div>
 
-      <Tabs defaultValue="add-transaction" className="w-full">
+      <Tabs defaultValue="add-transaction" className="w-full" dir="rtl">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="add-transaction">إضافة عملية</TabsTrigger>
           <TabsTrigger value="history">سجل العمليات</TabsTrigger>
@@ -317,9 +317,9 @@ const OilTrading = () => {
 
               <Button onClick={addTransaction} className="w-full">
                 {newTransaction.type === 'buy' ? (
-                  <TrendingDown className="h-4 w-4 ml-2" />
+                  <TrendingDown className="h-4 w-4 me-2" />
                 ) : (
-                  <TrendingUp className="h-4 w-4 ml-2" />
+                  <TrendingUp className="h-4 w-4 me-2" />
                 )}
                 تسجيل العملية
               </Button>
@@ -370,12 +370,12 @@ const OilTrading = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>التاريخ</TableHead>
-                        <TableHead>النوع</TableHead>
-                        <TableHead>الكمية</TableHead>
-                        <TableHead>السعر</TableHead>
-                        <TableHead>الإجمالي</TableHead>
-                        <TableHead>الطرف</TableHead>
+                        <TableHead className="text-right">التاريخ</TableHead>
+                        <TableHead className="text-right">النوع</TableHead>
+                        <TableHead className="text-right">الكمية</TableHead>
+                        <TableHead className="text-right">السعر</TableHead>
+                        <TableHead className="text-right">الإجمالي</TableHead>
+                        <TableHead className="text-right">الطرف</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -390,9 +390,9 @@ const OilTrading = () => {
                           <TableCell>
                             <Badge variant={transaction.type === 'buy' ? 'secondary' : 'default'}>
                               {transaction.type === 'buy' ? (
-                                <><TrendingDown className="h-4 w-4 ml-1" /> شراء</>
+                                <><TrendingDown className="h-4 w-4 me-1" /> شراء</>
                               ) : (
-                                <><TrendingUp className="h-4 w-4 ml-1" /> بيع</>
+                                <><TrendingUp className="h-4 w-4 me-1" /> بيع</>
                               )}
                             </Badge>
                           </TableCell>

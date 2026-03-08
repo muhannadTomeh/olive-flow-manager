@@ -41,13 +41,13 @@ export default function Settings() {
         <h2 className="text-3xl font-bold tracking-tight">الإعدادات</h2>
         <div className="flex items-center gap-2">
           <Button className="shadow-soft transition-smooth hover:shadow-olive">
-            <Save className="ml-2 h-4 w-4" />
+            <Save className="me-2 h-4 w-4" />
             حفظ التغييرات
           </Button>
         </div>
       </div>
 
-      <Tabs defaultValue="press" className="space-y-4">
+      <Tabs defaultValue="press" className="space-y-4" dir="rtl">
         <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="press">إعدادات المعصرة</TabsTrigger>
           <TabsTrigger value="profile">الملف الشخصي</TabsTrigger>
@@ -509,7 +509,7 @@ export default function Settings() {
                       </p>
                     </div>
                     <Button variant="outline" className="w-full">
-                      <Download className="ml-2 h-4 w-4" />
+                      <Download className="me-2 h-4 w-4" />
                       تصدير الآن
                     </Button>
                   </CardContent>
@@ -525,7 +525,7 @@ export default function Settings() {
                       </p>
                     </div>
                     <Button variant="outline" className="w-full">
-                      <Upload className="ml-2 h-4 w-4" />
+                      <Upload className="me-2 h-4 w-4" />
                       استيراد ملف
                     </Button>
                   </CardContent>
@@ -548,7 +548,7 @@ export default function Settings() {
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button variant="destructive">
-                            <Trash2 className="ml-2 h-4 w-4" />
+                            <Trash2 className="me-2 h-4 w-4" />
                             حذف الكل
                           </Button>
                         </AlertDialogTrigger>

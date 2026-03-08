@@ -60,7 +60,7 @@ export default function Reports() {
         <div className="flex items-center gap-2">
           <Select defaultValue="current-month">
             <SelectTrigger className="w-[180px]">
-              <Calendar className="h-4 w-4 ml-2" />
+              <Calendar className="h-4 w-4 me-2" />
               <SelectValue placeholder="اختر الفترة" />
             </SelectTrigger>
             <SelectContent>
@@ -71,13 +71,13 @@ export default function Reports() {
             </SelectContent>
           </Select>
           <Button variant="outline" className="shadow-soft transition-smooth hover:shadow-olive">
-            <Download className="h-4 w-4 ml-2" />
+            <Download className="h-4 w-4 me-2" />
             تصدير PDF
           </Button>
         </div>
       </div>
 
-      <Tabs defaultValue="overview" className="space-y-4">
+      <Tabs defaultValue="overview" className="space-y-4" dir="rtl">
         <TabsList>
           <TabsTrigger value="overview">نظرة عامة</TabsTrigger>
           <TabsTrigger value="production">تقرير الإنتاج</TabsTrigger>
@@ -96,7 +96,7 @@ export default function Reports() {
               <CardContent>
                 <div className="text-2xl font-bold">48,365 ش</div>
                 <p className="text-xs text-muted-foreground flex items-center">
-                  <TrendingUp className="h-3 w-3 text-green-500 ml-1" />
+                  <TrendingUp className="h-3 w-3 text-green-500 me-1" />
                   +15.2% من الشهر الماضي
                 </p>
               </CardContent>
@@ -109,7 +109,7 @@ export default function Reports() {
               <CardContent>
                 <div className="text-2xl font-bold">1,073 كغم</div>
                 <p className="text-xs text-muted-foreground flex items-center">
-                  <TrendingUp className="h-3 w-3 text-green-500 ml-1" />
+                  <TrendingUp className="h-3 w-3 text-green-500 me-1" />
                   +8.7% من الشهر الماضي
                 </p>
               </CardContent>
@@ -122,7 +122,7 @@ export default function Reports() {
               <CardContent>
                 <div className="text-2xl font-bold">127</div>
                 <p className="text-xs text-muted-foreground flex items-center">
-                  <TrendingUp className="h-3 w-3 text-green-500 ml-1" />
+                  <TrendingUp className="h-3 w-3 text-green-500 me-1" />
                   +12 زبون جديد
                 </p>
               </CardContent>
@@ -135,7 +135,7 @@ export default function Reports() {
               <CardContent>
                 <div className="text-2xl font-bold">32.5%</div>
                 <p className="text-xs text-muted-foreground flex items-center">
-                  <TrendingDown className="h-3 w-3 text-red-500 ml-1" />
+                  <TrendingDown className="h-3 w-3 text-red-500 me-1" />
                   -1.2% من الشهر الماضي
                 </p>
               </CardContent>
@@ -315,7 +315,7 @@ export default function Reports() {
                         {customer.percentage}% من إجمالي المبيعات
                       </p>
                     </div>
-                    <div className="text-left">
+                    <div className="text-right">
                       <p className="font-bold">{customer.sales.toLocaleString()} ش</p>
                       <p className="text-sm text-muted-foreground">هذا الموسم</p>
                     </div>

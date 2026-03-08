@@ -136,7 +136,7 @@ const Queue = () => {
             </div>
             
             <Button onClick={addToQueue} className="w-full">
-              <UserPlus className="h-4 w-4 ml-2" />
+              <UserPlus className="h-4 w-4 me-2" />
               إضافة إلى الطابور
             </Button>
           </CardContent>
@@ -190,7 +190,7 @@ const Queue = () => {
                           onClick={() => moveToInvoice(customer)}
                           className="bg-primary hover:bg-primary/90"
                         >
-                          <ArrowRight className="h-4 w-4 ml-1" />
+                          <ArrowRight className="h-4 w-4 me-1" />
                           إلى الفاتورة
                         </Button>
                       )}
