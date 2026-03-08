@@ -315,7 +315,7 @@ export default function Reports() {
                         {customer.percentage}% من إجمالي المبيعات
                       </p>
                     </div>
-                    <div className="text-left">
+                    <div className="text-right">
                       <p className="font-bold">{customer.sales.toLocaleString()} ش</p>
                       <p className="text-sm text-muted-foreground">هذا الموسم</p>
                     </div>

@@ -548,7 +548,7 @@ export default function Settings() {
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button variant="destructive">
-                            <Trash2 className="ml-2 h-4 w-4" />
+                            <Trash2 className="me-2 h-4 w-4" />
                             حذف الكل
                           </Button>
                         </AlertDialogTrigger>

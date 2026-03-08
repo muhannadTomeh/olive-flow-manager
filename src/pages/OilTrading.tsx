@@ -390,9 +390,9 @@ const OilTrading = () => {
                           <TableCell>
                             <Badge variant={transaction.type === 'buy' ? 'secondary' : 'default'}>
                               {transaction.type === 'buy' ? (
-                                <><TrendingDown className="h-4 w-4 ml-1" /> شراء</>
+                                <><TrendingDown className="h-4 w-4 me-1" /> شراء</>
                               ) : (
-                                <><TrendingUp className="h-4 w-4 ml-1" /> بيع</>
+                                <><TrendingUp className="h-4 w-4 me-1" /> بيع</>
                               )}
                             </Badge>
                           </TableCell>
