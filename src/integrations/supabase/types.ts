@@ -244,6 +244,7 @@ export type Database = {
           notes: string | null
           phone: string | null
           position: number
+          status: string
           user_id: string
         }
         Insert: {
@@ -254,6 +255,7 @@ export type Database = {
           notes?: string | null
           phone?: string | null
           position?: number
+          status?: string
           user_id: string
         }
         Update: {
@@ -264,6 +266,7 @@ export type Database = {
           notes?: string | null
           phone?: string | null
           position?: number
+          status?: string
           user_id?: string
         }
         Relationships: []
