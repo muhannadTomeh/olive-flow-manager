@@ -41,7 +41,7 @@ export default function Settings() {
         <h2 className="text-3xl font-bold tracking-tight">الإعدادات</h2>
         <div className="flex items-center gap-2">
           <Button className="shadow-soft transition-smooth hover:shadow-olive">
-            <Save className="ml-2 h-4 w-4" />
+            <Save className="me-2 h-4 w-4" />
             حفظ التغييرات
           </Button>
         </div>
