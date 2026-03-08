@@ -224,7 +224,7 @@ const Workers = () => {
       </div>
 
       <Tabs defaultValue="list" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-3 direction-rtl">
           <TabsTrigger value="list">قائمة العمال</TabsTrigger>
           <TabsTrigger value="add">إضافة عامل</TabsTrigger>
           <TabsTrigger value="work">تسجيل العمل</TabsTrigger>
