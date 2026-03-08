@@ -491,7 +491,7 @@ const Invoices = () => {
                           <span>{selectedPayment.total}</span>
                         </div>
 
-                        <div className="flex justify-between text-base font-bold text-green-700 dark:text-green-400">
+                        <div className="flex justify-between text-base font-bold text-accent-foreground">
                           <span>صافي الزيت للزبون:</span>
                           <span>{(invoiceData.oilProduced - selectedPayment.oilAmount).toFixed(2)} كغم</span>
                         </div>
