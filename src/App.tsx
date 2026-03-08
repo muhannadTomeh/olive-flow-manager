@@ -62,7 +62,7 @@ const ProtectedLayout = () => {
           </header>
           <main className="flex-1 overflow-auto p-6">
             <Routes>
-              <Route path="/" element={<Dashboard />} />
+              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/queue" element={<Queue />} />
               <Route path="/invoices" element={<Invoices />} />
               <Route path="/customers" element={<Customers />} />
