@@ -60,7 +60,7 @@ export default function Reports() {
         <div className="flex items-center gap-2">
           <Select defaultValue="current-month">
             <SelectTrigger className="w-[180px]">
-              <Calendar className="h-4 w-4 ml-2" />
+              <Calendar className="h-4 w-4 me-2" />
               <SelectValue placeholder="اختر الفترة" />
             </SelectTrigger>
             <SelectContent>
