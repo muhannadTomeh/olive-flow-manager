@@ -123,7 +123,7 @@ const Invoices = () => {
         <h1 className="text-3xl font-bold text-foreground">إدارة الفواتير</h1>
       </div>
 
-      <Tabs defaultValue="create" className="w-full">
+      <Tabs defaultValue="create" className="w-full" dir="rtl">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="create">إنشاء فاتورة جديدة</TabsTrigger>
           <TabsTrigger value="history">سجل الفواتير</TabsTrigger>
