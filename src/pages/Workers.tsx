@@ -224,7 +224,7 @@ const Workers = () => {
       </div>
 
       <Tabs defaultValue="list" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-3 direction-rtl">
           <TabsTrigger value="list">قائمة العمال</TabsTrigger>
           <TabsTrigger value="add">إضافة عامل</TabsTrigger>
           <TabsTrigger value="work">تسجيل العمل</TabsTrigger>
@@ -243,14 +243,14 @@ const Workers = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>الاسم</TableHead>
-                      <TableHead>نوع العامل</TableHead>
-                      <TableHead>السعر</TableHead>
-                      <TableHead>المكتسب</TableHead>
-                      <TableHead>المدفوع</TableHead>
-                      <TableHead>الرصيد</TableHead>
-                      <TableHead>آخر عمل</TableHead>
-                      <TableHead>الإجراءات</TableHead>
+                      <TableHead className="text-right">الاسم</TableHead>
+                      <TableHead className="text-right">نوع العامل</TableHead>
+                      <TableHead className="text-right">السعر</TableHead>
+                      <TableHead className="text-right">المكتسب</TableHead>
+                      <TableHead className="text-right">المدفوع</TableHead>
+                      <TableHead className="text-right">الرصيد</TableHead>
+                      <TableHead className="text-right">آخر عمل</TableHead>
+                      <TableHead className="text-right">الإجراءات</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -293,7 +293,7 @@ const Workers = () => {
                                 size="sm"
                                 onClick={() => payWorker(worker.id, worker.balance)}
                               >
-                                <DollarSign className="h-4 w-4 ml-1" />
+                                <DollarSign className="h-4 w-4 me-1" />
                                 دفع
                               </Button>
                             )}
@@ -439,7 +439,7 @@ const Workers = () => {
               </div>
 
               <Button onClick={addWorker} className="w-full">
-                <Plus className="h-4 w-4 ml-2" />
+                <Plus className="h-4 w-4 me-2" />
                 إضافة العامل
               </Button>
             </CardContent>
