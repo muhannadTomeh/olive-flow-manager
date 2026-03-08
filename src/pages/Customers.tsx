@@ -112,7 +112,7 @@ const Customers = () => {
         <h1 className="text-3xl font-bold text-foreground">إدارة الزبائن</h1>
       </div>
 
-      <Tabs defaultValue="list" className="w-full">
+      <Tabs defaultValue="list" className="w-full" dir="rtl">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="list">قائمة الزبائن</TabsTrigger>
           <TabsTrigger value="details">تفاصيل الزبون</TabsTrigger>
@@ -137,7 +137,7 @@ const Customers = () => {
                   />
                 </div>
                 <Button variant="outline">
-                  <Download className="h-4 w-4 ml-2" />
+                  <Download className="h-4 w-4 me-2" />
                   تصدير القائمة
                 </Button>
               </div>
@@ -152,13 +152,13 @@ const Customers = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>الاسم</TableHead>
-                      <TableHead>رقم الهاتف</TableHead>
-                      <TableHead>عدد الفواتير</TableHead>
-                      <TableHead>آخر زيارة</TableHead>
-                      <TableHead>الزيت المنتج</TableHead>
-                      <TableHead>طريقة الدفع المفضلة</TableHead>
-                      <TableHead>الإجراءات</TableHead>
+                      <TableHead className="text-right">الاسم</TableHead>
+                      <TableHead className="text-right">رقم الهاتف</TableHead>
+                      <TableHead className="text-right">عدد الفواتير</TableHead>
+                      <TableHead className="text-right">آخر زيارة</TableHead>
+                      <TableHead className="text-right">الزيت المنتج</TableHead>
+                      <TableHead className="text-right">طريقة الدفع المفضلة</TableHead>
+                      <TableHead className="text-right">الإجراءات</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -196,7 +196,7 @@ const Customers = () => {
                             variant="outline"
                             onClick={() => setSelectedCustomer(customer)}
                           >
-                            <FileText className="h-4 w-4 ml-1" />
+                            <FileText className="h-4 w-4 me-1" />
                             التفاصيل
                           </Button>
                         </TableCell>
@@ -266,12 +266,12 @@ const Customers = () => {
                     <CardContent>
                       <Table>
                         <TableHeader>
-                          <TableRow>
-                            <TableHead>التاريخ</TableHead>
-                            <TableHead>كمية الزيت</TableHead>
-                            <TableHead>طريقة الدفع</TableHead>
-                            <TableHead>المبلغ الإجمالي</TableHead>
-                            <TableHead>الإجراءات</TableHead>
+                           <TableRow>
+                            <TableHead className="text-right">التاريخ</TableHead>
+                            <TableHead className="text-right">كمية الزيت</TableHead>
+                            <TableHead className="text-right">طريقة الدفع</TableHead>
+                            <TableHead className="text-right">المبلغ الإجمالي</TableHead>
+                            <TableHead className="text-right">الإجراءات</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -287,7 +287,7 @@ const Customers = () => {
                               <TableCell>{invoice.totalAmount}</TableCell>
                               <TableCell>
                                 <Button size="sm" variant="outline">
-                                  <Download className="h-4 w-4 ml-1" />
+                                  <Download className="h-4 w-4 me-1" />
                                   تحميل
                                 </Button>
                               </TableCell>
