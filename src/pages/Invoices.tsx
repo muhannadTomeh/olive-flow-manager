@@ -63,8 +63,20 @@ const Invoices = () => {
   }, [location.state]);
 
   useEffect(() => {
-    if (user) fetchInvoices();
+    if (user) {
+      fetchInvoices();
+      fetchQueueCustomers();
+    }
   }, [user]);
+
+  const fetchQueueCustomers = async () => {
+    const { data } = await supabase
+      .from("queue")
+      .select("id, name, phone, position")
+      .eq("user_id", user!.id)
+      .order("position", { ascending: true });
+    setQueueCustomers(data || []);
+  };
 
   const fetchInvoices = async () => {
     const { data } = await supabase
