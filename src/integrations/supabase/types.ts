@@ -14,6 +14,173 @@ export type Database = {
   }
   public: {
     Tables: {
+      customers: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      expenses: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      inventory: {
+        Row: {
+          id: string
+          total_cash: number
+          total_oil: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          total_cash?: number
+          total_oil?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          total_cash?: number
+          total_oil?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      invoices: {
+        Row: {
+          cash_amount: number
+          container_count: number
+          container_type: string
+          created_at: string
+          customer_id: string | null
+          customer_name: string
+          id: string
+          oil_amount: number
+          oil_produced: number
+          payment_type: string
+          total_display: string
+          user_id: string
+        }
+        Insert: {
+          cash_amount?: number
+          container_count: number
+          container_type?: string
+          created_at?: string
+          customer_id?: string | null
+          customer_name: string
+          id?: string
+          oil_amount?: number
+          oil_produced: number
+          payment_type: string
+          total_display: string
+          user_id: string
+        }
+        Update: {
+          cash_amount?: number
+          container_count?: number
+          container_type?: string
+          created_at?: string
+          customer_id?: string | null
+          customer_name?: string
+          id?: string
+          oil_amount?: number
+          oil_produced?: number
+          payment_type?: string
+          total_display?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      oil_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          notes: string | null
+          party_name: string | null
+          price: number
+          total_price: number
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          party_name?: string | null
+          price: number
+          total_price: number
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          party_name?: string | null
+          price?: number
+          total_price?: number
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -39,6 +206,187 @@ export type Database = {
           display_name?: string | null
           id?: string
           phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      queue: {
+        Row: {
+          bags: number
+          created_at: string
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          position: number
+          user_id: string
+        }
+        Insert: {
+          bags: number
+          created_at?: string
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          position?: number
+          user_id: string
+        }
+        Update: {
+          bags?: number
+          created_at?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          position?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      settings: {
+        Row: {
+          cash_return_cost: number
+          created_at: string
+          id: string
+          metal_container_price: number
+          oil_buy_price: number
+          oil_sell_price: number
+          plastic_container_price: number
+          return_percent: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cash_return_cost?: number
+          created_at?: string
+          id?: string
+          metal_container_price?: number
+          oil_buy_price?: number
+          oil_sell_price?: number
+          plastic_container_price?: number
+          return_percent?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cash_return_cost?: number
+          created_at?: string
+          id?: string
+          metal_container_price?: number
+          oil_buy_price?: number
+          oil_sell_price?: number
+          plastic_container_price?: number
+          return_percent?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      work_records: {
+        Row: {
+          amount: number
+          created_at: string
+          hours: number | null
+          id: string
+          shifts: number | null
+          user_id: string
+          worker_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          hours?: number | null
+          id?: string
+          shifts?: number | null
+          user_id: string
+          worker_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          hours?: number | null
+          id?: string
+          shifts?: number | null
+          user_id?: string
+          worker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_records_worker_id_fkey"
+            columns: ["worker_id"]
+            isOneToOne: false
+            referencedRelation: "workers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      worker_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          user_id: string
+          worker_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          user_id: string
+          worker_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          user_id?: string
+          worker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "worker_payments_worker_id_fkey"
+            columns: ["worker_id"]
+            isOneToOne: false
+            referencedRelation: "workers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workers: {
+        Row: {
+          created_at: string
+          hourly_rate: number | null
+          id: string
+          name: string
+          shift_rate: number | null
+          total_earned: number
+          total_paid: number
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          hourly_rate?: number | null
+          id?: string
+          name: string
+          shift_rate?: number | null
+          total_earned?: number
+          total_paid?: number
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          hourly_rate?: number | null
+          id?: string
+          name?: string
+          shift_rate?: number | null
+          total_earned?: number
+          total_paid?: number
+          type?: string
           updated_at?: string
           user_id?: string
         }

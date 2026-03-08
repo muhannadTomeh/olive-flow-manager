@@ -92,7 +92,7 @@ export function AppSidebar() {
                         isActive ? "bg-sidebar-accent text-sidebar-primary font-medium" : "hover:bg-sidebar-accent/50"
                       }
                     >
-                      <item.icon className="h-5 w-5 ml-3" />
+                      <item.icon className="h-5 w-5 me-3" />
                       {!isCollapsed && <span className="text-right">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
@@ -117,7 +117,7 @@ export function AppSidebar() {
                         isActive ? "bg-sidebar-accent text-sidebar-primary font-medium" : "hover:bg-sidebar-accent/50"
                       }
                     >
-                      <item.icon className="h-5 w-5 ml-3" />
+                      <item.icon className="h-5 w-5 me-3" />
                       {!isCollapsed && <span className="text-right">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
