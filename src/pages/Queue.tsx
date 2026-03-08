@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Clock, UserPlus, ArrowLeft, Trash2 } from "lucide-react";
+import { Clock, UserPlus, ArrowLeft, Trash2, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -19,15 +19,24 @@ interface QueueItem {
   notes: string | null;
   position: number;
   created_at: string;
+  status: string;
 }
 
+const formatTime = (dateStr: string) => {
+  const d = new Date(dateStr);
+  return d.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit', hour12: false });
+};
+
 const Queue = () => {
-  const [queue, setQueue] = useState<QueueItem[]>([]);
+  const [allItems, setAllItems] = useState<QueueItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [newCustomer, setNewCustomer] = useState({ name: "", phone: "", bags: "", notes: "" });
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  const waiting = allItems.filter(i => i.status === "waiting");
+  const completed = allItems.filter(i => i.status === "completed");
 
   useEffect(() => {
     if (user) fetchQueue();
@@ -39,7 +48,7 @@ const Queue = () => {
       .select("*")
       .eq("user_id", user!.id)
       .order("position", { ascending: true });
-    setQueue((data as QueueItem[]) || []);
+    setAllItems((data as QueueItem[]) || []);
     setLoading(false);
   };
 
@@ -48,7 +57,8 @@ const Queue = () => {
       toast({ title: "خطأ", description: "يرجى إدخال الاسم وعدد الشوالات", variant: "destructive" });
       return;
     }
-    const maxPos = queue.length > 0 ? Math.max(...queue.map(q => q.position)) + 1 : 0;
+    // Cumulative: always use max position from ALL items (waiting + completed)
+    const maxPos = allItems.length > 0 ? Math.max(...allItems.map(q => q.position)) + 1 : 1;
     const { error } = await supabase.from("queue").insert({
       user_id: user!.id,
       name: newCustomer.name,
@@ -56,6 +66,7 @@ const Queue = () => {
       bags: parseInt(newCustomer.bags),
       notes: newCustomer.notes || null,
       position: maxPos,
+      status: "waiting",
     });
     if (!error) {
       setNewCustomer({ name: "", phone: "", bags: "", notes: "" });
@@ -74,6 +85,11 @@ const Queue = () => {
     navigate("/invoices", { state: { customerName: customer.name, customerPhone: customer.phone, queueId: customer.id } });
   };
 
+  const markCompleted = async (id: string) => {
+    await supabase.from("queue").update({ status: "completed" }).eq("id", id);
+    fetchQueue();
+  };
+
   return (
     <div className="space-y-6" dir="rtl">
       <div className="flex items-center gap-3">
@@ -82,6 +98,7 @@ const Queue = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Add customer form */}
         <Card className="lg:col-span-1">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -114,50 +131,88 @@ const Queue = () => {
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>الطابور الحالي ({queue.length} زبون)</CardTitle>
-            <CardDescription>قائمة الزبائن المنتظرين بترتيب الوصول</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <p className="text-center py-8 text-muted-foreground">جارٍ التحميل...</p>
-            ) : queue.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <Clock className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                <p className="text-lg">لا يوجد زبائن في الطابور حالياً</p>
-                <p className="text-sm">أضف زبوناً جديداً للبدء</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {queue.map((customer, index) => (
-                  <div key={customer.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors">
-                    <div className="flex items-center gap-4">
-                      <Badge variant={index === 0 ? "default" : "secondary"}>#{index + 1}</Badge>
-                      <div>
-                        <h3 className="font-semibold text-foreground">{customer.name}</h3>
-                        {customer.phone && <p className="text-sm text-muted-foreground">📱 {customer.phone}</p>}
-                        <p className="text-sm text-muted-foreground">
-                          🛍️ {customer.bags} شوال • ⏰ {new Date(customer.created_at).toLocaleTimeString('ar-SA')}
-                        </p>
-                        {customer.notes && <p className="text-sm text-muted-foreground mt-1">📝 {customer.notes}</p>}
+        {/* Queue + Completed */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Waiting queue */}
+          <Card>
+            <CardHeader>
+              <CardTitle>الطابور ({waiting.length} زبون)</CardTitle>
+              <CardDescription>قائمة الزبائن المنتظرين بترتيب الوصول</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <p className="text-center py-8 text-muted-foreground">جارٍ التحميل...</p>
+              ) : waiting.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Clock className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                  <p>لا يوجد زبائن في الطابور حالياً</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {waiting.map((customer) => (
+                    <div key={customer.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors">
+                      <div className="flex items-center gap-4">
+                        <Badge variant="default">#{customer.position}</Badge>
+                        <div>
+                          <h3 className="font-semibold text-foreground">{customer.name}</h3>
+                          {customer.phone && <p className="text-sm text-muted-foreground">📱 {customer.phone}</p>}
+                          <p className="text-sm text-muted-foreground">
+                            🛍️ {customer.bags} شوال • ⏰ {formatTime(customer.created_at)}
+                          </p>
+                          {customer.notes && <p className="text-sm text-muted-foreground mt-1">📝 {customer.notes}</p>}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button onClick={() => moveToInvoice(customer)} className="bg-primary hover:bg-primary/90">
+                          <ArrowLeft className="h-4 w-4 me-1" />
+                          إلى الفاتورة
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => removeFromQueue(customer.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Button onClick={() => moveToInvoice(customer)} className="bg-primary hover:bg-primary/90">
-                        <ArrowLeft className="h-4 w-4 me-1" />
-                        إلى الفاتورة
-                      </Button>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Completed */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 text-green-600" />
+                منجز ({completed.length})
+              </CardTitle>
+              <CardDescription>الزبائن الذين تم إنجاز خدمتهم</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {completed.length === 0 ? (
+                <p className="text-center py-6 text-muted-foreground">لا يوجد زبائن منجزين بعد</p>
+              ) : (
+                <div className="space-y-3">
+                  {completed.map((customer) => (
+                    <div key={customer.id} className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
+                      <div className="flex items-center gap-4">
+                        <Badge variant="secondary">#{customer.position}</Badge>
+                        <div>
+                          <h3 className="font-semibold text-muted-foreground line-through">{customer.name}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            🛍️ {customer.bags} شوال • ⏰ {formatTime(customer.created_at)}
+                          </p>
+                        </div>
+                      </div>
                       <Button variant="outline" size="sm" onClick={() => removeFromQueue(customer.id)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
