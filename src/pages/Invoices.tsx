@@ -173,29 +173,6 @@ const Invoices = () => {
       .join(" + ");
   };
 
-  const calculatePaymentMethods = () => {
-    if (!invoiceData.oilProduced) {
-      toast({ title: "خطأ", description: "يرجى إدخال كمية الزيت", variant: "destructive" });
-      return;
-    }
-    const { oilProduced } = invoiceData;
-    const totalContainerCost = getTotalContainerCost();
-
-    const oilReturn = (oilProduced * settings.return_percent) / 100;
-    const containerReturnInOil = totalContainerCost / settings.oil_buy_price;
-    const totalOilPayment = oilReturn + containerReturnInOil;
-
-    const cashReturn = oilProduced * settings.cash_return_cost;
-    const totalCashPayment = cashReturn + totalContainerCost;
-
-    const methods: PaymentMethod[] = [
-      { type: 'oil', oilAmount: totalOilPayment, cashAmount: 0, total: `${totalOilPayment.toFixed(2)} كغم زيت`, oilReturn, containerOilEquiv: containerReturnInOil, cashReturn: 0, containerCashCost: 0 },
-      { type: 'cash', oilAmount: 0, cashAmount: totalCashPayment, total: `${totalCashPayment.toFixed(2)} شيكل`, oilReturn: 0, containerOilEquiv: 0, cashReturn, containerCashCost: totalContainerCost },
-      { type: 'mixed', oilAmount: oilReturn, cashAmount: totalContainerCost, total: `${oilReturn.toFixed(2)} كغم زيت + ${totalContainerCost.toFixed(2)} شيكل`, oilReturn, containerOilEquiv: 0, cashReturn: 0, containerCashCost: totalContainerCost },
-    ];
-    setPaymentMethods(methods);
-    setSelectedPayment(null);
-  };
 
   const confirmInvoice = async () => {
     if (!selectedPayment) return;
