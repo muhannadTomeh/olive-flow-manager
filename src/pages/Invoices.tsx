@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Receipt, Calculator, FileText, Calendar, CheckCircle } from "lucide-react";
+import { Receipt, FileText, Calendar, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useSettings } from "@/hooks/useSettings";
 import { useInventory } from "@/hooks/useInventory";
@@ -91,6 +91,33 @@ const Invoices = () => {
     }
   }, [user]);
 
+  // Auto-calculate payment methods whenever oil or containers change
+  useEffect(() => {
+    if (!invoiceData.oilProduced) {
+      setPaymentMethods([]);
+      setSelectedPayment(null);
+      return;
+    }
+    const totalContainerCost = getTotalContainerCost();
+    const oilReturn = (invoiceData.oilProduced * settings.return_percent) / 100;
+    const containerReturnInOil = totalContainerCost / settings.oil_buy_price;
+    const totalOilPayment = oilReturn + containerReturnInOil;
+    const cashReturn = invoiceData.oilProduced * settings.cash_return_cost;
+    const totalCashPayment = cashReturn + totalContainerCost;
+
+    const methods: PaymentMethod[] = [
+      { type: 'oil', oilAmount: totalOilPayment, cashAmount: 0, total: `${totalOilPayment.toFixed(2)} كغم زيت`, oilReturn, containerOilEquiv: containerReturnInOil, cashReturn: 0, containerCashCost: 0 },
+      { type: 'cash', oilAmount: 0, cashAmount: totalCashPayment, total: `${totalCashPayment.toFixed(2)} شيكل`, oilReturn: 0, containerOilEquiv: 0, cashReturn, containerCashCost: totalContainerCost },
+      { type: 'mixed', oilAmount: oilReturn, cashAmount: totalContainerCost, total: `${oilReturn.toFixed(2)} كغم زيت + ${totalContainerCost.toFixed(2)} شيكل`, oilReturn, containerOilEquiv: 0, cashReturn: 0, containerCashCost: totalContainerCost },
+    ];
+    setPaymentMethods(methods);
+    // Keep selection if still valid
+    if (selectedPayment) {
+      const updated = methods.find(m => m.type === selectedPayment.type);
+      setSelectedPayment(updated || null);
+    }
+  }, [invoiceData.oilProduced, containerCounts, settings]);
+
   const fetchContainerTypes = async () => {
     const { data } = await supabase
       .from("container_types")
@@ -146,29 +173,6 @@ const Invoices = () => {
       .join(" + ");
   };
 
-  const calculatePaymentMethods = () => {
-    if (!invoiceData.oilProduced) {
-      toast({ title: "خطأ", description: "يرجى إدخال كمية الزيت", variant: "destructive" });
-      return;
-    }
-    const { oilProduced } = invoiceData;
-    const totalContainerCost = getTotalContainerCost();
-
-    const oilReturn = (oilProduced * settings.return_percent) / 100;
-    const containerReturnInOil = totalContainerCost / settings.oil_buy_price;
-    const totalOilPayment = oilReturn + containerReturnInOil;
-
-    const cashReturn = oilProduced * settings.cash_return_cost;
-    const totalCashPayment = cashReturn + totalContainerCost;
-
-    const methods: PaymentMethod[] = [
-      { type: 'oil', oilAmount: totalOilPayment, cashAmount: 0, total: `${totalOilPayment.toFixed(2)} كغم زيت`, oilReturn, containerOilEquiv: containerReturnInOil, cashReturn: 0, containerCashCost: 0 },
-      { type: 'cash', oilAmount: 0, cashAmount: totalCashPayment, total: `${totalCashPayment.toFixed(2)} شيكل`, oilReturn: 0, containerOilEquiv: 0, cashReturn, containerCashCost: totalContainerCost },
-      { type: 'mixed', oilAmount: oilReturn, cashAmount: totalContainerCost, total: `${oilReturn.toFixed(2)} كغم زيت + ${totalContainerCost.toFixed(2)} شيكل`, oilReturn, containerOilEquiv: 0, cashReturn: 0, containerCashCost: totalContainerCost },
-    ];
-    setPaymentMethods(methods);
-    setSelectedPayment(null);
-  };
 
   const confirmInvoice = async () => {
     if (!selectedPayment) return;
@@ -340,10 +344,6 @@ const Invoices = () => {
                   <Textarea value={invoiceData.notes} onChange={(e) => setInvoiceData(p => ({ ...p, notes: e.target.value }))} placeholder="ملاحظات إضافية (اختياري)" rows={2} />
                 </div>
 
-                <Button onClick={calculatePaymentMethods} className="w-full">
-                  <Calculator className="h-4 w-4 me-2" />
-                  حساب طرق الدفع
-                </Button>
 
                 {/* Payment methods inside form card */}
                 {paymentMethods.length > 0 && (
@@ -466,6 +466,11 @@ const Invoices = () => {
                         <div className="flex justify-between text-base font-bold text-primary">
                           <span>الإجمالي:</span>
                           <span>{selectedPayment.total}</span>
+                        </div>
+
+                        <div className="flex justify-between text-base font-bold text-accent-foreground">
+                          <span>صافي الزيت للزبون:</span>
+                          <span>{(invoiceData.oilProduced - selectedPayment.oilAmount).toFixed(2)} كغم</span>
                         </div>
                       </>
                     )}
