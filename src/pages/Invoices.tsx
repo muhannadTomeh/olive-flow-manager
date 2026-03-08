@@ -209,7 +209,7 @@ const Invoices = () => {
     });
 
     if (queueId && queueId !== "manual") {
-      await supabase.from("queue").delete().eq("id", queueId);
+      await supabase.from("queue").update({ status: "completed" }).eq("id", queueId);
       setQueueId(null);
     }
 
