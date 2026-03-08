@@ -152,13 +152,13 @@ const Customers = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>الاسم</TableHead>
-                      <TableHead>رقم الهاتف</TableHead>
-                      <TableHead>عدد الفواتير</TableHead>
-                      <TableHead>آخر زيارة</TableHead>
-                      <TableHead>الزيت المنتج</TableHead>
-                      <TableHead>طريقة الدفع المفضلة</TableHead>
-                      <TableHead>الإجراءات</TableHead>
+                      <TableHead className="text-right">الاسم</TableHead>
+                      <TableHead className="text-right">رقم الهاتف</TableHead>
+                      <TableHead className="text-right">عدد الفواتير</TableHead>
+                      <TableHead className="text-right">آخر زيارة</TableHead>
+                      <TableHead className="text-right">الزيت المنتج</TableHead>
+                      <TableHead className="text-right">طريقة الدفع المفضلة</TableHead>
+                      <TableHead className="text-right">الإجراءات</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
