@@ -3,23 +3,29 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Receipt, Calculator, FileText, DollarSign, Calendar } from "lucide-react";
+import { Receipt, Calculator, FileText, Calendar, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useSettings } from "@/hooks/useSettings";
 import { useInventory } from "@/hooks/useInventory";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocation } from "react-router-dom";
+import { Separator } from "@/components/ui/separator";
 
 interface PaymentMethod {
   type: 'oil' | 'cash' | 'mixed';
   oilAmount: number;
   cashAmount: number;
   total: string;
+  oilReturn: number;
+  containerOilEquiv: number;
+  cashReturn: number;
+  containerCashCost: number;
 }
 
 interface InvoiceRecord {
@@ -41,6 +47,12 @@ interface ContainerType {
   price: number;
 }
 
+const paymentLabel = (type: string) => {
+  if (type === 'oil') return 'دفع بالزيت';
+  if (type === 'cash') return 'دفع نقدي';
+  return 'دفع مختلط';
+};
+
 const Invoices = () => {
   const { user } = useAuth();
   const { settings } = useSettings();
@@ -52,10 +64,12 @@ const Invoices = () => {
     customerName: "",
     customerPhone: "",
     oilProduced: 0,
+    notes: "",
   });
   const [containerCounts, setContainerCounts] = useState<Record<string, number>>({});
   const [containerTypes, setContainerTypes] = useState<ContainerType[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [selectedPayment, setSelectedPayment] = useState<PaymentMethod | null>(null);
   const [invoices, setInvoices] = useState<InvoiceRecord[]>([]);
   const [queueId, setQueueId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -85,11 +99,9 @@ const Invoices = () => {
       .order("created_at", { ascending: true });
     const types = (data as ContainerType[]) || [];
     setContainerTypes(types);
-    // Initialize counts to 0 for each type
     const counts: Record<string, number> = {};
     types.forEach(t => { counts[t.id] = 0; });
     setContainerCounts(prev => {
-      // Keep existing non-zero values if types match
       const merged = { ...counts };
       Object.keys(prev).forEach(k => { if (merged[k] !== undefined) merged[k] = prev[k]; });
       return merged;
@@ -101,6 +113,7 @@ const Invoices = () => {
       .from("queue")
       .select("id, name, phone, position")
       .eq("user_id", user!.id)
+      .eq("status", "waiting")
       .order("position", { ascending: true });
     setQueueCustomers(data || []);
   };
@@ -149,15 +162,16 @@ const Invoices = () => {
     const totalCashPayment = cashReturn + totalContainerCost;
 
     const methods: PaymentMethod[] = [
-      { type: 'oil', oilAmount: totalOilPayment, cashAmount: 0, total: `${totalOilPayment.toFixed(2)} كغم زيت` },
-      { type: 'cash', oilAmount: 0, cashAmount: totalCashPayment, total: `${totalCashPayment.toFixed(2)} شيكل` },
-      { type: 'mixed', oilAmount: oilReturn, cashAmount: totalContainerCost, total: `${oilReturn.toFixed(2)} كغم زيت + ${totalContainerCost.toFixed(2)} شيكل` },
+      { type: 'oil', oilAmount: totalOilPayment, cashAmount: 0, total: `${totalOilPayment.toFixed(2)} كغم زيت`, oilReturn, containerOilEquiv: containerReturnInOil, cashReturn: 0, containerCashCost: 0 },
+      { type: 'cash', oilAmount: 0, cashAmount: totalCashPayment, total: `${totalCashPayment.toFixed(2)} شيكل`, oilReturn: 0, containerOilEquiv: 0, cashReturn, containerCashCost: totalContainerCost },
+      { type: 'mixed', oilAmount: oilReturn, cashAmount: totalContainerCost, total: `${oilReturn.toFixed(2)} كغم زيت + ${totalContainerCost.toFixed(2)} شيكل`, oilReturn, containerOilEquiv: 0, cashReturn: 0, containerCashCost: totalContainerCost },
     ];
     setPaymentMethods(methods);
-    toast({ title: "تم الحساب", description: "تم حساب طرق الدفع الثلاثة" });
+    setSelectedPayment(null);
   };
 
-  const processInvoice = async (method: PaymentMethod) => {
+  const confirmInvoice = async () => {
+    if (!selectedPayment) return;
     if (!invoiceData.customerName) {
       toast({ title: "خطأ", description: "يرجى إدخال اسم الزبون", variant: "destructive" });
       return;
@@ -191,10 +205,10 @@ const Invoices = () => {
       oil_produced: invoiceData.oilProduced,
       container_count: getTotalContainerCount(),
       container_type: containerSummary,
-      payment_type: method.type,
-      oil_amount: method.oilAmount,
-      cash_amount: method.cashAmount,
-      total_display: method.total,
+      payment_type: selectedPayment.type,
+      oil_amount: selectedPayment.oilAmount,
+      cash_amount: selectedPayment.cashAmount,
+      total_display: selectedPayment.total,
     });
 
     if (error) {
@@ -202,10 +216,10 @@ const Invoices = () => {
       return;
     }
 
-    const oilChange = invoiceData.oilProduced - method.oilAmount;
+    const oilChange = invoiceData.oilProduced - selectedPayment.oilAmount;
     await updateInventory({
       total_oil: inventory.total_oil + oilChange,
-      total_cash: inventory.total_cash + method.cashAmount,
+      total_cash: inventory.total_cash + selectedPayment.cashAmount,
     });
 
     if (queueId && queueId !== "manual") {
@@ -213,12 +227,13 @@ const Invoices = () => {
       setQueueId(null);
     }
 
-    toast({ title: "تمت معالجة الفاتورة", description: `تم إنشاء فاتورة لـ ${invoiceData.customerName}` });
-    setInvoiceData({ customerName: "", customerPhone: "", oilProduced: 0 });
+    toast({ title: "تم تأكيد الفاتورة", description: `تم إنشاء فاتورة لـ ${invoiceData.customerName}` });
+    setInvoiceData({ customerName: "", customerPhone: "", oilProduced: 0, notes: "" });
     const resetCounts: Record<string, number> = {};
     containerTypes.forEach(ct => { resetCounts[ct.id] = 0; });
     setContainerCounts(resetCounts);
     setPaymentMethods([]);
+    setSelectedPayment(null);
     fetchInvoices();
     fetchQueueCustomers();
     refetchInventory();
@@ -227,6 +242,8 @@ const Invoices = () => {
   const filteredInvoices = invoices.filter(inv =>
     inv.customer_name.includes(searchTerm)
   );
+
+  const today = new Date().toLocaleDateString('ar-SA');
 
   return (
     <div className="space-y-6" dir="rtl">
@@ -243,6 +260,7 @@ const Invoices = () => {
 
         <TabsContent value="create">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Right: Invoice Data Form */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -273,9 +291,9 @@ const Invoices = () => {
                       <SelectValue placeholder="اختر زبون من الطابور" />
                     </SelectTrigger>
                     <SelectContent>
-                      {queueCustomers.map((c, i) => (
+                      {queueCustomers.map((c) => (
                         <SelectItem key={c.id} value={c.id}>
-                          #{i + 1} - {c.name}
+                          #{c.position} - {c.name}
                         </SelectItem>
                       ))}
                       <SelectItem value="manual">إدخال يدوي</SelectItem>
@@ -285,6 +303,7 @@ const Invoices = () => {
                     <Input className="mt-2" value={invoiceData.customerName} onChange={(e) => setInvoiceData(p => ({ ...p, customerName: e.target.value }))} placeholder="أدخل اسم الزبون يدوياً" />
                   )}
                 </div>
+
                 <div>
                   <Label htmlFor="oilProduced">كمية الزيت المنتج (كغم)</Label>
                   <Input id="oilProduced" type="number" value={invoiceData.oilProduced || ""} onChange={(e) => setInvoiceData(p => ({ ...p, oilProduced: parseFloat(e.target.value) || 0 }))} placeholder="كمية الزيت بالكيلوغرام" min="0" step="0.1" />
@@ -316,46 +335,162 @@ const Invoices = () => {
                   <p className="text-sm text-muted-foreground">لم يتم إضافة أنواع تنكات بعد. أضفها من الإعدادات.</p>
                 )}
 
+                <div>
+                  <Label>ملاحظات</Label>
+                  <Textarea value={invoiceData.notes} onChange={(e) => setInvoiceData(p => ({ ...p, notes: e.target.value }))} placeholder="ملاحظات إضافية (اختياري)" rows={2} />
+                </div>
+
                 <Button onClick={calculatePaymentMethods} className="w-full">
                   <Calculator className="h-4 w-4 me-2" />
                   حساب طرق الدفع
                 </Button>
-              </CardContent>
-            </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <DollarSign className="h-5 w-5" />
-                  طرق الدفع المتاحة
-                </CardTitle>
-                <CardDescription>اختر طريقة الدفع المناسبة للزبون</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {paymentMethods.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Calculator className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                    <p>أدخل بيانات الإنتاج واضغط "حساب طرق الدفع"</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {paymentMethods.map((method, index) => (
-                      <div key={index} className="border rounded-lg p-4 space-y-3">
+                {/* Payment methods inside form card */}
+                {paymentMethods.length > 0 && (
+                  <div className="space-y-3 pt-2">
+                    <Separator />
+                    <Label className="text-base font-semibold">طرق الدفع المتاحة</Label>
+                    {paymentMethods.map((method) => (
+                      <div
+                        key={method.type}
+                        className={`border rounded-lg p-3 cursor-pointer transition-colors ${selectedPayment?.type === method.type ? 'border-primary bg-primary/5 ring-2 ring-primary/20' : 'hover:bg-accent/50'}`}
+                        onClick={() => setSelectedPayment(method)}
+                      >
                         <div className="flex items-center justify-between">
                           <Badge variant={method.type === 'oil' ? 'default' : method.type === 'cash' ? 'secondary' : 'outline'}>
-                            {method.type === 'oil' ? 'دفع بالزيت فقط' : method.type === 'cash' ? 'دفع نقدي فقط' : 'دفع مختلط'}
+                            {paymentLabel(method.type)}
                           </Badge>
-                          <Button size="sm" onClick={() => processInvoice(method)}>اختيار هذه الطريقة</Button>
+                          {selectedPayment?.type === method.type && <CheckCircle className="h-5 w-5 text-primary" />}
                         </div>
-                        <div className="space-y-2 text-sm">
-                          {method.oilAmount > 0 && <p>🫒 زيت: {method.oilAmount.toFixed(2)} كغم</p>}
-                          {method.cashAmount > 0 && <p>💰 نقد: {method.cashAmount.toFixed(2)} شيكل</p>}
-                          <p className="font-semibold text-primary">الإجمالي: {method.total}</p>
-                        </div>
+                        <p className="text-sm font-semibold text-primary mt-2">{method.total}</p>
                       </div>
                     ))}
                   </div>
                 )}
+              </CardContent>
+            </Card>
+
+            {/* Left: Invoice Preview */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Receipt className="h-5 w-5" />
+                  معاينة الفاتورة
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="border rounded-lg p-6 space-y-4 bg-card">
+                  <div className="text-center space-y-1">
+                    <h2 className="text-xl font-bold text-foreground">فاتورة معصرة الزيتون</h2>
+                    <p className="text-sm text-muted-foreground">{today}</p>
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">اسم الزبون:</span>
+                      <span className="font-medium">{invoiceData.customerName || "—"}</span>
+                    </div>
+
+                    {selectedPayment && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">طريقة الدفع:</span>
+                        <span className="font-medium">{paymentLabel(selectedPayment.type)}</span>
+                      </div>
+                    )}
+
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">إجمالي الزيت المنتج:</span>
+                      <span className="font-medium">{invoiceData.oilProduced ? `${invoiceData.oilProduced} كغم` : "—"}</span>
+                    </div>
+
+                    {getTotalContainerCount() > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">عدد التنكات:</span>
+                        <span className="font-medium">{getContainerSummary()}</span>
+                      </div>
+                    )}
+
+                    {selectedPayment && (
+                      <>
+                        <Separator />
+
+                        {selectedPayment.type === 'oil' && (
+                          <>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">الرد (زيت):</span>
+                              <span className="font-medium">{selectedPayment.oilReturn.toFixed(2)} كغم</span>
+                            </div>
+                            {selectedPayment.containerOilEquiv > 0 && (
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">ثمن التنكات (زيت):</span>
+                                <span className="font-medium">{selectedPayment.containerOilEquiv.toFixed(2)} كغم</span>
+                              </div>
+                            )}
+                          </>
+                        )}
+
+                        {selectedPayment.type === 'cash' && (
+                          <>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">الرد (نقدي):</span>
+                              <span className="font-medium">{selectedPayment.cashReturn.toFixed(2)} شيكل</span>
+                            </div>
+                            {selectedPayment.containerCashCost > 0 && (
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">ثمن التنكات:</span>
+                                <span className="font-medium">{selectedPayment.containerCashCost.toFixed(2)} شيكل</span>
+                              </div>
+                            )}
+                          </>
+                        )}
+
+                        {selectedPayment.type === 'mixed' && (
+                          <>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">الرد (زيت):</span>
+                              <span className="font-medium">{selectedPayment.oilReturn.toFixed(2)} كغم</span>
+                            </div>
+                            {selectedPayment.containerCashCost > 0 && (
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">ثمن التنكات (نقدي):</span>
+                                <span className="font-medium">{selectedPayment.containerCashCost.toFixed(2)} شيكل</span>
+                              </div>
+                            )}
+                          </>
+                        )}
+
+                        <Separator />
+
+                        <div className="flex justify-between text-base font-bold text-primary">
+                          <span>الإجمالي:</span>
+                          <span>{selectedPayment.total}</span>
+                        </div>
+                      </>
+                    )}
+
+                    {invoiceData.notes && (
+                      <>
+                        <Separator />
+                        <div>
+                          <span className="text-muted-foreground">ملاحظات: </span>
+                          <span className="font-medium">{invoiceData.notes}</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <Button
+                  onClick={confirmInvoice}
+                  disabled={!selectedPayment || !invoiceData.customerName}
+                  className="w-full mt-4"
+                  size="lg"
+                >
+                  <CheckCircle className="h-5 w-5 me-2" />
+                  تأكيد الفاتورة
+                </Button>
               </CardContent>
             </Card>
           </div>
@@ -402,7 +537,7 @@ const Invoices = () => {
                         <TableCell className="text-right">{inv.container_count} ({inv.container_type})</TableCell>
                         <TableCell className="text-right">
                           <Badge variant={inv.payment_type === 'oil' ? 'default' : inv.payment_type === 'cash' ? 'secondary' : 'outline'}>
-                            {inv.payment_type === 'oil' ? 'زيت' : inv.payment_type === 'cash' ? 'نقدي' : 'مختلط'}
+                            {paymentLabel(inv.payment_type)}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right font-semibold">{inv.total_display}</TableCell>
