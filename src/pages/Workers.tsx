@@ -223,8 +223,8 @@ const Workers = () => {
         <h1 className="text-3xl font-bold text-foreground">إدارة العمال</h1>
       </div>
 
-      <Tabs defaultValue="list" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 direction-rtl">
+      <Tabs defaultValue="list" className="w-full" dir="rtl">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="list">قائمة العمال</TabsTrigger>
           <TabsTrigger value="add">إضافة عامل</TabsTrigger>
           <TabsTrigger value="work">تسجيل العمل</TabsTrigger>
