@@ -122,7 +122,7 @@ export default function Reports() {
               <CardContent>
                 <div className="text-2xl font-bold">127</div>
                 <p className="text-xs text-muted-foreground flex items-center">
-                  <TrendingUp className="h-3 w-3 text-green-500 ml-1" />
+                  <TrendingUp className="h-3 w-3 text-green-500 me-1" />
                   +12 زبون جديد
                 </p>
               </CardContent>
