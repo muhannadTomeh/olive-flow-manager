@@ -439,7 +439,7 @@ const Workers = () => {
               </div>
 
               <Button onClick={addWorker} className="w-full">
-                <Plus className="h-4 w-4 ml-2" />
+                <Plus className="h-4 w-4 me-2" />
                 إضافة العامل
               </Button>
             </CardContent>
