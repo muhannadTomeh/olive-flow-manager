@@ -196,7 +196,7 @@ const Customers = () => {
                             variant="outline"
                             onClick={() => setSelectedCustomer(customer)}
                           >
-                            <FileText className="h-4 w-4 ml-1" />
+                            <FileText className="h-4 w-4 me-1" />
                             التفاصيل
                           </Button>
                         </TableCell>
