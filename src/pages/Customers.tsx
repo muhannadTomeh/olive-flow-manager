@@ -266,12 +266,12 @@ const Customers = () => {
                     <CardContent>
                       <Table>
                         <TableHeader>
-                          <TableRow>
-                            <TableHead>التاريخ</TableHead>
-                            <TableHead>كمية الزيت</TableHead>
-                            <TableHead>طريقة الدفع</TableHead>
-                            <TableHead>المبلغ الإجمالي</TableHead>
-                            <TableHead>الإجراءات</TableHead>
+                           <TableRow>
+                            <TableHead className="text-right">التاريخ</TableHead>
+                            <TableHead className="text-right">كمية الزيت</TableHead>
+                            <TableHead className="text-right">طريقة الدفع</TableHead>
+                            <TableHead className="text-right">المبلغ الإجمالي</TableHead>
+                            <TableHead className="text-right">الإجراءات</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
