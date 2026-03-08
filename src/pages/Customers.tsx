@@ -112,7 +112,7 @@ const Customers = () => {
         <h1 className="text-3xl font-bold text-foreground">إدارة الزبائن</h1>
       </div>
 
-      <Tabs defaultValue="list" className="w-full">
+      <Tabs defaultValue="list" className="w-full" dir="rtl">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="list">قائمة الزبائن</TabsTrigger>
           <TabsTrigger value="details">تفاصيل الزبون</TabsTrigger>
