@@ -135,7 +135,7 @@ export default function Reports() {
               <CardContent>
                 <div className="text-2xl font-bold">32.5%</div>
                 <p className="text-xs text-muted-foreground flex items-center">
-                  <TrendingDown className="h-3 w-3 text-red-500 ml-1" />
+                  <TrendingDown className="h-3 w-3 text-red-500 me-1" />
                   -1.2% من الشهر الماضي
                 </p>
               </CardContent>
