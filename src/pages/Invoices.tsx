@@ -52,6 +52,7 @@ const Invoices = () => {
   const [invoices, setInvoices] = useState<InvoiceRecord[]>([]);
   const [queueId, setQueueId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [queueCustomers, setQueueCustomers] = useState<{ id: string; name: string; phone: string | null; position: number }[]>([]);
 
   useEffect(() => {
     if (location.state) {
