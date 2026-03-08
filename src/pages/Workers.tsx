@@ -293,7 +293,7 @@ const Workers = () => {
                                 size="sm"
                                 onClick={() => payWorker(worker.id, worker.balance)}
                               >
-                                <DollarSign className="h-4 w-4 ml-1" />
+                                <DollarSign className="h-4 w-4 me-1" />
                                 دفع
                               </Button>
                             )}
