@@ -207,8 +207,37 @@ const Invoices = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="customerName">اسم الزبون</Label>
-                  <Input id="customerName" value={invoiceData.customerName} onChange={(e) => setInvoiceData(p => ({ ...p, customerName: e.target.value }))} placeholder="اسم الزبون" />
+                  <Label>اسم الزبون</Label>
+                  <Select
+                    value={queueId || "manual"}
+                    onValueChange={(val) => {
+                      if (val === "manual") {
+                        setQueueId(null);
+                        setInvoiceData(p => ({ ...p, customerName: "", customerPhone: "" }));
+                      } else {
+                        const c = queueCustomers.find(q => q.id === val);
+                        if (c) {
+                          setQueueId(c.id);
+                          setInvoiceData(p => ({ ...p, customerName: c.name, customerPhone: c.phone || "" }));
+                        }
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="اختر زبون من الطابور" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {queueCustomers.map((c, i) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          #{i + 1} - {c.name}
+                        </SelectItem>
+                      ))}
+                      <SelectItem value="manual">إدخال يدوي</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {(!queueId || queueId === "manual") && (
+                    <Input className="mt-2" value={invoiceData.customerName} onChange={(e) => setInvoiceData(p => ({ ...p, customerName: e.target.value }))} placeholder="أدخل اسم الزبون يدوياً" />
+                  )}
                 </div>
                 <div>
                   <Label htmlFor="oilProduced">كمية الزيت المنتج (كغم)</Label>
