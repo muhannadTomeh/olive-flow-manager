@@ -71,7 +71,7 @@ export default function Reports() {
             </SelectContent>
           </Select>
           <Button variant="outline" className="shadow-soft transition-smooth hover:shadow-olive">
-            <Download className="h-4 w-4 ml-2" />
+            <Download className="h-4 w-4 me-2" />
             تصدير PDF
           </Button>
         </div>
