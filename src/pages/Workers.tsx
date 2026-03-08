@@ -243,14 +243,14 @@ const Workers = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>الاسم</TableHead>
-                      <TableHead>نوع العامل</TableHead>
-                      <TableHead>السعر</TableHead>
-                      <TableHead>المكتسب</TableHead>
-                      <TableHead>المدفوع</TableHead>
-                      <TableHead>الرصيد</TableHead>
-                      <TableHead>آخر عمل</TableHead>
-                      <TableHead>الإجراءات</TableHead>
+                      <TableHead className="text-right">الاسم</TableHead>
+                      <TableHead className="text-right">نوع العامل</TableHead>
+                      <TableHead className="text-right">السعر</TableHead>
+                      <TableHead className="text-right">المكتسب</TableHead>
+                      <TableHead className="text-right">المدفوع</TableHead>
+                      <TableHead className="text-right">الرصيد</TableHead>
+                      <TableHead className="text-right">آخر عمل</TableHead>
+                      <TableHead className="text-right">الإجراءات</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
