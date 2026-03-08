@@ -213,7 +213,7 @@ const OilTrading = () => {
         </Card>
       </div>
 
-      <Tabs defaultValue="add-transaction" className="w-full">
+      <Tabs defaultValue="add-transaction" className="w-full" dir="rtl">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="add-transaction">إضافة عملية</TabsTrigger>
           <TabsTrigger value="history">سجل العمليات</TabsTrigger>
