@@ -233,7 +233,7 @@ const Workers = () => {
         <TabsContent value="list">
           <div className="space-y-6">
             <Card>
-              <CardHeader>
+              <CardHeader className="text-right">
                 <CardTitle>قائمة العمال ({workers.length})</CardTitle>
                 <CardDescription>
                   عرض وإدارة جميع العمال والحسابات

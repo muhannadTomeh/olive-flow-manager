@@ -287,7 +287,7 @@ const Customers = () => {
                               <TableCell>{invoice.totalAmount}</TableCell>
                               <TableCell>
                                 <Button size="sm" variant="outline">
-                                  <Download className="h-4 w-4 ml-1" />
+                                  <Download className="h-4 w-4 me-1" />
                                   تحميل
                                 </Button>
                               </TableCell>

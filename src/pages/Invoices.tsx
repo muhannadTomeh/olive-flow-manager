@@ -205,7 +205,7 @@ const Invoices = () => {
                 </div>
 
                 <Button onClick={calculatePaymentMethods} className="w-full">
-                  <Calculator className="h-4 w-4 ml-2" />
+                  <Calculator className="h-4 w-4 me-2" />
                   حساب طرق الدفع
                 </Button>
               </CardContent>
