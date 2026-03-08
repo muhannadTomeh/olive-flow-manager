@@ -166,7 +166,7 @@ const Invoices = () => {
     });
 
     // Remove from queue if came from there
-    if (queueId) {
+    if (queueId && queueId !== "manual") {
       await supabase.from("queue").delete().eq("id", queueId);
       setQueueId(null);
     }
@@ -175,6 +175,7 @@ const Invoices = () => {
     setInvoiceData({ customerName: "", customerPhone: "", oilProduced: 0, containerCount: 0, containerType: 'plastic' });
     setPaymentMethods([]);
     fetchInvoices();
+    fetchQueueCustomers();
     refetchInventory();
   };
 
