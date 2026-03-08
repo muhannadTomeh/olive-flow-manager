@@ -91,6 +91,33 @@ const Invoices = () => {
     }
   }, [user]);
 
+  // Auto-calculate payment methods whenever oil or containers change
+  useEffect(() => {
+    if (!invoiceData.oilProduced) {
+      setPaymentMethods([]);
+      setSelectedPayment(null);
+      return;
+    }
+    const totalContainerCost = getTotalContainerCost();
+    const oilReturn = (invoiceData.oilProduced * settings.return_percent) / 100;
+    const containerReturnInOil = totalContainerCost / settings.oil_buy_price;
+    const totalOilPayment = oilReturn + containerReturnInOil;
+    const cashReturn = invoiceData.oilProduced * settings.cash_return_cost;
+    const totalCashPayment = cashReturn + totalContainerCost;
+
+    const methods: PaymentMethod[] = [
+      { type: 'oil', oilAmount: totalOilPayment, cashAmount: 0, total: `${totalOilPayment.toFixed(2)} كغم زيت`, oilReturn, containerOilEquiv: containerReturnInOil, cashReturn: 0, containerCashCost: 0 },
+      { type: 'cash', oilAmount: 0, cashAmount: totalCashPayment, total: `${totalCashPayment.toFixed(2)} شيكل`, oilReturn: 0, containerOilEquiv: 0, cashReturn, containerCashCost: totalContainerCost },
+      { type: 'mixed', oilAmount: oilReturn, cashAmount: totalContainerCost, total: `${oilReturn.toFixed(2)} كغم زيت + ${totalContainerCost.toFixed(2)} شيكل`, oilReturn, containerOilEquiv: 0, cashReturn: 0, containerCashCost: totalContainerCost },
+    ];
+    setPaymentMethods(methods);
+    // Keep selection if still valid
+    if (selectedPayment) {
+      const updated = methods.find(m => m.type === selectedPayment.type);
+      setSelectedPayment(updated || null);
+    }
+  }, [invoiceData.oilProduced, containerCounts, settings]);
+
   const fetchContainerTypes = async () => {
     const { data } = await supabase
       .from("container_types")
