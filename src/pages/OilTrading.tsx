@@ -317,9 +317,9 @@ const OilTrading = () => {
 
               <Button onClick={addTransaction} className="w-full">
                 {newTransaction.type === 'buy' ? (
-                  <TrendingDown className="h-4 w-4 ml-2" />
+                  <TrendingDown className="h-4 w-4 me-2" />
                 ) : (
-                  <TrendingUp className="h-4 w-4 ml-2" />
+                  <TrendingUp className="h-4 w-4 me-2" />
                 )}
                 تسجيل العملية
               </Button>
