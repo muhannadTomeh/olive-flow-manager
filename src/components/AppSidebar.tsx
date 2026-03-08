@@ -31,7 +31,7 @@ import {
 const items = [
   { title: "لوحة التحكم", url: "/dashboard", icon: LayoutDashboard },
   { title: "الطابور", url: "/queue", icon: Clock },
-  { title: "الفواتير", url: "/invoices", icon: Receipt },
+  { title: "حساب الرد", url: "/invoices", icon: Receipt },
   { title: "الزبائن", url: "/customers", icon: Users },
   { title: "العمال", url: "/workers", icon: UserCheck },
   { title: "بيع/شراء الزيت", url: "/oil-trading", icon: ShoppingCart },

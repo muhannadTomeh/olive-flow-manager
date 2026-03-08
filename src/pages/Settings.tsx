@@ -3,13 +3,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Settings as SettingsIcon, Save } from "lucide-react";
+import { Settings as SettingsIcon, Save, Plus, Trash2 } from "lucide-react";
 import { useSettings } from "@/hooks/useSettings";
 import { useInventory } from "@/hooks/useInventory";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+
+interface ContainerType {
+  id: string;
+  name: string;
+  price: number;
+}
 
 export default function Settings() {
+  const { user } = useAuth();
   const { settings, loading, updateSettings } = useSettings();
   const { inventory, updateInventory } = useInventory();
   const { toast } = useToast();
@@ -19,14 +28,16 @@ export default function Settings() {
     oil_sell_price: "",
     oil_buy_price: "",
     cash_return_cost: "",
-    plastic_container_price: "",
-    metal_container_price: "",
   });
 
   const [inventoryForm, setInventoryForm] = useState({
     total_oil: "",
     total_cash: "",
   });
+
+  const [containerTypes, setContainerTypes] = useState<ContainerType[]>([]);
+  const [newContainerName, setNewContainerName] = useState("");
+  const [newContainerPrice, setNewContainerPrice] = useState("");
 
   useEffect(() => {
     if (!loading) {
@@ -35,8 +46,6 @@ export default function Settings() {
         oil_sell_price: String(settings.oil_sell_price),
         oil_buy_price: String(settings.oil_buy_price),
         cash_return_cost: String(settings.cash_return_cost),
-        plastic_container_price: String(settings.plastic_container_price),
-        metal_container_price: String(settings.metal_container_price),
       });
       setInventoryForm({
         total_oil: String(inventory.total_oil),
@@ -45,14 +54,46 @@ export default function Settings() {
     }
   }, [loading, settings, inventory]);
 
+  useEffect(() => {
+    if (user) fetchContainerTypes();
+  }, [user]);
+
+  const fetchContainerTypes = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("container_types")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: true });
+    setContainerTypes((data as ContainerType[]) || []);
+  };
+
+  const addContainerType = async () => {
+    if (!user || !newContainerName.trim() || !newContainerPrice) return;
+    const { error } = await supabase.from("container_types").insert({
+      user_id: user.id,
+      name: newContainerName.trim(),
+      price: parseFloat(newContainerPrice),
+    });
+    if (!error) {
+      toast({ title: "تمت الإضافة", description: `تم إضافة نوع "${newContainerName}"` });
+      setNewContainerName("");
+      setNewContainerPrice("");
+      fetchContainerTypes();
+    }
+  };
+
+  const deleteContainerType = async (id: string) => {
+    await supabase.from("container_types").delete().eq("id", id);
+    fetchContainerTypes();
+  };
+
   const saveSettings = async () => {
     const result = await updateSettings({
       return_percent: parseFloat(form.return_percent),
       oil_sell_price: parseFloat(form.oil_sell_price),
       oil_buy_price: parseFloat(form.oil_buy_price),
       cash_return_cost: parseFloat(form.cash_return_cost),
-      plastic_container_price: parseFloat(form.plastic_container_price),
-      metal_container_price: parseFloat(form.metal_container_price),
     });
     if (!result?.error) {
       toast({ title: "تم الحفظ", description: "تم حفظ إعدادات المعصرة بنجاح" });
@@ -107,18 +148,45 @@ export default function Settings() {
               <Input type="number" value={form.oil_buy_price} onChange={(e) => setForm(p => ({ ...p, oil_buy_price: e.target.value }))} min="0" step="0.1" />
             </div>
           </div>
-          <Separator />
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label>سعر التنكة البلاستيكية (شيكل)</Label>
-              <Input type="number" value={form.plastic_container_price} onChange={(e) => setForm(p => ({ ...p, plastic_container_price: e.target.value }))} min="0" step="0.1" />
-            </div>
-            <div className="space-y-2">
-              <Label>سعر التنكة الحديدية (شيكل)</Label>
-              <Input type="number" value={form.metal_container_price} onChange={(e) => setForm(p => ({ ...p, metal_container_price: e.target.value }))} min="0" step="0.1" />
-            </div>
-          </div>
           <Button onClick={saveSettings}><Save className="h-4 w-4 me-2" />حفظ الإعدادات</Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>أنواع التنكات</CardTitle>
+          <CardDescription>أضف أنواع التنكات المتوفرة في معصرتك مع أسعارها</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {containerTypes.length > 0 && (
+            <div className="space-y-2">
+              {containerTypes.map((ct) => (
+                <div key={ct.id} className="flex items-center justify-between border rounded-lg p-3">
+                  <div>
+                    <span className="font-medium">{ct.name}</span>
+                    <span className="text-muted-foreground me-2"> — {ct.price} شيكل</span>
+                  </div>
+                  <Button variant="ghost" size="icon" onClick={() => deleteContainerType(ct.id)}>
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+          <Separator />
+          <div className="flex gap-2 items-end">
+            <div className="flex-1 space-y-1">
+              <Label>اسم النوع</Label>
+              <Input value={newContainerName} onChange={(e) => setNewContainerName(e.target.value)} placeholder="مثال: بلاستيك، حديد..." />
+            </div>
+            <div className="w-32 space-y-1">
+              <Label>السعر (شيكل)</Label>
+              <Input type="number" value={newContainerPrice} onChange={(e) => setNewContainerPrice(e.target.value)} min="0" step="0.1" />
+            </div>
+            <Button onClick={addContainerType} disabled={!newContainerName.trim() || !newContainerPrice}>
+              <Plus className="h-4 w-4 me-1" />إضافة
+            </Button>
+          </div>
         </CardContent>
       </Card>
 

@@ -35,6 +35,12 @@ interface InvoiceRecord {
   created_at: string;
 }
 
+interface ContainerType {
+  id: string;
+  name: string;
+  price: number;
+}
+
 const Invoices = () => {
   const { user } = useAuth();
   const { settings } = useSettings();
@@ -46,9 +52,9 @@ const Invoices = () => {
     customerName: "",
     customerPhone: "",
     oilProduced: 0,
-    containerCount: 0,
-    containerType: 'plastic' as 'plastic' | 'metal',
   });
+  const [containerCounts, setContainerCounts] = useState<Record<string, number>>({});
+  const [containerTypes, setContainerTypes] = useState<ContainerType[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [invoices, setInvoices] = useState<InvoiceRecord[]>([]);
   const [queueId, setQueueId] = useState<string | null>(null);
@@ -67,8 +73,28 @@ const Invoices = () => {
     if (user) {
       fetchInvoices();
       fetchQueueCustomers();
+      fetchContainerTypes();
     }
   }, [user]);
+
+  const fetchContainerTypes = async () => {
+    const { data } = await supabase
+      .from("container_types")
+      .select("*")
+      .eq("user_id", user!.id)
+      .order("created_at", { ascending: true });
+    const types = (data as ContainerType[]) || [];
+    setContainerTypes(types);
+    // Initialize counts to 0 for each type
+    const counts: Record<string, number> = {};
+    types.forEach(t => { counts[t.id] = 0; });
+    setContainerCounts(prev => {
+      // Keep existing non-zero values if types match
+      const merged = { ...counts };
+      Object.keys(prev).forEach(k => { if (merged[k] !== undefined) merged[k] = prev[k]; });
+      return merged;
+    });
+  };
 
   const fetchQueueCustomers = async () => {
     const { data } = await supabase
@@ -88,26 +114,44 @@ const Invoices = () => {
     setInvoices((data as InvoiceRecord[]) || []);
   };
 
+  const getTotalContainerCost = () => {
+    let total = 0;
+    containerTypes.forEach(ct => {
+      total += (containerCounts[ct.id] || 0) * ct.price;
+    });
+    return total;
+  };
+
+  const getTotalContainerCount = () => {
+    return Object.values(containerCounts).reduce((s, v) => s + v, 0);
+  };
+
+  const getContainerSummary = () => {
+    return containerTypes
+      .filter(ct => (containerCounts[ct.id] || 0) > 0)
+      .map(ct => `${containerCounts[ct.id]} ${ct.name}`)
+      .join(" + ");
+  };
+
   const calculatePaymentMethods = () => {
-    if (!invoiceData.oilProduced || !invoiceData.containerCount) {
-      toast({ title: "خطأ", description: "يرجى إدخال كمية الزيت وعدد التنكات", variant: "destructive" });
+    if (!invoiceData.oilProduced) {
+      toast({ title: "خطأ", description: "يرجى إدخال كمية الزيت", variant: "destructive" });
       return;
     }
-    const { oilProduced, containerCount, containerType } = invoiceData;
-    const containerPrice = containerType === 'plastic' ? settings.plastic_container_price : settings.metal_container_price;
+    const { oilProduced } = invoiceData;
+    const totalContainerCost = getTotalContainerCost();
 
     const oilReturn = (oilProduced * settings.return_percent) / 100;
-    const containerReturnInOil = (containerCount * containerPrice) / settings.oil_buy_price;
+    const containerReturnInOil = totalContainerCost / settings.oil_buy_price;
     const totalOilPayment = oilReturn + containerReturnInOil;
 
     const cashReturn = oilProduced * settings.cash_return_cost;
-    const containerReturnCash = containerCount * containerPrice;
-    const totalCashPayment = cashReturn + containerReturnCash;
+    const totalCashPayment = cashReturn + totalContainerCost;
 
     const methods: PaymentMethod[] = [
       { type: 'oil', oilAmount: totalOilPayment, cashAmount: 0, total: `${totalOilPayment.toFixed(2)} كغم زيت` },
       { type: 'cash', oilAmount: 0, cashAmount: totalCashPayment, total: `${totalCashPayment.toFixed(2)} شيكل` },
-      { type: 'mixed', oilAmount: oilReturn, cashAmount: containerReturnCash, total: `${oilReturn.toFixed(2)} كغم زيت + ${containerReturnCash.toFixed(2)} شيكل` },
+      { type: 'mixed', oilAmount: oilReturn, cashAmount: totalContainerCost, total: `${oilReturn.toFixed(2)} كغم زيت + ${totalContainerCost.toFixed(2)} شيكل` },
     ];
     setPaymentMethods(methods);
     toast({ title: "تم الحساب", description: "تم حساب طرق الدفع الثلاثة" });
@@ -119,7 +163,6 @@ const Invoices = () => {
       return;
     }
 
-    // Find or create customer
     let customerId: string | null = null;
     const { data: existing } = await supabase
       .from("customers")
@@ -139,14 +182,15 @@ const Invoices = () => {
       if (newCust) customerId = newCust.id;
     }
 
-    // Create invoice
+    const containerSummary = getContainerSummary() || "بدون تنكات";
+
     const { error } = await supabase.from("invoices").insert({
       user_id: user!.id,
       customer_id: customerId,
       customer_name: invoiceData.customerName,
       oil_produced: invoiceData.oilProduced,
-      container_count: invoiceData.containerCount,
-      container_type: invoiceData.containerType,
+      container_count: getTotalContainerCount(),
+      container_type: containerSummary,
       payment_type: method.type,
       oil_amount: method.oilAmount,
       cash_amount: method.cashAmount,
@@ -158,21 +202,22 @@ const Invoices = () => {
       return;
     }
 
-    // Update inventory based on payment method
     const oilChange = invoiceData.oilProduced - method.oilAmount;
     await updateInventory({
       total_oil: inventory.total_oil + oilChange,
       total_cash: inventory.total_cash + method.cashAmount,
     });
 
-    // Remove from queue if came from there
     if (queueId && queueId !== "manual") {
       await supabase.from("queue").delete().eq("id", queueId);
       setQueueId(null);
     }
 
     toast({ title: "تمت معالجة الفاتورة", description: `تم إنشاء فاتورة لـ ${invoiceData.customerName}` });
-    setInvoiceData({ customerName: "", customerPhone: "", oilProduced: 0, containerCount: 0, containerType: 'plastic' });
+    setInvoiceData({ customerName: "", customerPhone: "", oilProduced: 0 });
+    const resetCounts: Record<string, number> = {};
+    containerTypes.forEach(ct => { resetCounts[ct.id] = 0; });
+    setContainerCounts(resetCounts);
     setPaymentMethods([]);
     fetchInvoices();
     fetchQueueCustomers();
@@ -187,7 +232,7 @@ const Invoices = () => {
     <div className="space-y-6" dir="rtl">
       <div className="flex items-center gap-3">
         <Receipt className="h-8 w-8 text-primary" />
-        <h1 className="text-3xl font-bold text-foreground">إدارة الفواتير</h1>
+        <h1 className="text-3xl font-bold text-foreground">حساب الرد</h1>
       </div>
 
       <Tabs defaultValue="create" className="w-full" dir="rtl">
@@ -244,23 +289,29 @@ const Invoices = () => {
                   <Label htmlFor="oilProduced">كمية الزيت المنتج (كغم)</Label>
                   <Input id="oilProduced" type="number" value={invoiceData.oilProduced || ""} onChange={(e) => setInvoiceData(p => ({ ...p, oilProduced: parseFloat(e.target.value) || 0 }))} placeholder="كمية الزيت بالكيلوغرام" min="0" step="0.1" />
                 </div>
-                <div>
-                  <Label htmlFor="containerCount">عدد التنكات</Label>
-                  <Input id="containerCount" type="number" value={invoiceData.containerCount || ""} onChange={(e) => setInvoiceData(p => ({ ...p, containerCount: parseInt(e.target.value) || 0 }))} placeholder="عدد التنكات" min="0" />
-                </div>
-                <div>
-                  <Label>نوع التنكة</Label>
-                  <div className="flex gap-4 mt-2">
-                    <label className="flex items-center gap-2">
-                      <input type="radio" name="containerType" value="plastic" checked={invoiceData.containerType === 'plastic'} onChange={(e) => setInvoiceData(p => ({ ...p, containerType: 'plastic' }))} />
-                      بلاستيك ({settings.plastic_container_price} شيكل)
-                    </label>
-                    <label className="flex items-center gap-2">
-                      <input type="radio" name="containerType" value="metal" checked={invoiceData.containerType === 'metal'} onChange={(e) => setInvoiceData(p => ({ ...p, containerType: 'metal' }))} />
-                      حديد ({settings.metal_container_price} شيكل)
-                    </label>
+
+                {containerTypes.length > 0 && (
+                  <div className="space-y-3">
+                    <Label>عدد التنكات لكل نوع</Label>
+                    {containerTypes.map(ct => (
+                      <div key={ct.id} className="flex items-center gap-3">
+                        <Label className="w-40 text-sm">{ct.name}:</Label>
+                        <Input
+                          type="number"
+                          className="w-24"
+                          value={containerCounts[ct.id] || 0}
+                          onChange={(e) => setContainerCounts(p => ({ ...p, [ct.id]: parseInt(e.target.value) || 0 }))}
+                          min="0"
+                        />
+                      </div>
+                    ))}
                   </div>
-                </div>
+                )}
+
+                {containerTypes.length === 0 && (
+                  <p className="text-sm text-muted-foreground">لم يتم إضافة أنواع تنكات بعد. أضفها من الإعدادات.</p>
+                )}
+
                 <Button onClick={calculatePaymentMethods} className="w-full">
                   <Calculator className="h-4 w-4 me-2" />
                   حساب طرق الدفع
@@ -344,7 +395,7 @@ const Invoices = () => {
                         </TableCell>
                         <TableCell className="text-right font-medium">{inv.customer_name}</TableCell>
                         <TableCell className="text-right">{inv.oil_produced} كغم</TableCell>
-                        <TableCell className="text-right">{inv.container_count} ({inv.container_type === 'plastic' ? 'بلاستيك' : 'حديد'})</TableCell>
+                        <TableCell className="text-right">{inv.container_count} ({inv.container_type})</TableCell>
                         <TableCell className="text-right">
                           <Badge variant={inv.payment_type === 'oil' ? 'default' : inv.payment_type === 'cash' ? 'secondary' : 'outline'}>
                             {inv.payment_type === 'oil' ? 'زيت' : inv.payment_type === 'cash' ? 'نقدي' : 'مختلط'}
