@@ -525,7 +525,7 @@ export default function Settings() {
                       </p>
                     </div>
                     <Button variant="outline" className="w-full">
-                      <Upload className="ml-2 h-4 w-4" />
+                      <Upload className="me-2 h-4 w-4" />
                       استيراد ملف
                     </Button>
                   </CardContent>
