@@ -370,12 +370,12 @@ const OilTrading = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>التاريخ</TableHead>
-                        <TableHead>النوع</TableHead>
-                        <TableHead>الكمية</TableHead>
-                        <TableHead>السعر</TableHead>
-                        <TableHead>الإجمالي</TableHead>
-                        <TableHead>الطرف</TableHead>
+                        <TableHead className="text-right">التاريخ</TableHead>
+                        <TableHead className="text-right">النوع</TableHead>
+                        <TableHead className="text-right">الكمية</TableHead>
+                        <TableHead className="text-right">السعر</TableHead>
+                        <TableHead className="text-right">الإجمالي</TableHead>
+                        <TableHead className="text-right">الطرف</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
