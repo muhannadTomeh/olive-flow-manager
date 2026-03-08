@@ -20,6 +20,7 @@ import Settings from "./pages/Settings";
 import Notifications from "./pages/Notifications";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
+import LandingPage from "./pages/LandingPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -61,7 +62,7 @@ const ProtectedLayout = () => {
           </header>
           <main className="flex-1 overflow-auto p-6">
             <Routes>
-              <Route path="/" element={<Dashboard />} />
+              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/queue" element={<Queue />} />
               <Route path="/invoices" element={<Invoices />} />
               <Route path="/customers" element={<Customers />} />
@@ -88,6 +89,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
+            <Route path="/" element={<LandingPage />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/*" element={<ProtectedLayout />} />
