@@ -144,12 +144,10 @@ const Queue = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      {index === 0 && (
-                        <Button onClick={() => moveToInvoice(customer)} className="bg-primary hover:bg-primary/90">
-                          <ArrowLeft className="h-4 w-4 me-1" />
-                          إلى الفاتورة
-                        </Button>
-                      )}
+                      <Button onClick={() => moveToInvoice(customer)} className="bg-primary hover:bg-primary/90">
+                        <ArrowLeft className="h-4 w-4 me-1" />
+                        إلى الفاتورة
+                      </Button>
                       <Button variant="outline" size="sm" onClick={() => removeFromQueue(customer.id)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>

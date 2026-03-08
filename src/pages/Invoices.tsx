@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Receipt, Calculator, FileText, DollarSign, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -52,6 +53,7 @@ const Invoices = () => {
   const [invoices, setInvoices] = useState<InvoiceRecord[]>([]);
   const [queueId, setQueueId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [queueCustomers, setQueueCustomers] = useState<{ id: string; name: string; phone: string | null; position: number }[]>([]);
 
   useEffect(() => {
     if (location.state) {
@@ -62,8 +64,20 @@ const Invoices = () => {
   }, [location.state]);
 
   useEffect(() => {
-    if (user) fetchInvoices();
+    if (user) {
+      fetchInvoices();
+      fetchQueueCustomers();
+    }
   }, [user]);
+
+  const fetchQueueCustomers = async () => {
+    const { data } = await supabase
+      .from("queue")
+      .select("id, name, phone, position")
+      .eq("user_id", user!.id)
+      .order("position", { ascending: true });
+    setQueueCustomers(data || []);
+  };
 
   const fetchInvoices = async () => {
     const { data } = await supabase
@@ -152,7 +166,7 @@ const Invoices = () => {
     });
 
     // Remove from queue if came from there
-    if (queueId) {
+    if (queueId && queueId !== "manual") {
       await supabase.from("queue").delete().eq("id", queueId);
       setQueueId(null);
     }
@@ -161,6 +175,7 @@ const Invoices = () => {
     setInvoiceData({ customerName: "", customerPhone: "", oilProduced: 0, containerCount: 0, containerType: 'plastic' });
     setPaymentMethods([]);
     fetchInvoices();
+    fetchQueueCustomers();
     refetchInventory();
   };
 
@@ -193,8 +208,37 @@ const Invoices = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="customerName">اسم الزبون</Label>
-                  <Input id="customerName" value={invoiceData.customerName} onChange={(e) => setInvoiceData(p => ({ ...p, customerName: e.target.value }))} placeholder="اسم الزبون" />
+                  <Label>اسم الزبون</Label>
+                  <Select
+                    value={queueId || "manual"}
+                    onValueChange={(val) => {
+                      if (val === "manual") {
+                        setQueueId(null);
+                        setInvoiceData(p => ({ ...p, customerName: "", customerPhone: "" }));
+                      } else {
+                        const c = queueCustomers.find(q => q.id === val);
+                        if (c) {
+                          setQueueId(c.id);
+                          setInvoiceData(p => ({ ...p, customerName: c.name, customerPhone: c.phone || "" }));
+                        }
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="اختر زبون من الطابور" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {queueCustomers.map((c, i) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          #{i + 1} - {c.name}
+                        </SelectItem>
+                      ))}
+                      <SelectItem value="manual">إدخال يدوي</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {(!queueId || queueId === "manual") && (
+                    <Input className="mt-2" value={invoiceData.customerName} onChange={(e) => setInvoiceData(p => ({ ...p, customerName: e.target.value }))} placeholder="أدخل اسم الزبون يدوياً" />
+                  )}
                 </div>
                 <div>
                   <Label htmlFor="oilProduced">كمية الزيت المنتج (كغم)</Label>
