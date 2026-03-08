@@ -47,7 +47,7 @@ export default function Settings() {
         </div>
       </div>
 
-      <Tabs defaultValue="press" className="space-y-4">
+      <Tabs defaultValue="press" className="space-y-4" dir="rtl">
         <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="press">إعدادات المعصرة</TabsTrigger>
           <TabsTrigger value="profile">الملف الشخصي</TabsTrigger>
