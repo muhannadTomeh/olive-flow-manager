@@ -226,7 +226,7 @@ const Expenses = () => {
             </div>
 
             <Button onClick={addExpense} className="w-full">
-              <Plus className="h-4 w-4 ml-2" />
+              <Plus className="h-4 w-4 me-2" />
               إضافة المصروف
             </Button>
           </CardContent>
