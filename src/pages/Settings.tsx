@@ -509,7 +509,7 @@ export default function Settings() {
                       </p>
                     </div>
                     <Button variant="outline" className="w-full">
-                      <Download className="ml-2 h-4 w-4" />
+                      <Download className="me-2 h-4 w-4" />
                       تصدير الآن
                     </Button>
                   </CardContent>
