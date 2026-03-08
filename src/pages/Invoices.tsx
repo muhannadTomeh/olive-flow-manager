@@ -299,9 +299,13 @@ const Invoices = () => {
                         <Input
                           type="number"
                           className="w-24"
-                          value={containerCounts[ct.id] || 0}
-                          onChange={(e) => setContainerCounts(p => ({ ...p, [ct.id]: parseInt(e.target.value) || 0 }))}
+                          value={containerCounts[ct.id] ?? 0}
+                          onChange={(e) => {
+                            const val = e.target.value === "" ? 0 : parseInt(e.target.value);
+                            setContainerCounts(p => ({ ...p, [ct.id]: isNaN(val) ? 0 : val }));
+                          }}
                           min="0"
+                          onFocus={(e) => e.target.select()}
                         />
                       </div>
                     ))}
