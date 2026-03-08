@@ -367,10 +367,6 @@ const Invoices = () => {
                   <Textarea value={invoiceData.notes} onChange={(e) => setInvoiceData(p => ({ ...p, notes: e.target.value }))} placeholder="ملاحظات إضافية (اختياري)" rows={2} />
                 </div>
 
-                <Button onClick={calculatePaymentMethods} className="w-full">
-                  <Calculator className="h-4 w-4 me-2" />
-                  حساب طرق الدفع
-                </Button>
 
                 {/* Payment methods inside form card */}
                 {paymentMethods.length > 0 && (
