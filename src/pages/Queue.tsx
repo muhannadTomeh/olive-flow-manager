@@ -39,6 +39,7 @@ const Queue = () => {
   const { activeSeason } = useSeason();
   const navigate = useNavigate();
 
+  const processing = allItems.find(i => i.status === "processing");
   const waiting = allItems.filter(i => i.status === "waiting");
   const completed = allItems.filter(i => i.status === "completed");
 
