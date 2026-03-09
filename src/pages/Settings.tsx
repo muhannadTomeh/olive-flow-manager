@@ -195,19 +195,19 @@ export default function Settings() {
 
 
         
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label>كمية الزيت (كغم)</Label>
-              <Input type="number" value={inventoryForm.total_oil} onChange={(e) => setInventoryForm((p) => ({ ...p, total_oil: e.target.value }))} min="0" step="0.1" />
-            </div>
-            <div className="space-y-2">
-              <Label>الكاش المتوفر (شيكل)</Label>
-              <Input type="number" value={inventoryForm.total_cash} onChange={(e) => setInventoryForm((p) => ({ ...p, total_cash: e.target.value }))} min="0" step="0.1" />
-            </div>
-          </div>
-          <Button onClick={saveInventory}><Save className="h-4 w-4 me-2" />حفظ المخزون</Button>
-        </CardContent>
+        
+
+
+
+
+
+
+
+
+
+
+
+        
       </Card>
     </div>);
 
