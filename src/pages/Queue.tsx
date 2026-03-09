@@ -99,10 +99,6 @@ const Queue = () => {
   };
 
   const startProcessing = async (id: string) => {
-    // Remove any existing "processing" status first
-    if (processing) {
-      await supabase.from("queue").update({ status: "completed" }).eq("id", processing.id);
-    }
     await supabase.from("queue").update({ status: "processing" }).eq("id", id);
     toast({ title: "قيد العصر", description: "تم تحديث حالة الزبون إلى قيد العصر" });
     fetchQueue();
@@ -164,6 +160,35 @@ const Queue = () => {
       </div>
 
       <div className="space-y-6">
+          {/* Processing */}
+          {processing && (
+            <Card className="border-2 border-green-500/50 bg-green-50 dark:bg-green-950/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-green-700 dark:text-green-400">
+                  <Play className="h-5 w-5" />
+                  قيد العصر الآن
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between p-4 border rounded-lg border-green-500/30 bg-green-100/50 dark:bg-green-900/20">
+                  <div className="flex items-center gap-4">
+                    <Badge className="bg-green-600 text-white">#{processing.position}</Badge>
+                    <div>
+                      <h3 className="font-semibold text-foreground text-lg">{processing.name}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        🛍️ {processing.bags} شوال • ⏰ {formatTime(processing.created_at)}
+                      </p>
+                    </div>
+                  </div>
+                  <Button onClick={() => moveToInvoice(processing)} className="bg-primary hover:bg-primary/90">
+                    <ArrowLeft className="h-4 w-4 me-1" />
+                    إلى الفاتورة
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Waiting queue */}
           <Card>
             <CardHeader>
@@ -194,14 +219,12 @@ const Queue = () => {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Button variant="secondary" onClick={() => startProcessing(customer.id)}>
-                          <Play className="h-4 w-4 me-1" />
-                          قيد العصر
-                        </Button>
-                        <Button onClick={() => moveToInvoice(customer)} className="bg-primary hover:bg-primary/90">
-                          <ArrowLeft className="h-4 w-4 me-1" />
-                          إلى الفاتورة
-                        </Button>
+                        {!processing && (
+                          <Button variant="secondary" onClick={() => startProcessing(customer.id)}>
+                            <Play className="h-4 w-4 me-1" />
+                            قيد العصر
+                          </Button>
+                        )}
                         <Button variant="outline" size="sm" onClick={() => removeFromQueue(customer.id)}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
