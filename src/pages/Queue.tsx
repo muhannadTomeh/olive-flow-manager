@@ -96,9 +96,20 @@ const Queue = () => {
 
   return (
     <div className="space-y-6" dir="rtl">
-      <div className="flex items-center gap-3">
-        <Clock className="h-8 w-8 text-primary" />
-        <h1 className="text-3xl font-bold text-foreground">إدارة الطابور</h1>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Clock className="h-8 w-8 text-primary" />
+          <h1 className="text-3xl font-bold text-foreground">إدارة الطابور</h1>
+        </div>
+        {activeSeason && (
+          <Button
+            variant="outline"
+            onClick={() => window.open(`/display/${activeSeason.id}`, '_blank')}
+          >
+            <Monitor className="h-4 w-4 me-2" />
+            فتح شاشة العرض
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
