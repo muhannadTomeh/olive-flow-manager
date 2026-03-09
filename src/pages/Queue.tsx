@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Clock, UserPlus, ArrowLeft, Trash2, CheckCircle, Monitor, Play } from "lucide-react";
+import { Clock, UserPlus, Trash2, CheckCircle, Monitor, Play } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -32,7 +32,7 @@ const formatTime = (dateStr: string) => {
 const Queue = () => {
   const [allItems, setAllItems] = useState<QueueItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [newCustomer, setNewCustomer] = useState({ name: "", phone: "", bags: "", notes: "" });
+  const [newCustomer, setNewCustomer] = useState({ name: "", phone: "", bags: "", notes: "", estimatedMinutes: "" });
   const [dialogOpen, setDialogOpen] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -63,7 +63,6 @@ const Queue = () => {
       toast({ title: "خطأ", description: "يرجى إدخال الاسم وعدد الشوالات", variant: "destructive" });
       return;
     }
-    // Cumulative: always use max position from ALL items (waiting + completed)
     const maxPos = allItems.length > 0 ? Math.max(...allItems.map(q => q.position)) + 1 : 1;
     const { error } = await supabase.from("queue").insert({
       user_id: user!.id,
@@ -76,7 +75,7 @@ const Queue = () => {
       status: "waiting",
     });
     if (!error) {
-      setNewCustomer({ name: "", phone: "", bags: "", notes: "" });
+      setNewCustomer({ name: "", phone: "", bags: "", notes: "", estimatedMinutes: "" });
       setDialogOpen(false);
       toast({ title: "تمت الإضافة", description: `تم إضافة ${newCustomer.name} إلى الطابور` });
       fetchQueue();
@@ -95,6 +94,7 @@ const Queue = () => {
 
   const markCompleted = async (id: string) => {
     await supabase.from("queue").update({ status: "completed" }).eq("id", id);
+    toast({ title: "تم", description: "تم إنجاز الزبون" });
     fetchQueue();
   };
 
@@ -102,6 +102,12 @@ const Queue = () => {
     await supabase.from("queue").update({ status: "processing" }).eq("id", id);
     toast({ title: "قيد العصر", description: "تم تحديث حالة الزبون إلى قيد العصر" });
     fetchQueue();
+  };
+
+  const openDisplay = () => {
+    if (activeSeason) {
+      window.open(`/display/${activeSeason.id}`, '_blank', 'fullscreen=yes');
+    }
   };
 
   return (
@@ -137,6 +143,10 @@ const Queue = () => {
                   <Input id="bags" type="number" value={newCustomer.bags} onChange={(e) => setNewCustomer(p => ({ ...p, bags: e.target.value }))} placeholder="عدد الشوالات" min="1" />
                 </div>
                 <div>
+                  <Label htmlFor="estimatedMinutes">الوقت التقديري (دقائق)</Label>
+                  <Input id="estimatedMinutes" type="number" value={newCustomer.estimatedMinutes} onChange={(e) => setNewCustomer(p => ({ ...p, estimatedMinutes: e.target.value }))} placeholder="اختياري" min="1" />
+                </div>
+                <div>
                   <Label htmlFor="notes">ملاحظات</Label>
                   <Textarea id="notes" value={newCustomer.notes} onChange={(e) => setNewCustomer(p => ({ ...p, notes: e.target.value }))} placeholder="ملاحظات إضافية (اختياري)" rows={3} />
                 </div>
@@ -148,10 +158,7 @@ const Queue = () => {
             </DialogContent>
           </Dialog>
           {activeSeason && (
-            <Button
-              variant="outline"
-              onClick={() => window.open('/queue-display', '_blank', 'fullscreen=yes')}
-            >
+            <Button variant="outline" onClick={openDisplay}>
               <Monitor className="h-4 w-4 me-2" />
               فتح شاشة العرض
             </Button>
@@ -160,116 +167,121 @@ const Queue = () => {
       </div>
 
       <div className="space-y-6">
-          {/* Processing */}
-          {processing && (
-            <Card className="border-2 border-green-500/50 bg-green-50 dark:bg-green-950/20">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-green-700 dark:text-green-400">
-                  <Play className="h-5 w-5" />
-                  قيد العصر الآن
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between p-4 border rounded-lg border-green-500/30 bg-green-100/50 dark:bg-green-900/20">
-                  <div className="flex items-center gap-4">
-                    <Badge className="bg-green-600 text-white">#{processing.position}</Badge>
-                    <div>
-                      <h3 className="font-semibold text-foreground text-lg">{processing.name}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        🛍️ {processing.bags} شوال • ⏰ {formatTime(processing.created_at)}
-                      </p>
-                    </div>
+        {/* Processing */}
+        {processing && (
+          <Card className="border-2 border-green-500/50 bg-green-50 dark:bg-green-950/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-green-700 dark:text-green-400">
+                <Play className="h-5 w-5" />
+                قيد العصر الآن
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between p-4 border rounded-lg border-green-500/30 bg-green-100/50 dark:bg-green-900/20">
+                <div className="flex items-center gap-4">
+                  <Badge className="bg-green-600 text-white text-lg px-3 py-1">#{processing.position}</Badge>
+                  <div>
+                    <h3 className="font-semibold text-foreground text-lg">{processing.name}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      🛍️ {processing.bags} شوال • ⏰ {formatTime(processing.created_at)}
+                    </p>
                   </div>
-                  <Button onClick={() => moveToInvoice(processing)} className="bg-primary hover:bg-primary/90">
-                    <ArrowLeft className="h-4 w-4 me-1" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button onClick={() => markCompleted(processing.id)} variant="default" className="bg-green-600 hover:bg-green-700">
+                    <CheckCircle className="h-4 w-4 me-1" />
+                    تم
+                  </Button>
+                  <Button onClick={() => moveToInvoice(processing)} variant="outline">
                     إلى الفاتورة
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Waiting queue */}
-          <Card>
-            <CardHeader>
-              <CardTitle>الطابور ({waiting.length} زبون)</CardTitle>
-              <CardDescription>قائمة الزبائن المنتظرين بترتيب الوصول</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <p className="text-center py-8 text-muted-foreground">جارٍ التحميل...</p>
-              ) : waiting.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Clock className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                  <p>لا يوجد زبائن في الطابور حالياً</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {waiting.map((customer) => (
-                    <div key={customer.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors">
-                      <div className="flex items-center gap-4">
-                        <Badge variant="default">#{customer.position}</Badge>
-                        <div>
-                          <h3 className="font-semibold text-foreground">{customer.name}</h3>
-                          {customer.phone && <p className="text-sm text-muted-foreground">📱 {customer.phone}</p>}
-                          <p className="text-sm text-muted-foreground">
-                            🛍️ {customer.bags} شوال • ⏰ {formatTime(customer.created_at)}
-                          </p>
-                          {customer.notes && <p className="text-sm text-muted-foreground mt-1">📝 {customer.notes}</p>}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {!processing && (
-                          <Button variant="secondary" onClick={() => startProcessing(customer.id)}>
-                            <Play className="h-4 w-4 me-1" />
-                            قيد العصر
-                          </Button>
-                        )}
-                        <Button variant="outline" size="sm" onClick={() => removeFromQueue(customer.id)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              </div>
             </CardContent>
           </Card>
+        )}
 
-          {/* Completed */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-                منجز ({completed.length})
-              </CardTitle>
-              <CardDescription>الزبائن الذين تم إنجاز خدمتهم</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {completed.length === 0 ? (
-                <p className="text-center py-6 text-muted-foreground">لا يوجد زبائن منجزين بعد</p>
-              ) : (
-                <div className="space-y-3">
-                  {completed.map((customer) => (
-                    <div key={customer.id} className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
-                      <div className="flex items-center gap-4">
-                        <Badge variant="secondary">#{customer.position}</Badge>
-                        <div>
-                          <h3 className="font-semibold text-muted-foreground line-through">{customer.name}</h3>
-                          <p className="text-sm text-muted-foreground">
-                            🛍️ {customer.bags} شوال • ⏰ {formatTime(customer.created_at)}
-                          </p>
-                        </div>
+        {/* Waiting queue */}
+        <Card>
+          <CardHeader>
+            <CardTitle>الطابور ({waiting.length} زبون)</CardTitle>
+            <CardDescription>قائمة الزبائن المنتظرين بترتيب الوصول</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <p className="text-center py-8 text-muted-foreground">جارٍ التحميل...</p>
+            ) : waiting.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Clock className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <p>لا يوجد زبائن في الطابور حالياً</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {waiting.map((customer) => (
+                  <div key={customer.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors">
+                    <div className="flex items-center gap-4">
+                      <Badge variant="default">#{customer.position}</Badge>
+                      <div>
+                        <h3 className="font-semibold text-foreground">{customer.name}</h3>
+                        {customer.phone && <p className="text-sm text-muted-foreground">📱 {customer.phone}</p>}
+                        <p className="text-sm text-muted-foreground">
+                          🛍️ {customer.bags} شوال • ⏰ {formatTime(customer.created_at)}
+                        </p>
+                        {customer.notes && <p className="text-sm text-muted-foreground mt-1">📝 {customer.notes}</p>}
                       </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {!processing && (
+                        <Button variant="secondary" onClick={() => startProcessing(customer.id)}>
+                          <Play className="h-4 w-4 me-1" />
+                          قيد العصر
+                        </Button>
+                      )}
                       <Button variant="outline" size="sm" onClick={() => removeFromQueue(customer.id)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Completed */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+              منجز ({completed.length})
+            </CardTitle>
+            <CardDescription>الزبائن الذين تم إنجاز خدمتهم</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {completed.length === 0 ? (
+              <p className="text-center py-6 text-muted-foreground">لا يوجد زبائن منجزين بعد</p>
+            ) : (
+              <div className="space-y-3">
+                {completed.map((customer) => (
+                  <div key={customer.id} className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
+                    <div className="flex items-center gap-4">
+                      <Badge variant="secondary">#{customer.position}</Badge>
+                      <div>
+                        <h3 className="font-semibold text-muted-foreground line-through">{customer.name}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          🛍️ {customer.bags} شوال • ⏰ {formatTime(customer.created_at)}
+                        </p>
+                      </div>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={() => removeFromQueue(customer.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
