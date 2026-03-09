@@ -35,6 +35,7 @@ import Seasons from "./pages/Seasons";
 import SeasonSetup from "./pages/SeasonSetup";
 import NotFound from "./pages/NotFound";
 import QueueDisplay from "./pages/QueueDisplay";
+import PublicQueueDisplay from "./pages/PublicQueueDisplay";
 
 const queryClient = new QueryClient();
 
@@ -206,6 +207,7 @@ const App = () => (
             <Route path="/" element={<LandingPage />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/display/:seasonId" element={<PublicQueueDisplay />} />
             <Route path="/*" element={<ProtectedLayout />} />
           </Routes>
         </AuthProvider>
