@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Clock, UserPlus, ArrowLeft, Trash2, CheckCircle, Monitor } from "lucide-react";
+import { Clock, UserPlus, ArrowLeft, Trash2, CheckCircle, Monitor, Play } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -39,6 +39,7 @@ const Queue = () => {
   const { activeSeason } = useSeason();
   const navigate = useNavigate();
 
+  const processing = allItems.find(i => i.status === "processing");
   const waiting = allItems.filter(i => i.status === "waiting");
   const completed = allItems.filter(i => i.status === "completed");
 
@@ -94,6 +95,16 @@ const Queue = () => {
 
   const markCompleted = async (id: string) => {
     await supabase.from("queue").update({ status: "completed" }).eq("id", id);
+    fetchQueue();
+  };
+
+  const startProcessing = async (id: string) => {
+    // Remove any existing "processing" status first
+    if (processing) {
+      await supabase.from("queue").update({ status: "completed" }).eq("id", processing.id);
+    }
+    await supabase.from("queue").update({ status: "processing" }).eq("id", id);
+    toast({ title: "قيد العصر", description: "تم تحديث حالة الزبون إلى قيد العصر" });
     fetchQueue();
   };
 
@@ -183,6 +194,10 @@ const Queue = () => {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
+                        <Button variant="secondary" onClick={() => startProcessing(customer.id)}>
+                          <Play className="h-4 w-4 me-1" />
+                          قيد العصر
+                        </Button>
                         <Button onClick={() => moveToInvoice(customer)} className="bg-primary hover:bg-primary/90">
                           <ArrowLeft className="h-4 w-4 me-1" />
                           إلى الفاتورة
