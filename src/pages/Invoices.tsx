@@ -200,7 +200,7 @@ const Invoices = () => {
     } else {
       const { data: newCust } = await supabase
         .from("customers")
-        .insert({ user_id: user!.id, name: invoiceData.customerName, phone: invoiceData.customerPhone || null })
+        .insert({ user_id: user!.id, season_id: activeSeason!.id, name: invoiceData.customerName, phone: invoiceData.customerPhone || null })
         .select("id")
         .single();
       if (newCust) customerId = newCust.id;
