@@ -188,6 +188,7 @@ const ProtectedLayout = () => {
         <Route path="/seasons" element={<Seasons />} />
         <Route path="/seasons/new" element={<SeasonSetup />} />
         <Route path="/seasons/edit/:id" element={<SeasonSetup />} />
+        <Route path="/queue-display" element={<QueueDisplay />} />
         <Route path="/*" element={<SeasonGate />} />
       </Routes>
     </SeasonProvider>
