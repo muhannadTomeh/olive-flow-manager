@@ -28,6 +28,7 @@ const EXPENSE_CATEGORIES = [
 
 const Expenses = () => {
   const { user } = useAuth();
+  const { activeSeason } = useSeason();
   const { toast } = useToast();
   const { inventory, updateInventory, refetch: refetchInventory } = useInventory();
   const [expenses, setExpenses] = useState<Expense[]>([]);
