@@ -42,7 +42,7 @@ const Customers = () => {
   }, [user]);
 
   const fetchCustomers = async () => {
-    const { data } = await supabase.from("customers").select("*").eq("user_id", user!.id).order("created_at", { ascending: false });
+    const { data } = await supabase.from("customers").select("*").eq("user_id", user!.id).eq("season_id", activeSeason!.id).order("created_at", { ascending: false });
     setCustomers((data as Customer[]) || []);
     setLoading(false);
   };
