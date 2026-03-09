@@ -9,6 +9,27 @@ interface QueueItem {
   name: string;
   position: number;
   status: string;
+  bags: number;
+}
+
+const AVG_MINUTES_PER_BAG = 3;
+
+function useElapsed(startTime: Date | null) {
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    if (!startTime) return;
+    const tick = () => setElapsed(Math.floor((Date.now() - startTime.getTime()) / 1000));
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [startTime]);
+  return elapsed;
+}
+
+function formatTimer(seconds: number) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
 export default function QueueDisplay() {
@@ -16,12 +37,14 @@ export default function QueueDisplay() {
   const { activeSeason } = useSeason();
   const [items, setItems] = useState<QueueItem[]>([]);
   const [now, setNow] = useState(new Date());
+  const [processingStartTime, setProcessingStartTime] = useState<Date | null>(null);
+  const [prevProcessingId, setPrevProcessingId] = useState<string | null>(null);
 
   const fetchQueue = async () => {
     if (!user || !activeSeason) return;
     const { data } = await supabase
       .from("queue")
-      .select("id, name, position, status")
+      .select("id, name, position, status, bags")
       .eq("user_id", user.id)
       .eq("season_id", activeSeason.id)
       .neq("status", "done")
@@ -51,6 +74,22 @@ export default function QueueDisplay() {
   const waitingItems = items.filter((i) => i.status === "waiting");
   const nextItem = waitingItems[0];
 
+  // Track when processing starts (reset timer on new processing item)
+  useEffect(() => {
+    if (currentItem && currentItem.id !== prevProcessingId) {
+      setProcessingStartTime(new Date());
+      setPrevProcessingId(currentItem.id);
+    } else if (!currentItem) {
+      setProcessingStartTime(null);
+      setPrevProcessingId(null);
+    }
+  }, [currentItem?.id]);
+
+  const elapsed = useElapsed(processingStartTime);
+  const estimatedMinutes = currentItem ? currentItem.bags * AVG_MINUTES_PER_BAG : 0;
+  const estimatedSeconds = estimatedMinutes * 60;
+  const remaining = Math.max(0, estimatedSeconds - elapsed);
+
   return (
     <div className="fixed inset-0 bg-black text-white overflow-hidden flex flex-col" dir="rtl">
       {/* Header */}
@@ -75,6 +114,20 @@ export default function QueueDisplay() {
                 {currentItem.position}
               </div>
               <p className="text-5xl font-bold text-white">{currentItem.name}</p>
+              {/* Estimated time */}
+              <div className="flex items-center gap-8 mt-2">
+                <div className="text-center">
+                  <p className="text-green-400/60 text-sm mb-1">الوقت المنقضي</p>
+                  <p className="text-4xl font-mono font-bold text-green-300">{formatTimer(elapsed)}</p>
+                </div>
+                <div className="w-px h-12 bg-green-500/30" />
+                <div className="text-center">
+                  <p className="text-green-400/60 text-sm mb-1">الوقت المتبقي (تقديري)</p>
+                  <p className={`text-4xl font-mono font-bold ${remaining > 0 ? "text-yellow-300" : "text-red-400"}`}>
+                    {formatTimer(remaining)}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         ) : (
