@@ -34,6 +34,7 @@ const Queue = () => {
   const [newCustomer, setNewCustomer] = useState({ name: "", phone: "", bags: "", notes: "" });
   const { toast } = useToast();
   const { user } = useAuth();
+  const { activeSeason } = useSeason();
   const navigate = useNavigate();
 
   const waiting = allItems.filter(i => i.status === "waiting");
