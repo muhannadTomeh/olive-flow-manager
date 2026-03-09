@@ -27,6 +27,7 @@ interface InvoiceRecord {
 
 const Customers = () => {
   const { user } = useAuth();
+  const { activeSeason } = useSeason();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [invoices, setInvoices] = useState<InvoiceRecord[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
