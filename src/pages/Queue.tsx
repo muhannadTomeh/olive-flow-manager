@@ -49,6 +49,7 @@ const Queue = () => {
       .from("queue")
       .select("*")
       .eq("user_id", user!.id)
+      .eq("season_id", activeSeason!.id)
       .order("position", { ascending: true });
     setAllItems((data as QueueItem[]) || []);
     setLoading(false);
