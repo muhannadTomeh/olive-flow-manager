@@ -63,11 +63,12 @@ export default function Settings() {
   }, [user]);
 
   const fetchContainerTypes = async () => {
-    if (!user) return;
+    if (!user || !activeSeason) return;
     const { data } = await supabase.
     from("container_types").
     select("*").
     eq("user_id", user.id).
+    eq("season_id", activeSeason.id).
     order("created_at", { ascending: true });
     setContainerTypes(data as ContainerType[] || []);
   };
