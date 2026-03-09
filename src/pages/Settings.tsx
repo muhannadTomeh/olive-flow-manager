@@ -81,6 +81,7 @@ export default function Settings() {
       toast({ title: "تمت الإضافة", description: `تم إضافة نوع "${newContainerName}"` });
       setNewContainerName("");
       setNewContainerPrice("");
+      setDialogOpen(false);
       fetchContainerTypes();
     }
   };
