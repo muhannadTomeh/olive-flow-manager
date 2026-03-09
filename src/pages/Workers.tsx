@@ -5,9 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { UserCheck, Plus, DollarSign, Pencil, ChevronDown, ChevronUp, ClipboardList } from "lucide-react";
+import { UserCheck, Plus, DollarSign, Pencil, ClipboardList, Search, Filter } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,6 +17,7 @@ interface Worker {
   id: string;
   name: string;
   type: string;
+  phone: string | null;
   hourly_rate: number | null;
   shift_rate: number | null;
   total_earned: number;
@@ -33,28 +34,56 @@ interface WorkRecord {
   created_at: string;
 }
 
+interface WorkerPayment {
+  id: string;
+  worker_id: string;
+  amount: number;
+  notes: string | null;
+  created_at: string;
+}
+
 const Workers = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { inventory, updateInventory } = useInventory();
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [workRecords, setWorkRecords] = useState<WorkRecord[]>([]);
+  const [payments, setPayments] = useState<WorkerPayment[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Add worker dialog
   const [addDialogOpen, setAddDialogOpen] = useState(false);
-  const [newWorker, setNewWorker] = useState({ name: "", type: 'hourly' as 'hourly' | 'shift', rate: "" });
-  const [expandedWorkerId, setExpandedWorkerId] = useState<string | null>(null);
-  const [editingWorkerId, setEditingWorkerId] = useState<string | null>(null);
-  const [editWorker, setEditWorker] = useState({ name: "", type: 'hourly' as 'hourly' | 'shift', rate: "" });
-  const [payingWorkerId, setPayingWorkerId] = useState<string | null>(null);
+  const [newWorker, setNewWorker] = useState({ name: "", type: 'hourly' as 'hourly' | 'shift', rate: "", phone: "" });
+
+  // Edit worker dialog
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingWorker, setEditingWorker] = useState<Worker | null>(null);
+  const [editWorker, setEditWorker] = useState({ name: "", type: 'hourly' as 'hourly' | 'shift', rate: "", phone: "" });
+
+  // Pay worker dialog (from workers list)
+  const [payDialogOpen, setPayDialogOpen] = useState(false);
+  const [payingWorker, setPayingWorker] = useState<Worker | null>(null);
   const [payAmount, setPayAmount] = useState("");
-  
-  // Work registration state
-  const [selectedWorkerId, setSelectedWorkerId] = useState<string>("");
+  const [payNotes, setPayNotes] = useState("");
+
+  // Pay from payments tab dialog
+  const [payFromListOpen, setPayFromListOpen] = useState(false);
+  const [payFromListWorker, setPayFromListWorker] = useState<Worker | null>(null);
+  const [payFromListAmount, setPayFromListAmount] = useState("");
+  const [payFromListNotes, setPayFromListNotes] = useState("");
+
+  // Work session state
+  const [selectedWorkerId, setSelectedWorkerId] = useState("");
   const [workValue, setWorkValue] = useState("");
   const [workNotes, setWorkNotes] = useState("");
 
+  // Session filters
+  const [filterWorker, setFilterWorker] = useState("");
+  const [filterDate, setFilterDate] = useState("");
+  const [filterToday, setFilterToday] = useState(false);
+
   useEffect(() => {
-    if (user) { fetchWorkers(); fetchRecords(); }
+    if (user) { fetchWorkers(); fetchRecords(); fetchPayments(); }
   }, [user]);
 
   const fetchWorkers = async () => {
@@ -68,65 +97,69 @@ const Workers = () => {
     setWorkRecords((data as WorkRecord[]) || []);
   };
 
+  const fetchPayments = async () => {
+    const { data } = await supabase.from("worker_payments").select("*").eq("user_id", user!.id).order("created_at", { ascending: false });
+    setPayments((data as WorkerPayment[]) || []);
+  };
+
   const addWorker = async () => {
     if (!newWorker.name || !newWorker.rate) {
-      toast({ title: "خطأ", description: "يرجى إدخال جميع البيانات", variant: "destructive" });
+      toast({ title: "خطأ", description: "يرجى إدخال الاسم والسعر", variant: "destructive" });
       return;
     }
     const { error } = await supabase.from("workers").insert({
       user_id: user!.id,
       name: newWorker.name,
       type: newWorker.type,
+      phone: newWorker.phone || null,
       hourly_rate: newWorker.type === 'hourly' ? parseFloat(newWorker.rate) : null,
       shift_rate: newWorker.type === 'shift' ? parseFloat(newWorker.rate) : null,
     });
     if (!error) {
-      setNewWorker({ name: "", type: 'hourly', rate: "" });
+      setNewWorker({ name: "", type: 'hourly', rate: "", phone: "" });
       setAddDialogOpen(false);
       toast({ title: "تمت الإضافة", description: `تم إضافة العامل ${newWorker.name}` });
       fetchWorkers();
     }
   };
 
-  const updateWorkerDetails = async (workerId: string) => {
-    if (!editWorker.name || !editWorker.rate) {
+  const updateWorkerDetails = async () => {
+    if (!editingWorker || !editWorker.name || !editWorker.rate) {
       toast({ title: "خطأ", description: "يرجى إدخال جميع البيانات", variant: "destructive" });
       return;
     }
     const { error } = await supabase.from("workers").update({
       name: editWorker.name,
       type: editWorker.type,
+      phone: editWorker.phone || null,
       hourly_rate: editWorker.type === 'hourly' ? parseFloat(editWorker.rate) : null,
       shift_rate: editWorker.type === 'shift' ? parseFloat(editWorker.rate) : null,
-    }).eq("id", workerId);
+    }).eq("id", editingWorker.id);
     if (!error) {
-      setEditingWorkerId(null);
+      setEditDialogOpen(false);
+      setEditingWorker(null);
       toast({ title: "تم التحديث", description: "تم تحديث بيانات العامل" });
       fetchWorkers();
     }
   };
 
-  const payWorker = async (workerId: string, amount: number) => {
-    const worker = workers.find(w => w.id === workerId);
-    if (!worker || amount <= 0) return;
-
+  const payWorker = async (worker: Worker, amount: number, notes: string, onDone: () => void) => {
+    if (amount <= 0) return;
     const balance = worker.total_earned - worker.total_paid;
     if (amount > balance) {
       toast({ title: "خطأ", description: "المبلغ أكبر من الرصيد المستحق", variant: "destructive" });
       return;
     }
-
     const { error } = await supabase.from("worker_payments").insert({
-      user_id: user!.id, worker_id: workerId, amount,
+      user_id: user!.id, worker_id: worker.id, amount, notes: notes.trim() || null,
     });
-
     if (!error) {
-      await supabase.from("workers").update({ total_paid: worker.total_paid + amount }).eq("id", workerId);
+      await supabase.from("workers").update({ total_paid: worker.total_paid + amount }).eq("id", worker.id);
       await updateInventory({ total_cash: inventory.total_cash - amount });
-      toast({ title: "تم الدفع", description: `تم دفع ${amount} شيكل للعامل` });
+      toast({ title: "تم الدفع", description: `تم دفع ${amount} شيكل للعامل ${worker.name}` });
       fetchWorkers();
-      setPayAmount("");
-      setPayingWorkerId(null);
+      fetchPayments();
+      onDone();
     }
   };
 
@@ -135,31 +168,17 @@ const Workers = () => {
       toast({ title: "خطأ", description: "يرجى اختيار العامل وإدخال القيمة", variant: "destructive" });
       return;
     }
-
     const worker = workers.find(w => w.id === selectedWorkerId);
     if (!worker) return;
-
     const val = parseFloat(workValue);
-    const amount = worker.type === 'hourly'
-      ? val * (worker.hourly_rate || 0)
-      : val * (worker.shift_rate || 0);
-
-    const record: any = {
-      user_id: user!.id,
-      worker_id: selectedWorkerId,
-      amount,
-      notes: workNotes.trim() || null,
-    };
-    if (worker.type === 'hourly') {
-      record.hours = val;
-    } else {
-      record.shifts = val;
-    }
+    const amount = worker.type === 'hourly' ? val * (worker.hourly_rate || 0) : val * (worker.shift_rate || 0);
+    const record: any = { user_id: user!.id, worker_id: selectedWorkerId, amount, notes: workNotes.trim() || null };
+    if (worker.type === 'hourly') record.hours = val; else record.shifts = val;
 
     const { error } = await supabase.from("work_records").insert(record);
     if (!error) {
       await supabase.from("workers").update({ total_earned: worker.total_earned + amount }).eq("id", selectedWorkerId);
-      toast({ title: "تم التسجيل", description: `تم تسجيل ${val} ${worker.type === 'hourly' ? 'ساعة' : 'شفت'} للعامل ${worker.name} (${amount} ش)` });
+      toast({ title: "تم التسجيل", description: `تم تسجيل ${val} ${worker.type === 'hourly' ? 'ساعة' : 'شفت'} للعامل ${worker.name}` });
       setWorkValue("");
       setWorkNotes("");
       fetchWorkers();
@@ -168,15 +187,46 @@ const Workers = () => {
   };
 
   const startEdit = (worker: Worker) => {
+    setEditingWorker(worker);
     setEditWorker({
       name: worker.name,
       type: worker.type as 'hourly' | 'shift',
       rate: String(worker.type === 'hourly' ? worker.hourly_rate || 0 : worker.shift_rate || 0),
+      phone: worker.phone || "",
     });
-    setEditingWorkerId(worker.id);
+    setEditDialogOpen(true);
+  };
+
+  const startPay = (worker: Worker) => {
+    setPayingWorker(worker);
+    setPayAmount("");
+    setPayNotes("");
+    setPayDialogOpen(true);
+  };
+
+  const startPayFromList = (worker: Worker) => {
+    setPayFromListWorker(worker);
+    setPayFromListAmount("");
+    setPayFromListNotes("");
+    setPayFromListOpen(true);
   };
 
   const selectedWorkerForReg = workers.find(w => w.id === selectedWorkerId);
+
+  // Filter sessions
+  const filteredRecords = workRecords.filter(r => {
+    if (filterWorker && r.worker_id !== filterWorker) return false;
+    if (filterToday) {
+      const today = new Date().toISOString().split('T')[0];
+      const recordDate = new Date(r.created_at).toISOString().split('T')[0];
+      if (recordDate !== today) return false;
+    }
+    if (filterDate) {
+      const recordDate = new Date(r.created_at).toISOString().split('T')[0];
+      if (recordDate !== filterDate) return false;
+    }
+    return true;
+  });
 
   return (
     <div className="space-y-6" dir="rtl">
@@ -185,7 +235,6 @@ const Workers = () => {
           <UserCheck className="h-8 w-8 text-primary" />
           <h1 className="text-3xl font-bold text-foreground">إدارة العمال</h1>
         </div>
-
         <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
           <DialogTrigger asChild>
             <Button><Plus className="h-4 w-4 me-2" />إضافة عامل</Button>
@@ -193,30 +242,35 @@ const Workers = () => {
           <DialogContent dir="rtl">
             <DialogHeader>
               <DialogTitle>إضافة عامل جديد</DialogTitle>
+              <DialogDescription>أدخل بيانات العامل الجديد</DialogDescription>
             </DialogHeader>
-            <div className="space-y-4 mt-4">
+            <div className="space-y-4 mt-2">
               <div>
-                <Label htmlFor="workerName">اسم العامل</Label>
-                <Input id="workerName" value={newWorker.name} onChange={(e) => setNewWorker(p => ({ ...p, name: e.target.value }))} placeholder="اسم العامل" />
+                <Label>اسم العامل</Label>
+                <Input value={newWorker.name} onChange={e => setNewWorker(p => ({ ...p, name: e.target.value }))} placeholder="اسم العامل" />
               </div>
               <div>
-                <Label>نوع العامل</Label>
+                <Label>رقم الهاتف (اختياري)</Label>
+                <Input value={newWorker.phone} onChange={e => setNewWorker(p => ({ ...p, phone: e.target.value }))} placeholder="رقم الهاتف" />
+              </div>
+              <div>
+                <Label>نوع العمل</Label>
                 <div className="flex gap-4 mt-2">
-                  <label className="flex items-center gap-2">
-                    <input type="radio" name="workerType" value="hourly" checked={newWorker.type === 'hourly'} onChange={() => setNewWorker(p => ({ ...p, type: 'hourly' }))} />
-                    عامل بالساعة
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="newType" value="hourly" checked={newWorker.type === 'hourly'} onChange={() => setNewWorker(p => ({ ...p, type: 'hourly' }))} />
+                    بالساعة
                   </label>
-                  <label className="flex items-center gap-2">
-                    <input type="radio" name="workerType" value="shift" checked={newWorker.type === 'shift'} onChange={() => setNewWorker(p => ({ ...p, type: 'shift' }))} />
-                    عامل بالشفت
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="newType" value="shift" checked={newWorker.type === 'shift'} onChange={() => setNewWorker(p => ({ ...p, type: 'shift' }))} />
+                    بالشفت
                   </label>
                 </div>
               </div>
               <div>
-                <Label htmlFor="rate">{newWorker.type === 'hourly' ? 'سعر الساعة (شيكل)' : 'سعر الشفت (شيكل)'}</Label>
-                <Input id="rate" type="number" value={newWorker.rate} onChange={(e) => setNewWorker(p => ({ ...p, rate: e.target.value }))} placeholder={newWorker.type === 'hourly' ? 'سعر الساعة' : 'سعر الشفت'} min="0" />
+                <Label>{newWorker.type === 'hourly' ? 'سعر الساعة (شيكل)' : 'سعر الشفت (شيكل)'}</Label>
+                <Input type="number" value={newWorker.rate} onChange={e => setNewWorker(p => ({ ...p, rate: e.target.value }))} placeholder="السعر" min="0" />
               </div>
-              <Button onClick={addWorker} className="w-full"><Plus className="h-4 w-4 me-2" />إضافة العامل</Button>
+              <Button onClick={addWorker} className="w-full"><Plus className="h-4 w-4 me-2" />إضافة</Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -225,14 +279,16 @@ const Workers = () => {
       <Tabs defaultValue="list" dir="rtl">
         <TabsList className="w-full justify-start">
           <TabsTrigger value="list">قائمة العمال</TabsTrigger>
-          <TabsTrigger value="register">تسجيل العمل</TabsTrigger>
+          <TabsTrigger value="sessions">جلسات العمل</TabsTrigger>
+          <TabsTrigger value="payments">سجل المدفوعات</TabsTrigger>
         </TabsList>
 
+        {/* ===== TAB 1: قائمة العمال ===== */}
         <TabsContent value="list">
           <Card>
             <CardHeader>
               <CardTitle>قائمة العمال ({workers.length})</CardTitle>
-              <CardDescription>عرض وإدارة جميع العمال والحسابات</CardDescription>
+              <CardDescription>عرض وإدارة جميع العمال</CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
@@ -240,23 +296,29 @@ const Workers = () => {
               ) : workers.length === 0 ? (
                 <p className="text-center py-8 text-muted-foreground">لا يوجد عمال. أضف عاملاً جديداً.</p>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-right">الاسم</TableHead>
-                      <TableHead className="text-right">النوع</TableHead>
-                      <TableHead className="text-right">الإجراءات</TableHead>
-                      <TableHead className="text-right">التفاصيل</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {workers.map((worker) => {
-                      const balance = worker.total_earned - worker.total_paid;
-                      const isExpanded = expandedWorkerId === worker.id;
-                      const workerRecords = workRecords.filter(r => r.worker_id === worker.id);
+                <div className="overflow-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-right">الاسم</TableHead>
+                        <TableHead className="text-right">نوع العمل</TableHead>
+                        <TableHead className="text-right">الهاتف</TableHead>
+                        <TableHead className="text-right">وحدات العمل</TableHead>
+                        <TableHead className="text-right">سعر الوحدة</TableHead>
+                        <TableHead className="text-right">المستحق</TableHead>
+                        <TableHead className="text-right">المدفوع</TableHead>
+                        <TableHead className="text-right">المتبقي</TableHead>
+                        <TableHead className="text-right">الإجراءات</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {workers.map(worker => {
+                        const balance = worker.total_earned - worker.total_paid;
+                        const workerRecs = workRecords.filter(r => r.worker_id === worker.id);
+                        const totalUnits = workerRecs.reduce((s, r) => s + (r.hours || r.shifts || 0), 0);
+                        const rate = worker.type === 'hourly' ? worker.hourly_rate : worker.shift_rate;
 
-                      return (
-                        <>
+                        return (
                           <TableRow key={worker.id}>
                             <TableCell className="text-right font-medium">{worker.name}</TableCell>
                             <TableCell className="text-right">
@@ -264,113 +326,182 @@ const Workers = () => {
                                 {worker.type === 'hourly' ? 'بالساعة' : 'بالشفت'}
                               </Badge>
                             </TableCell>
+                            <TableCell className="text-right text-muted-foreground">{worker.phone || '—'}</TableCell>
+                            <TableCell className="text-right">{totalUnits}</TableCell>
+                            <TableCell className="text-right">{rate || 0} ش</TableCell>
+                            <TableCell className="text-right font-medium">{worker.total_earned} ش</TableCell>
+                            <TableCell className="text-right">{worker.total_paid} ش</TableCell>
+                            <TableCell className={`text-right font-bold ${balance > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>{balance} ش</TableCell>
                             <TableCell className="text-right">
                               <div className="flex gap-2">
                                 <Button size="sm" variant="outline" onClick={() => startEdit(worker)}>
                                   <Pencil className="h-3 w-3 me-1" />تعديل
                                 </Button>
-                                <Button size="sm" variant="outline" onClick={() => setPayingWorkerId(payingWorkerId === worker.id ? null : worker.id)}>
-                                  <DollarSign className="h-3 w-3 me-1" />دفعة
+                                <Button size="sm" variant="outline" onClick={() => startPay(worker)} disabled={balance <= 0}>
+                                  <DollarSign className="h-3 w-3 me-1" />دفع
                                 </Button>
                               </div>
                             </TableCell>
-                            <TableCell className="text-right">
-                              <Button size="sm" variant="ghost" onClick={() => setExpandedWorkerId(isExpanded ? null : worker.id)}>
-                                {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                              </Button>
-                            </TableCell>
                           </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-                          {editingWorkerId === worker.id && (
-                            <TableRow key={`edit-${worker.id}`}>
-                              <TableCell colSpan={4}>
-                                <div className="flex flex-wrap gap-3 items-end p-3 bg-muted/50 rounded-lg">
-                                  <div>
-                                    <Label className="text-xs">الاسم</Label>
-                                    <Input value={editWorker.name} onChange={(e) => setEditWorker(p => ({ ...p, name: e.target.value }))} className="w-32 h-8" />
-                                  </div>
-                                  <div>
-                                    <Label className="text-xs">النوع</Label>
-                                    <select value={editWorker.type} onChange={(e) => setEditWorker(p => ({ ...p, type: e.target.value as 'hourly' | 'shift' }))} className="w-28 h-8 p-1 border rounded-md bg-background text-foreground text-sm">
-                                      <option value="hourly">بالساعة</option>
-                                      <option value="shift">بالشفت</option>
-                                    </select>
-                                  </div>
-                                  <div>
-                                    <Label className="text-xs">{editWorker.type === 'hourly' ? 'سعر الساعة' : 'سعر الشفت'}</Label>
-                                    <Input type="number" value={editWorker.rate} onChange={(e) => setEditWorker(p => ({ ...p, rate: e.target.value }))} className="w-24 h-8" min="0" />
-                                  </div>
-                                  <Button size="sm" onClick={() => updateWorkerDetails(worker.id)}>حفظ</Button>
-                                  <Button size="sm" variant="outline" onClick={() => setEditingWorkerId(null)}>إلغاء</Button>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          )}
+        {/* ===== TAB 2: جلسات العمل ===== */}
+        <TabsContent value="sessions">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ClipboardList className="h-5 w-5" />
+                جلسات العمل
+              </CardTitle>
+              <CardDescription>تسجيل وعرض جلسات العمل</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {workers.length === 0 ? (
+                <p className="text-center py-8 text-muted-foreground">لا يوجد عمال. أضف عاملاً أولاً.</p>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label>اختر العامل</Label>
+                      <select value={selectedWorkerId} onChange={e => { setSelectedWorkerId(e.target.value); setWorkValue(""); }}
+                        className="w-full h-10 p-2 border rounded-md bg-background text-foreground mt-1">
+                        <option value="">-- اختر عامل --</option>
+                        {workers.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
+                      </select>
+                    </div>
+                    {selectedWorkerForReg && (
+                      <>
+                        <div>
+                          <Label>{selectedWorkerForReg.type === 'hourly' ? 'عدد الساعات' : 'عدد الشفتات'}</Label>
+                          <Input type="number" value={workValue} onChange={e => setWorkValue(e.target.value)}
+                            placeholder={selectedWorkerForReg.type === 'hourly' ? 'الساعات' : 'الشفتات'} min="0" step="0.5" />
+                        </div>
+                        <div>
+                          <Label>ملاحظات (اختياري)</Label>
+                          <Input value={workNotes} onChange={e => setWorkNotes(e.target.value)} placeholder="ملاحظات..." />
+                        </div>
+                      </>
+                    )}
+                  </div>
 
-                          {payingWorkerId === worker.id && (
-                            <TableRow key={`pay-${worker.id}`}>
-                              <TableCell colSpan={4}>
-                                <div className="flex flex-wrap gap-3 items-end p-3 bg-muted/50 rounded-lg">
-                                  <p className="text-sm text-muted-foreground">المتبقي: <span className="font-semibold text-foreground">{balance} ش</span></p>
-                                  <Input type="number" placeholder="مبلغ الدفعة" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} className="w-32 h-8" min="0" max={balance} />
-                                  <Button size="sm" onClick={() => payWorker(worker.id, parseFloat(payAmount) || 0)} disabled={!payAmount || parseFloat(payAmount) <= 0}>
-                                    <DollarSign className="h-3 w-3 me-1" />دفع
-                                  </Button>
-                                  <Button size="sm" variant="outline" onClick={() => payWorker(worker.id, balance)} disabled={balance <= 0}>دفع الكل</Button>
-                                  <Button size="sm" variant="ghost" onClick={() => { setPayingWorkerId(null); setPayAmount(""); }}>إلغاء</Button>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          )}
+                  {selectedWorkerForReg && workValue && parseFloat(workValue) > 0 && (
+                    <div className="p-3 bg-primary/10 rounded-lg text-sm">
+                      المبلغ المحسوب: <span className="font-bold text-primary">
+                        {(parseFloat(workValue) * (selectedWorkerForReg.type === 'hourly' ? (selectedWorkerForReg.hourly_rate || 0) : (selectedWorkerForReg.shift_rate || 0))).toFixed(2)} ش
+                      </span>
+                    </div>
+                  )}
 
-                          {isExpanded && (
-                            <TableRow key={`details-${worker.id}`}>
-                              <TableCell colSpan={4}>
-                                <div className="p-4 bg-muted/30 rounded-lg space-y-4">
-                                  <div className="grid grid-cols-3 gap-4">
-                                    <div className="text-center p-3 bg-background rounded-lg border">
-                                      <p className="text-xs text-muted-foreground">المستحق</p>
-                                      <p className="text-lg font-bold text-foreground">{worker.total_earned} ش</p>
-                                    </div>
-                                    <div className="text-center p-3 bg-background rounded-lg border">
-                                      <p className="text-xs text-muted-foreground">المدفوع</p>
-                                      <p className="text-lg font-bold text-foreground">{worker.total_paid} ش</p>
-                                    </div>
-                                    <div className="text-center p-3 bg-background rounded-lg border">
-                                      <p className="text-xs text-muted-foreground">المتبقي</p>
-                                      <p className={`text-lg font-bold ${balance > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>{balance} ش</p>
-                                    </div>
-                                  </div>
-                                  {workerRecords.length > 0 && (
-                                    <div>
-                                      <p className="text-sm font-medium mb-2">سجل العمل</p>
-                                      <Table>
-                                        <TableHeader>
-                                          <TableRow>
-                                            <TableHead className="text-right">التاريخ</TableHead>
-                                            <TableHead className="text-right">العمل</TableHead>
-                                            <TableHead className="text-right">المبلغ</TableHead>
-                                          </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                          {workerRecords.map((record) => (
-                                            <TableRow key={record.id}>
-                                              <TableCell className="text-right">{new Date(record.created_at).toLocaleDateString('ar-SA')}</TableCell>
-                                              <TableCell className="text-right">
-                                                {record.hours ? `${record.hours} ساعة` : `${record.shifts} شفت`}
-                                              </TableCell>
-                                              <TableCell className="text-right">{record.amount} ش</TableCell>
-                                            </TableRow>
-                                          ))}
-                                        </TableBody>
-                                      </Table>
-                                    </div>
-                                  )}
-                                </div>
-                              </TableCell>
+                  <Button onClick={registerWork} disabled={!selectedWorkerId || !workValue || parseFloat(workValue) <= 0} className="w-full md:w-auto">
+                    <ClipboardList className="h-4 w-4 me-2" />تسجيل الجلسة
+                  </Button>
+
+                  {/* Filters */}
+                  <div className="border-t pt-4 mt-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Filter className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-medium">فلترة السجلات</span>
+                    </div>
+                    <div className="flex flex-wrap gap-3">
+                      <Button size="sm" variant={filterToday ? "default" : "outline"} onClick={() => { setFilterToday(!filterToday); setFilterDate(""); }}>
+                        اليوم
+                      </Button>
+                      <Input type="date" value={filterDate} onChange={e => { setFilterDate(e.target.value); setFilterToday(false); }}
+                        className="w-44 h-9" />
+                      <select value={filterWorker} onChange={e => setFilterWorker(e.target.value)}
+                        className="h-9 p-1 border rounded-md bg-background text-foreground text-sm min-w-[140px]">
+                        <option value="">كل العمال</option>
+                        {workers.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
+                      </select>
+                      {(filterWorker || filterDate || filterToday) && (
+                        <Button size="sm" variant="ghost" onClick={() => { setFilterWorker(""); setFilterDate(""); setFilterToday(false); }}>مسح الفلاتر</Button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Session records */}
+                  {filteredRecords.length > 0 ? (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="text-right">العامل</TableHead>
+                          <TableHead className="text-right">العمل</TableHead>
+                          <TableHead className="text-right">المبلغ</TableHead>
+                          <TableHead className="text-right">ملاحظات</TableHead>
+                          <TableHead className="text-right">التاريخ</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredRecords.map(record => {
+                          const w = workers.find(x => x.id === record.worker_id);
+                          return (
+                            <TableRow key={record.id}>
+                              <TableCell className="text-right font-medium">{w?.name || '—'}</TableCell>
+                              <TableCell className="text-right">{record.hours ? `${record.hours} ساعة` : `${record.shifts} شفت`}</TableCell>
+                              <TableCell className="text-right">{record.amount} ش</TableCell>
+                              <TableCell className="text-right text-muted-foreground text-xs">{record.notes || '—'}</TableCell>
+                              <TableCell className="text-right">{new Date(record.created_at).toLocaleDateString('ar-SA')}</TableCell>
                             </TableRow>
-                          )}
-                        </>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  ) : (
+                    <p className="text-center py-4 text-muted-foreground">لا توجد جلسات مطابقة</p>
+                  )}
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ===== TAB 3: سجل المدفوعات ===== */}
+        <TabsContent value="payments">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <DollarSign className="h-5 w-5" />
+                سجل المدفوعات
+              </CardTitle>
+              <CardDescription>ملخص المستحقات والمدفوعات لكل عامل</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {workers.length === 0 ? (
+                <p className="text-center py-8 text-muted-foreground">لا يوجد عمال.</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-right">اسم العامل</TableHead>
+                      <TableHead className="text-right">إجمالي المستحقات</TableHead>
+                      <TableHead className="text-right">إجمالي المدفوعات</TableHead>
+                      <TableHead className="text-right">المبلغ المتبقي</TableHead>
+                      <TableHead className="text-right">الإجراءات</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {workers.map(worker => {
+                      const balance = worker.total_earned - worker.total_paid;
+                      return (
+                        <TableRow key={worker.id}>
+                          <TableCell className="text-right font-medium">{worker.name}</TableCell>
+                          <TableCell className="text-right">{worker.total_earned} ش</TableCell>
+                          <TableCell className="text-right">{worker.total_paid} ش</TableCell>
+                          <TableCell className={`text-right font-bold ${balance > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>{balance} ش</TableCell>
+                          <TableCell className="text-right">
+                            <Button size="sm" onClick={() => startPayFromList(worker)} disabled={balance <= 0}>
+                              <DollarSign className="h-3 w-3 me-1" />إجراء دفعة
+                            </Button>
+                          </TableCell>
+                        </TableRow>
                       );
                     })}
                   </TableBody>
@@ -379,116 +510,110 @@ const Workers = () => {
             </CardContent>
           </Card>
         </TabsContent>
-
-        <TabsContent value="register">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ClipboardList className="h-5 w-5" />
-                تسجيل العمل
-              </CardTitle>
-              <CardDescription>تسجيل ساعات أو شفتات العمل للعمال</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {workers.length === 0 ? (
-                <p className="text-center py-8 text-muted-foreground">لا يوجد عمال. أضف عاملاً أولاً.</p>
-              ) : (
-                <>
-                  <div>
-                    <Label>اختر العامل</Label>
-                    <select
-                      value={selectedWorkerId}
-                      onChange={(e) => { setSelectedWorkerId(e.target.value); setWorkValue(""); }}
-                      className="w-full h-10 p-2 border rounded-md bg-background text-foreground mt-1"
-                    >
-                      <option value="">-- اختر عامل --</option>
-                      {workers.map(w => (
-                        <option key={w.id} value={w.id}>{w.name} ({w.type === 'hourly' ? 'بالساعة' : 'بالشفت'})</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {selectedWorkerForReg && (
-                    <>
-                      <div className="p-3 bg-muted/50 rounded-lg text-sm">
-                        <p>النوع: <Badge variant={selectedWorkerForReg.type === 'hourly' ? 'default' : 'secondary'}>{selectedWorkerForReg.type === 'hourly' ? 'بالساعة' : 'بالشفت'}</Badge></p>
-                        <p className="mt-1">الأجر: <span className="font-semibold">{selectedWorkerForReg.type === 'hourly' ? selectedWorkerForReg.hourly_rate : selectedWorkerForReg.shift_rate} ش/{selectedWorkerForReg.type === 'hourly' ? 'ساعة' : 'شفت'}</span></p>
-                      </div>
-
-                      <div>
-                        <Label>{selectedWorkerForReg.type === 'hourly' ? 'عدد الساعات' : 'عدد الشفتات'}</Label>
-                        <Input
-                          type="number"
-                          value={workValue}
-                          onChange={(e) => setWorkValue(e.target.value)}
-                          placeholder={selectedWorkerForReg.type === 'hourly' ? 'أدخل عدد الساعات' : 'أدخل عدد الشفتات'}
-                          min="0"
-                          step="0.5"
-                        />
-                      </div>
-
-                      {workValue && parseFloat(workValue) > 0 && (
-                        <div className="p-3 bg-primary/10 rounded-lg text-sm">
-                          <p>المبلغ المحسوب: <span className="font-bold text-primary">
-                            {(parseFloat(workValue) * (selectedWorkerForReg.type === 'hourly' ? (selectedWorkerForReg.hourly_rate || 0) : (selectedWorkerForReg.shift_rate || 0))).toFixed(2)} ش
-                          </span></p>
-                        </div>
-                      )}
-
-                      <div>
-                        <Label>ملاحظات (اختياري)</Label>
-                        <Input
-                          value={workNotes}
-                          onChange={(e) => setWorkNotes(e.target.value)}
-                          placeholder="أضف ملاحظة..."
-                        />
-                      </div>
-
-                      <Button onClick={registerWork} className="w-full" disabled={!workValue || parseFloat(workValue) <= 0}>
-                        <ClipboardList className="h-4 w-4 me-2" />تسجيل العمل
-                      </Button>
-                    </>
-                  )}
-
-                  {/* Recent records */}
-                  {workRecords.length > 0 && (
-                    <div className="mt-6">
-                      <p className="text-sm font-medium mb-2">آخر التسجيلات</p>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                             <TableHead className="text-right">العامل</TableHead>
-                             <TableHead className="text-right">العمل</TableHead>
-                             <TableHead className="text-right">المبلغ</TableHead>
-                             <TableHead className="text-right">ملاحظات</TableHead>
-                             <TableHead className="text-right">التاريخ</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {workRecords.slice(0, 10).map((record) => {
-                            const w = workers.find(x => x.id === record.worker_id);
-                            return (
-                              <TableRow key={record.id}>
-                                <TableCell className="text-right font-medium">{w?.name || '—'}</TableCell>
-                                <TableCell className="text-right">
-                                  {record.hours ? `${record.hours} ساعة` : `${record.shifts} شفت`}
-                                </TableCell>
-                                <TableCell className="text-right">{record.amount} ش</TableCell>
-                                <TableCell className="text-right text-muted-foreground text-xs">{record.notes || '—'}</TableCell>
-                                <TableCell className="text-right">{new Date(record.created_at).toLocaleDateString('ar-SA')}</TableCell>
-                              </TableRow>
-                            );
-                          })}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  )}
-                </>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
       </Tabs>
+
+      {/* ===== Edit Worker Dialog ===== */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent dir="rtl">
+          <DialogHeader>
+            <DialogTitle>تعديل بيانات العامل</DialogTitle>
+            <DialogDescription>قم بتعديل بيانات العامل</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div>
+              <Label>الاسم</Label>
+              <Input value={editWorker.name} onChange={e => setEditWorker(p => ({ ...p, name: e.target.value }))} />
+            </div>
+            <div>
+              <Label>رقم الهاتف</Label>
+              <Input value={editWorker.phone} onChange={e => setEditWorker(p => ({ ...p, phone: e.target.value }))} placeholder="رقم الهاتف" />
+            </div>
+            <div>
+              <Label>نوع العمل</Label>
+              <div className="flex gap-4 mt-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="editType" value="hourly" checked={editWorker.type === 'hourly'} onChange={() => setEditWorker(p => ({ ...p, type: 'hourly' }))} />
+                  بالساعة
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="editType" value="shift" checked={editWorker.type === 'shift'} onChange={() => setEditWorker(p => ({ ...p, type: 'shift' }))} />
+                  بالشفت
+                </label>
+              </div>
+            </div>
+            <div>
+              <Label>{editWorker.type === 'hourly' ? 'سعر الساعة' : 'سعر الشفت'}</Label>
+              <Input type="number" value={editWorker.rate} onChange={e => setEditWorker(p => ({ ...p, rate: e.target.value }))} min="0" />
+            </div>
+            <DialogFooter className="gap-2">
+              <Button variant="outline" onClick={() => setEditDialogOpen(false)}>إلغاء</Button>
+              <Button onClick={updateWorkerDetails}>حفظ التعديلات</Button>
+            </DialogFooter>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ===== Pay Worker Dialog (from list) ===== */}
+      <Dialog open={payDialogOpen} onOpenChange={setPayDialogOpen}>
+        <DialogContent dir="rtl">
+          <DialogHeader>
+            <DialogTitle>دفعة للعامل: {payingWorker?.name}</DialogTitle>
+            <DialogDescription>المتبقي: {payingWorker ? (payingWorker.total_earned - payingWorker.total_paid) : 0} ش</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div>
+              <Label>المبلغ المراد دفعه</Label>
+              <Input type="number" value={payAmount} onChange={e => setPayAmount(e.target.value)} placeholder="المبلغ" min="0"
+                max={payingWorker ? payingWorker.total_earned - payingWorker.total_paid : 0} />
+            </div>
+            <div>
+              <Label>ملاحظات (اختياري)</Label>
+              <Input value={payNotes} onChange={e => setPayNotes(e.target.value)} placeholder="ملاحظات..." />
+            </div>
+            <DialogFooter className="gap-2">
+              <Button variant="outline" onClick={() => setPayDialogOpen(false)}>إلغاء</Button>
+              {payingWorker && (
+                <Button variant="outline" onClick={() => payWorker(payingWorker, payingWorker.total_earned - payingWorker.total_paid, payNotes, () => { setPayDialogOpen(false); })}
+                  disabled={payingWorker.total_earned - payingWorker.total_paid <= 0}>
+                  دفع الكل
+                </Button>
+              )}
+              <Button onClick={() => payingWorker && payWorker(payingWorker, parseFloat(payAmount) || 0, payNotes, () => { setPayDialogOpen(false); })}
+                disabled={!payAmount || parseFloat(payAmount) <= 0}>
+                <DollarSign className="h-4 w-4 me-1" />دفع
+              </Button>
+            </DialogFooter>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ===== Pay Worker Dialog (from payments tab) ===== */}
+      <Dialog open={payFromListOpen} onOpenChange={setPayFromListOpen}>
+        <DialogContent dir="rtl">
+          <DialogHeader>
+            <DialogTitle>إجراء دفعة: {payFromListWorker?.name}</DialogTitle>
+            <DialogDescription>المتبقي: {payFromListWorker ? (payFromListWorker.total_earned - payFromListWorker.total_paid) : 0} ش</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div>
+              <Label>المبلغ</Label>
+              <Input type="number" value={payFromListAmount} onChange={e => setPayFromListAmount(e.target.value)} placeholder="المبلغ" min="0"
+                max={payFromListWorker ? payFromListWorker.total_earned - payFromListWorker.total_paid : 0} />
+            </div>
+            <div>
+              <Label>ملاحظات (اختياري)</Label>
+              <Input value={payFromListNotes} onChange={e => setPayFromListNotes(e.target.value)} placeholder="ملاحظات..." />
+            </div>
+            <DialogFooter className="gap-2">
+              <Button variant="outline" onClick={() => setPayFromListOpen(false)}>إلغاء</Button>
+              <Button onClick={() => payFromListWorker && payWorker(payFromListWorker, parseFloat(payFromListAmount) || 0, payFromListNotes, () => { setPayFromListOpen(false); })}
+                disabled={!payFromListAmount || parseFloat(payFromListAmount) <= 0}>
+                <DollarSign className="h-4 w-4 me-1" />دفع
+              </Button>
+            </DialogFooter>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
