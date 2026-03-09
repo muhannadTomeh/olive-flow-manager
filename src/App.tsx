@@ -34,6 +34,7 @@ import LandingPage from "./pages/LandingPage";
 import Seasons from "./pages/Seasons";
 import SeasonSetup from "./pages/SeasonSetup";
 import NotFound from "./pages/NotFound";
+import QueueDisplay from "./pages/QueueDisplay";
 
 const queryClient = new QueryClient();
 
