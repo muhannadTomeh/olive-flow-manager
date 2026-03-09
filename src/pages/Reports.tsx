@@ -29,11 +29,11 @@ export default function Reports() {
 
   const fetchReports = async () => {
     const [invoicesRes, customersRes, expensesRes, salesRes, purchasesRes] = await Promise.all([
-      supabase.from("invoices").select("*").eq("user_id", user!.id),
-      supabase.from("customers").select("id", { count: "exact", head: true }).eq("user_id", user!.id),
-      supabase.from("expenses").select("amount").eq("user_id", user!.id),
-      supabase.from("oil_transactions").select("total_price").eq("user_id", user!.id).eq("type", "sell"),
-      supabase.from("oil_transactions").select("total_price").eq("user_id", user!.id).eq("type", "buy"),
+      supabase.from("invoices").select("*").eq("user_id", user!.id).eq("season_id", activeSeason!.id),
+      supabase.from("customers").select("id", { count: "exact", head: true }).eq("user_id", user!.id).eq("season_id", activeSeason!.id),
+      supabase.from("expenses").select("amount").eq("user_id", user!.id).eq("season_id", activeSeason!.id),
+      supabase.from("oil_transactions").select("total_price").eq("user_id", user!.id).eq("season_id", activeSeason!.id).eq("type", "sell"),
+      supabase.from("oil_transactions").select("total_price").eq("user_id", user!.id).eq("season_id", activeSeason!.id).eq("type", "buy"),
     ]);
 
     const invoices = invoicesRes.data || [];

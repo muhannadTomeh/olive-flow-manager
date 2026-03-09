@@ -180,7 +180,7 @@ const Workers = () => {
     if (!worker) return;
     const val = parseFloat(workValue);
     const amount = worker.type === 'hourly' ? val * (worker.hourly_rate || 0) : val * (worker.shift_rate || 0);
-    const record: any = { user_id: user!.id, worker_id: selectedWorkerId, amount, notes: workNotes.trim() || null };
+    const record: any = { user_id: user!.id, season_id: activeSeason!.id, worker_id: selectedWorkerId, amount, notes: workNotes.trim() || null };
     if (worker.type === 'hourly') record.hours = val; else record.shifts = val;
 
     const { error } = await supabase.from("work_records").insert(record);

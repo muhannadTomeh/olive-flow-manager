@@ -27,9 +27,9 @@ export default function Dashboard() {
     const today = new Date().toISOString().split('T')[0];
 
     const [waitingRes, doneRes, expenseRes] = await Promise.all([
-    supabase.from("queue").select("id", { count: "exact", head: true }).eq("user_id", user!.id).neq("status", "done"),
-    supabase.from("queue").select("id", { count: "exact", head: true }).eq("user_id", user!.id).eq("status", "done"),
-    supabase.from("expenses").select("amount").eq("user_id", user!.id).gte("created_at", today)]
+    supabase.from("queue").select("id", { count: "exact", head: true }).eq("user_id", user!.id).eq("season_id", activeSeason!.id).neq("status", "done"),
+    supabase.from("queue").select("id", { count: "exact", head: true }).eq("user_id", user!.id).eq("season_id", activeSeason!.id).eq("status", "done"),
+    supabase.from("expenses").select("amount").eq("user_id", user!.id).eq("season_id", activeSeason!.id).gte("created_at", today)]
     );
 
     setStats({
