@@ -232,7 +232,6 @@ const Queue = () => {
               )}
             </CardContent>
           </Card>
-        </div>
       </div>
     </div>
   );
