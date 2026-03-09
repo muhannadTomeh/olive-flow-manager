@@ -10,6 +10,7 @@ import { ShoppingCart, TrendingUp, TrendingDown, Package, DollarSign, Calendar }
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSeason } from "@/contexts/SeasonContext";
 import { useInventory } from "@/hooks/useInventory";
 
 interface Transaction {
