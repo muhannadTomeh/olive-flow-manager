@@ -13,7 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export default function SeasonSetup() {
   const { user } = useAuth();
-  const { seasons, refetch, enterSeason } = useSeason();
+  const { seasons, refetch } = useSeason();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { id } = useParams();
@@ -56,7 +56,7 @@ export default function SeasonSetup() {
       toast({ title: "لا يوجد مواسم سابقة", variant: "destructive" });
       return;
     }
-    const last = seasons[0]; // sorted by created_at desc
+    const last = seasons[0];
     setForm((prev) => ({
       ...prev,
       return_percent: String(last.return_percent),
@@ -99,7 +99,7 @@ export default function SeasonSetup() {
         navigate("/seasons");
       }
     } else {
-      // Deactivate all active seasons first
+      // Close all active seasons first
       await supabase
         .from("seasons")
         .update({ status: "closed" })
@@ -110,7 +110,6 @@ export default function SeasonSetup() {
       if (error) {
         toast({ title: "خطأ", description: error.message, variant: "destructive" });
       } else {
-        // Create inventory for this season
         await supabase.from("inventory").insert({ user_id: user!.id, season_id: data.id });
         toast({ title: "تم الإنشاء", description: `تم إنشاء ${form.name} وتفعيله` });
         await refetch();
@@ -120,57 +119,49 @@ export default function SeasonSetup() {
     setSaving(false);
   };
 
+  const set = (key: string, val: string) => setForm((p) => ({ ...p, [key]: val }));
+
   return (
     <div className="min-h-screen bg-background" dir="rtl">
-      <header className="h-16 border-b border-border bg-background/95 backdrop-blur-sm flex items-center px-6 sticky top-0 z-40">
-        <Button variant="ghost" onClick={() => navigate("/seasons")} className="me-4">
+      <header className="h-16 border-b border-border bg-card/80 backdrop-blur-md flex items-center px-4 md:px-6 sticky top-0 z-40">
+        <Button variant="ghost" onClick={() => navigate("/seasons")} className="me-3">
           <ArrowRight className="h-5 w-5 me-1" />
           رجوع
         </Button>
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 olive-gradient rounded-lg flex items-center justify-center">
-            <Leaf className="h-5 w-5 text-white" />
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 olive-gradient rounded-lg flex items-center justify-center">
+            <Leaf className="h-4 w-4 text-primary-foreground" />
           </div>
-          <h1 className="text-xl font-bold text-foreground">
+          <h1 className="text-lg font-bold text-foreground">
             {isEdit ? "تعديل الموسم" : "إنشاء موسم جديد"}
           </h1>
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto p-6 space-y-6">
+      <main className="max-w-2xl mx-auto p-4 md:p-6 space-y-5">
         {/* Basic Info */}
         <Card>
-          <CardHeader>
-            <CardTitle>معلومات الموسم</CardTitle>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">معلومات الموسم</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
               <Label>اسم الموسم *</Label>
               <Input
-                placeholder="مثال: موسم 2025"
+                placeholder="مثال: موسم الزيتون 2026"
                 value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                onChange={(e) => set("name", e.target.value)}
                 className="text-lg h-12 mt-1"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>تاريخ البداية</Label>
-                <Input
-                  type="date"
-                  value={form.start_date}
-                  onChange={(e) => setForm({ ...form, start_date: e.target.value })}
-                  className="mt-1"
-                />
+                <Input type="date" value={form.start_date} onChange={(e) => set("start_date", e.target.value)} className="mt-1" />
               </div>
               <div>
                 <Label>تاريخ النهاية (اختياري)</Label>
-                <Input
-                  type="date"
-                  value={form.end_date}
-                  onChange={(e) => setForm({ ...form, end_date: e.target.value })}
-                  className="mt-1"
-                />
+                <Input type="date" value={form.end_date} onChange={(e) => set("end_date", e.target.value)} className="mt-1" />
               </div>
             </div>
           </CardContent>
@@ -178,95 +169,47 @@ export default function SeasonSetup() {
 
         {/* Configuration */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>إعدادات الموسم</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between pb-3">
+            <CardTitle className="text-base">إعدادات الموسم</CardTitle>
             {!isEdit && seasons.length > 0 && (
-              <Button variant="outline" size="sm" onClick={copyFromLastSeason}>
-                <Copy className="h-4 w-4 me-2" />
-                نسخ من الموسم السابق
+              <Button variant="outline" size="sm" onClick={copyFromLastSeason} className="gap-1.5">
+                <Copy className="h-3.5 w-3.5" />
+                نسخ من السابق
               </Button>
             )}
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>نسبة الرد بالزيت (%)</Label>
-                <Input
-                  type="number"
-                  value={form.return_percent}
-                  onChange={(e) => setForm({ ...form, return_percent: e.target.value })}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <Label>تكلفة الرد النقدي (شيكل/كغم)</Label>
-                <Input
-                  type="number"
-                  step="0.1"
-                  value={form.cash_return_cost}
-                  onChange={(e) => setForm({ ...form, cash_return_cost: e.target.value })}
-                  className="mt-1"
-                />
-              </div>
+              <FieldNum label="نسبة الرد بالزيت (%)" value={form.return_percent} onChange={(v) => set("return_percent", v)} />
+              <FieldNum label="تكلفة الرد النقدي (شيكل/كغم)" value={form.cash_return_cost} onChange={(v) => set("cash_return_cost", v)} step="0.1" />
             </div>
             <Separator />
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>سعر بيع الزيت (شيكل/كغم)</Label>
-                <Input
-                  type="number"
-                  step="0.1"
-                  value={form.oil_sell_price}
-                  onChange={(e) => setForm({ ...form, oil_sell_price: e.target.value })}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <Label>سعر شراء الزيت (شيكل/كغم)</Label>
-                <Input
-                  type="number"
-                  step="0.1"
-                  value={form.oil_buy_price}
-                  onChange={(e) => setForm({ ...form, oil_buy_price: e.target.value })}
-                  className="mt-1"
-                />
-              </div>
+              <FieldNum label="سعر بيع الزيت (شيكل/كغم)" value={form.oil_sell_price} onChange={(v) => set("oil_sell_price", v)} step="0.1" />
+              <FieldNum label="سعر شراء الزيت (شيكل/كغم)" value={form.oil_buy_price} onChange={(v) => set("oil_buy_price", v)} step="0.1" />
             </div>
             <Separator />
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>سعر التنكة البلاستيكية (شيكل)</Label>
-                <Input
-                  type="number"
-                  value={form.plastic_container_price}
-                  onChange={(e) => setForm({ ...form, plastic_container_price: e.target.value })}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <Label>سعر التنكة المعدنية (شيكل)</Label>
-                <Input
-                  type="number"
-                  value={form.metal_container_price}
-                  onChange={(e) => setForm({ ...form, metal_container_price: e.target.value })}
-                  className="mt-1"
-                />
-              </div>
+              <FieldNum label="سعر التنكة البلاستيكية (شيكل)" value={form.plastic_container_price} onChange={(v) => set("plastic_container_price", v)} />
+              <FieldNum label="سعر التنكة المعدنية (شيكل)" value={form.metal_container_price} onChange={(v) => set("metal_container_price", v)} />
             </div>
           </CardContent>
         </Card>
 
-        {/* Save Button */}
-        <Button
-          className="w-full text-lg py-6"
-          size="lg"
-          onClick={handleSave}
-          disabled={saving}
-        >
+        <Button className="w-full text-lg py-6" size="lg" onClick={handleSave} disabled={saving}>
           <Save className="h-5 w-5 me-2" />
           {saving ? "جارٍ الحفظ..." : isEdit ? "حفظ التعديلات" : "إنشاء الموسم والدخول"}
         </Button>
       </main>
+    </div>
+  );
+}
+
+function FieldNum({ label, value, onChange, step }: { label: string; value: string; onChange: (v: string) => void; step?: string }) {
+  return (
+    <div>
+      <Label className="text-sm">{label}</Label>
+      <Input type="number" step={step} value={value} onChange={(e) => onChange(e.target.value)} className="mt-1" />
     </div>
   );
 }
