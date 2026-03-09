@@ -82,6 +82,11 @@ const Workers = () => {
   const [filterDate, setFilterDate] = useState("");
   const [filterToday, setFilterToday] = useState(false);
 
+  // Payment filters
+  const [payFilterWorker, setPayFilterWorker] = useState("");
+  const [payFilterDate, setPayFilterDate] = useState("");
+  const [payFilterToday, setPayFilterToday] = useState(false);
+
   useEffect(() => {
     if (user) { fetchWorkers(); fetchRecords(); fetchPayments(); }
   }, [user]);
