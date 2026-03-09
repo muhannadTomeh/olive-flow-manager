@@ -39,6 +39,7 @@ export default function Settings() {
   const [containerTypes, setContainerTypes] = useState<ContainerType[]>([]);
   const [newContainerName, setNewContainerName] = useState("");
   const [newContainerPrice, setNewContainerPrice] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     if (!loading) {
