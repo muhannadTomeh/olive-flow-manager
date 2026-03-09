@@ -141,7 +141,7 @@ const HeaderBar = () => {
               <ChevronDown className="h-3 w-3 text-muted-foreground hidden sm:block" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-56" dir="rtl">
+          <DropdownMenuContent align="start" className="w-56">
             <div className="px-3 py-2">
               <p className="text-sm font-medium truncate">{user?.email}</p>
               <p className="text-xs text-muted-foreground">مالك المعصرة</p>
