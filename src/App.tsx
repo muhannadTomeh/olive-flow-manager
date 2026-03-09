@@ -34,6 +34,7 @@ import LandingPage from "./pages/LandingPage";
 import Seasons from "./pages/Seasons";
 import SeasonSetup from "./pages/SeasonSetup";
 import NotFound from "./pages/NotFound";
+import QueueDisplay from "./pages/QueueDisplay";
 
 const queryClient = new QueryClient();
 
@@ -187,6 +188,7 @@ const ProtectedLayout = () => {
         <Route path="/seasons" element={<Seasons />} />
         <Route path="/seasons/new" element={<SeasonSetup />} />
         <Route path="/seasons/edit/:id" element={<SeasonSetup />} />
+        <Route path="/queue-display" element={<QueueDisplay />} />
         <Route path="/*" element={<SeasonGate />} />
       </Routes>
     </SeasonProvider>
