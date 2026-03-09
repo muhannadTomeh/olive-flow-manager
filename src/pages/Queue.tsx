@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Clock, UserPlus, ArrowLeft, Trash2, CheckCircle, Monitor } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,6 +33,7 @@ const Queue = () => {
   const [allItems, setAllItems] = useState<QueueItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [newCustomer, setNewCustomer] = useState({ name: "", phone: "", bags: "", notes: "" });
+  const [dialogOpen, setDialogOpen] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
   const { activeSeason } = useSeason();
@@ -74,6 +76,7 @@ const Queue = () => {
     });
     if (!error) {
       setNewCustomer({ name: "", phone: "", bags: "", notes: "" });
+      setDialogOpen(false);
       toast({ title: "تمت الإضافة", description: `تم إضافة ${newCustomer.name} إلى الطابور` });
       fetchQueue();
     }
@@ -101,53 +104,55 @@ const Queue = () => {
           <Clock className="h-8 w-8 text-primary" />
           <h1 className="text-3xl font-bold text-foreground">إدارة الطابور</h1>
         </div>
-        {activeSeason && (
-          <Button
-            variant="outline"
-            onClick={() => window.open('/queue-display', '_blank', 'fullscreen=yes')}
-          >
-            <Monitor className="h-4 w-4 me-2" />
-            فتح شاشة العرض
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <UserPlus className="h-4 w-4 me-2" />
+                إضافة زبون جديد
+              </Button>
+            </DialogTrigger>
+            <DialogContent dir="rtl">
+              <DialogHeader>
+                <DialogTitle>إضافة زبون جديد</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 mt-2">
+                <div>
+                  <Label htmlFor="name">الاسم *</Label>
+                  <Input id="name" value={newCustomer.name} onChange={(e) => setNewCustomer(p => ({ ...p, name: e.target.value }))} placeholder="اسم الزبون" />
+                </div>
+                <div>
+                  <Label htmlFor="phone">رقم الهاتف</Label>
+                  <Input id="phone" value={newCustomer.phone} onChange={(e) => setNewCustomer(p => ({ ...p, phone: e.target.value }))} placeholder="رقم الهاتف (اختياري)" />
+                </div>
+                <div>
+                  <Label htmlFor="bags">عدد الشوالات *</Label>
+                  <Input id="bags" type="number" value={newCustomer.bags} onChange={(e) => setNewCustomer(p => ({ ...p, bags: e.target.value }))} placeholder="عدد الشوالات" min="1" />
+                </div>
+                <div>
+                  <Label htmlFor="notes">ملاحظات</Label>
+                  <Textarea id="notes" value={newCustomer.notes} onChange={(e) => setNewCustomer(p => ({ ...p, notes: e.target.value }))} placeholder="ملاحظات إضافية (اختياري)" rows={3} />
+                </div>
+                <Button onClick={addToQueue} className="w-full">
+                  <UserPlus className="h-4 w-4 me-2" />
+                  إضافة إلى الطابور
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+          {activeSeason && (
+            <Button
+              variant="outline"
+              onClick={() => window.open('/queue-display', '_blank', 'fullscreen=yes')}
+            >
+              <Monitor className="h-4 w-4 me-2" />
+              فتح شاشة العرض
+            </Button>
+          )}
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Add customer form */}
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <UserPlus className="h-5 w-5" />
-              إضافة زبون جديد
-            </CardTitle>
-            <CardDescription>أدخل بيانات الزبون لإضافته إلى الطابور</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="name">الاسم *</Label>
-              <Input id="name" value={newCustomer.name} onChange={(e) => setNewCustomer(p => ({ ...p, name: e.target.value }))} placeholder="اسم الزبون" />
-            </div>
-            <div>
-              <Label htmlFor="phone">رقم الهاتف</Label>
-              <Input id="phone" value={newCustomer.phone} onChange={(e) => setNewCustomer(p => ({ ...p, phone: e.target.value }))} placeholder="رقم الهاتف (اختياري)" />
-            </div>
-            <div>
-              <Label htmlFor="bags">عدد الشوالات *</Label>
-              <Input id="bags" type="number" value={newCustomer.bags} onChange={(e) => setNewCustomer(p => ({ ...p, bags: e.target.value }))} placeholder="عدد الشوالات" min="1" />
-            </div>
-            <div>
-              <Label htmlFor="notes">ملاحظات</Label>
-              <Textarea id="notes" value={newCustomer.notes} onChange={(e) => setNewCustomer(p => ({ ...p, notes: e.target.value }))} placeholder="ملاحظات إضافية (اختياري)" rows={3} />
-            </div>
-            <Button onClick={addToQueue} className="w-full">
-              <UserPlus className="h-4 w-4 me-2" />
-              إضافة إلى الطابور
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Queue + Completed */}
-        <div className="lg:col-span-2 space-y-6">
+      <div className="space-y-6">
           {/* Waiting queue */}
           <Card>
             <CardHeader>
@@ -227,7 +232,6 @@ const Queue = () => {
               )}
             </CardContent>
           </Card>
-        </div>
       </div>
     </div>
   );
