@@ -76,6 +76,7 @@ const Queue = () => {
     });
     if (!error) {
       setNewCustomer({ name: "", phone: "", bags: "", notes: "" });
+      setDialogOpen(false);
       toast({ title: "تمت الإضافة", description: `تم إضافة ${newCustomer.name} إلى الطابور` });
       fetchQueue();
     }
