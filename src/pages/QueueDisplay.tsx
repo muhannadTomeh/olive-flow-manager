@@ -60,14 +60,12 @@ export default function QueueDisplay() {
 
   const currentItem = items.find((i) => i.status === "processing");
   const waitingItems = items.filter((i) => i.status === "waiting");
-  const nextThree = waitingItems.slice(0, 3);
+  const nextFive = waitingItems.slice(0, 5);
 
-  // Play sound & trigger animation on processing change
   useEffect(() => {
     if (currentItem && currentItem.id !== prevProcessingId) {
       setPrevProcessingId(currentItem.id);
       setFadeKey((k) => k + 1);
-      // Play notification sound
       try {
         if (!audioRef.current) {
           audioRef.current = new Audio("data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgip2teleAkKSsi2lJPVqBmq2bjGdHQFuCla+fkm5OQlmBk6+hlnZVQ1d/ka2hl3xbRVZ9jqmgloBhSFV7i6WdsHxhPlN4h6GevndiN0h4gZ2dwXRZMkJ0fJeYtXBRK0NwdpOTs25NKERycJGQrm1KJ0ZycY+Oq2xJJkZzco+Oq21JJ0d0c4+Oqm1KKEh1dJCPqG1LKkl2dpGRpm1NK0t3d5OSo21PLUx5eJOTo2xQLk16eZSUoWtRME57epWVn2tSMVB8e5aWnmpTMlF9fJeXnGpUNFJ+fZiYm2lVNVN/fpmZmmhWNlSAf5qamWdXN1WBgJubl2ZYOFeChJybleVZOViDhZ2dlONaOlmEhp6ek+FbPFqFh5+fkeBcPVuGiKCgj99ePlyHiaChjt5fP12Iiquan95gQF6JiqsA");
@@ -82,165 +80,174 @@ export default function QueueDisplay() {
 
   const hours = String(clock.getHours()).padStart(2, "0");
   const minutes = String(clock.getMinutes()).padStart(2, "0");
-  const seconds = String(clock.getSeconds()).padStart(2, "0");
 
   return (
     <div className="fixed inset-0 overflow-hidden flex flex-col" dir="rtl"
       style={{ background: "linear-gradient(160deg, #020a04 0%, #0a1f10 40%, #0d2914 70%, #061208 100%)" }}
     >
-      {/* Ambient glow effects */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full opacity-20 blur-[120px] pointer-events-none"
-        style={{ background: "radial-gradient(circle, #22c55e 0%, transparent 70%)" }}
-      />
-
-      {/* Clock */}
-      <div className="flex justify-center pt-6 pb-2">
-        <div className="flex items-baseline gap-1">
-          <span className="text-white/30 font-mono text-3xl">{seconds}</span>
-          <span className="text-white/40 font-mono text-5xl mx-1 animate-pulse">:</span>
-          <span className="text-white font-mono text-7xl font-bold tracking-widest"
-            style={{ textShadow: "0 0 30px rgba(255,255,255,0.15)" }}
+      {/* Top bar: clock + branding */}
+      <div className="flex items-center justify-between px-10 pt-6 pb-4">
+        <div className="flex items-center gap-3">
+          <span className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
+          <span className="text-white/40 text-lg font-medium">معصرة الزيتون</span>
+        </div>
+        <div className="flex items-baseline gap-1 font-mono">
+          <span className="text-white/80 text-5xl font-bold tracking-widest"
+            style={{ textShadow: "0 0 20px rgba(255,255,255,0.1)" }}
           >
-            {minutes}
-          </span>
-          <span className="text-white/40 font-mono text-5xl mx-1 animate-pulse">:</span>
-          <span className="text-white font-mono text-7xl font-bold tracking-widest"
-            style={{ textShadow: "0 0 30px rgba(255,255,255,0.15)" }}
-          >
-            {hours}
+            {hours}:{minutes}
           </span>
         </div>
       </div>
 
-      {/* Main content */}
-      <div className="flex-1 flex flex-col items-center justify-center gap-6 px-8">
-        {/* Current Processing */}
-        {currentItem ? (
-          <div
-            key={fadeKey}
-            className="w-full max-w-3xl text-center"
-            style={{ animation: "qd-fade-scale 0.6s cubic-bezier(0.16, 1, 0.3, 1)" }}
-          >
-            <p className="text-2xl font-bold mb-5 tracking-wide"
-              style={{ color: "#6ee7b7" }}
+      {/* Divider */}
+      <div className="mx-10 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(74,222,128,0.2), transparent)" }} />
+
+      {/* Main two-column layout */}
+      <div className="flex-1 flex gap-0 overflow-hidden">
+        
+        {/* RIGHT SIDE — Currently Processing */}
+        <div className="flex-1 flex items-center justify-center relative">
+          {/* Ambient glow */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="w-[500px] h-[500px] rounded-full opacity-15 blur-[120px]"
+              style={{ background: "radial-gradient(circle, #22c55e 0%, transparent 70%)" }}
+            />
+          </div>
+
+          {currentItem ? (
+            <div
+              key={fadeKey}
+              className="relative z-10 flex flex-col items-center gap-4 w-full px-12"
+              style={{ animation: "qd-fade-scale 0.6s cubic-bezier(0.16, 1, 0.3, 1)" }}
             >
-              🫒 جاري العصر الآن
-            </p>
-            <div className="relative rounded-[2rem] p-8 overflow-hidden"
-              style={{
-                background: "linear-gradient(135deg, rgba(22,101,52,0.5) 0%, rgba(5,46,22,0.6) 100%)",
-                border: "2px solid rgba(74,222,128,0.3)",
-                boxShadow: "0 0 60px rgba(34,197,94,0.15), inset 0 1px 0 rgba(255,255,255,0.05)",
-              }}
-            >
-              {/* Glow behind number */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-72 h-72 rounded-full blur-[80px] opacity-30"
-                  style={{ background: "#22c55e" }}
-                />
-              </div>
-              <div className="relative z-10 flex flex-col items-center gap-3">
-                <span className="font-black text-white leading-none"
+              <p className="text-xl font-bold tracking-widest uppercase"
+                style={{ color: "#6ee7b7", letterSpacing: "0.3em" }}
+              >
+                🫒 قيد العصر
+              </p>
+
+              <div className="w-full max-w-lg rounded-[2.5rem] p-6 pb-8 flex flex-col items-center"
+                style={{
+                  background: "linear-gradient(160deg, rgba(22,101,52,0.45) 0%, rgba(5,46,22,0.55) 100%)",
+                  border: "2px solid rgba(74,222,128,0.25)",
+                  boxShadow: "0 0 80px rgba(34,197,94,0.12), inset 0 1px 0 rgba(255,255,255,0.04)",
+                }}
+              >
+                {/* Big glow behind number */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="w-64 h-64 rounded-full blur-[80px] opacity-25"
+                    style={{ background: "#22c55e" }}
+                  />
+                </div>
+
+                <span className="relative font-black text-white leading-none"
                   style={{
-                    fontSize: "clamp(8rem, 20vw, 16rem)",
-                    textShadow: "0 0 80px rgba(74,222,128,0.4), 0 4px 0 rgba(0,0,0,0.3)",
+                    fontSize: "clamp(10rem, 22vw, 18rem)",
+                    textShadow: "0 0 100px rgba(74,222,128,0.35), 0 4px 0 rgba(0,0,0,0.3)",
+                    lineHeight: 0.85,
                   }}
                 >
                   {currentItem.position}
                 </span>
-                <span className="text-white text-4xl font-bold tracking-wide"
-                  style={{ textShadow: "0 2px 10px rgba(0,0,0,0.5)" }}
+
+                <span className="relative text-white text-4xl font-bold mt-4 tracking-wide"
+                  style={{ textShadow: "0 2px 12px rgba(0,0,0,0.5)" }}
                 >
                   {currentItem.name}
                 </span>
               </div>
             </div>
-          </div>
-        ) : (
-          <div className="w-full max-w-3xl text-center">
-            <div className="rounded-[2rem] p-16"
-              style={{
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(255,255,255,0.06)",
-              }}
-            >
-              <p className="text-white/20 text-4xl font-light">لا يوجد عصر حالياً</p>
+          ) : (
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-32 h-32 rounded-full flex items-center justify-center"
+                style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
+              >
+                <span className="text-5xl">🫒</span>
+              </div>
+              <p className="text-white/15 text-3xl font-light">لا يوجد عصر حالياً</p>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
-        {/* Next in queue */}
-        {nextThree.length > 0 && (
-          <div className="w-full max-w-2xl text-center">
-            <p className="text-xl font-bold mb-4 tracking-wide"
-              style={{ color: "#fbbf24" }}
-            >
-              ⏳ الدور القادم
-            </p>
-            <div className="flex flex-col gap-3">
-              {nextThree.map((item, idx) => (
+        {/* Vertical divider */}
+        <div className="w-px my-8" style={{ background: "linear-gradient(180deg, transparent, rgba(255,255,255,0.1), transparent)" }} />
+
+        {/* LEFT SIDE — Next in Queue */}
+        <div className="w-[420px] flex flex-col px-8 py-8">
+          <div className="flex items-center gap-3 mb-6">
+            <span className="text-2xl">⏳</span>
+            <h2 className="text-2xl font-bold tracking-wide" style={{ color: "#fbbf24" }}>
+              الدور
+            </h2>
+            {waitingItems.length > 0 && (
+              <span className="text-sm font-medium px-3 py-1 rounded-full"
+                style={{ background: "rgba(251,191,36,0.1)", color: "#fbbf24" }}
+              >
+                {waitingItems.length}
+              </span>
+            )}
+          </div>
+
+          <div className="flex-1 flex flex-col gap-3 overflow-hidden">
+            {nextFive.length > 0 ? (
+              nextFive.map((item, idx) => (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between rounded-2xl px-8 py-5 transition-all"
+                  className="flex items-center gap-5 rounded-2xl px-6 py-4 transition-all"
                   style={{
                     background: idx === 0
-                      ? "linear-gradient(135deg, rgba(234,179,8,0.12) 0%, rgba(161,98,7,0.08) 100%)"
-                      : "rgba(255,255,255,0.03)",
+                      ? "linear-gradient(135deg, rgba(234,179,8,0.14) 0%, rgba(161,98,7,0.08) 100%)"
+                      : "rgba(255,255,255,0.025)",
                     border: idx === 0
-                      ? "1px solid rgba(250,204,21,0.25)"
-                      : "1px solid rgba(255,255,255,0.06)",
-                    animation: `qd-slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 0.08}s both`,
+                      ? "1px solid rgba(250,204,21,0.3)"
+                      : "1px solid rgba(255,255,255,0.05)",
+                    animation: `qd-slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 0.07}s both`,
                   }}
                 >
-                  <div className="flex items-center gap-6">
+                  <span
+                    className="font-black leading-none flex-shrink-0"
+                    style={{
+                      fontSize: idx === 0 ? "4.5rem" : "3.5rem",
+                      color: idx === 0 ? "#fbbf24" : "rgba(255,255,255,0.3)",
+                      textShadow: idx === 0 ? "0 0 30px rgba(251,191,36,0.25)" : "none",
+                      minWidth: idx === 0 ? "5rem" : "4rem",
+                      textAlign: "center",
+                    }}
+                  >
+                    {item.position}
+                  </span>
+                  <div className="flex flex-col gap-0.5 overflow-hidden">
                     <span
-                      className="font-black leading-none"
+                      className="font-semibold truncate"
                       style={{
-                        fontSize: idx === 0 ? "4rem" : "3rem",
-                        color: idx === 0 ? "#fbbf24" : "rgba(255,255,255,0.4)",
-                        textShadow: idx === 0 ? "0 0 30px rgba(251,191,36,0.3)" : "none",
-                      }}
-                    >
-                      {item.position}
-                    </span>
-                    <span
-                      className="font-semibold"
-                      style={{
-                        fontSize: idx === 0 ? "2rem" : "1.5rem",
-                        color: idx === 0 ? "#fef3c7" : "rgba(255,255,255,0.5)",
+                        fontSize: idx === 0 ? "1.75rem" : "1.35rem",
+                        color: idx === 0 ? "#fef3c7" : "rgba(255,255,255,0.45)",
                       }}
                     >
                       {item.name}
                     </span>
+                    {idx === 0 && (
+                      <span className="text-xs font-medium" style={{ color: "rgba(251,191,36,0.6)" }}>
+                        التالي
+                      </span>
+                    )}
                   </div>
-                  {idx === 0 && (
-                    <span className="text-sm font-medium px-3 py-1 rounded-full"
-                      style={{ background: "rgba(251,191,36,0.15)", color: "#fbbf24" }}
-                    >
-                      التالي
-                    </span>
-                  )}
                 </div>
-              ))}
-            </div>
+              ))
+            ) : (
+              <div className="flex-1 flex items-center justify-center">
+                <p className="text-white/10 text-xl">لا يوجد منتظرين</p>
+              </div>
+            )}
           </div>
-        )}
 
-        {/* Waiting count */}
-        {waitingItems.length > 3 && (
-          <p className="text-white/25 text-lg mt-2">
-            +{waitingItems.length - 3} منتظرين آخرين
-          </p>
-        )}
-      </div>
-
-      {/* Footer */}
-      <div className="px-8 py-4 flex justify-between items-center text-white/20 text-sm">
-        <span>معصرة الزيتون</span>
-        <span className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-          مباشر
-        </span>
+          {waitingItems.length > 5 && (
+            <p className="text-white/20 text-base mt-4 text-center">
+              +{waitingItems.length - 5} آخرين
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Inline keyframes */}
