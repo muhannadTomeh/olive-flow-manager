@@ -147,6 +147,7 @@ const Workers = () => {
       user_id: user!.id,
       worker_id: selectedWorkerId,
       amount,
+      notes: workNotes.trim() || null,
     };
     if (worker.type === 'hourly') {
       record.hours = val;
