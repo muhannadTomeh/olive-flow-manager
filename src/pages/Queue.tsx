@@ -104,7 +104,7 @@ const Queue = () => {
         {activeSeason && (
           <Button
             variant="outline"
-            onClick={() => window.open(`/display/${activeSeason.id}`, '_blank')}
+            onClick={() => window.open('/queue-display', '_blank', 'fullscreen=yes')}
           >
             <Monitor className="h-4 w-4 me-2" />
             فتح شاشة العرض
