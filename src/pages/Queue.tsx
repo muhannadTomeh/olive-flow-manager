@@ -9,6 +9,7 @@ import { Clock, UserPlus, ArrowLeft, Trash2, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSeason } from "@/contexts/SeasonContext";
 import { useNavigate } from "react-router-dom";
 
 interface QueueItem {
