@@ -99,10 +99,6 @@ const Queue = () => {
   };
 
   const startProcessing = async (id: string) => {
-    // Remove any existing "processing" status first
-    if (processing) {
-      await supabase.from("queue").update({ status: "completed" }).eq("id", processing.id);
-    }
     await supabase.from("queue").update({ status: "processing" }).eq("id", id);
     toast({ title: "قيد العصر", description: "تم تحديث حالة الزبون إلى قيد العصر" });
     fetchQueue();
