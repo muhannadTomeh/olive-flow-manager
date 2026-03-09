@@ -29,6 +29,7 @@ interface WorkRecord {
   hours: number | null;
   shifts: number | null;
   amount: number;
+  notes: string | null;
   created_at: string;
 }
 
