@@ -20,6 +20,7 @@ export type Database = {
           id: string
           name: string
           price: number
+          season_id: string | null
           user_id: string
         }
         Insert: {
@@ -27,6 +28,7 @@ export type Database = {
           id?: string
           name: string
           price?: number
+          season_id?: string | null
           user_id: string
         }
         Update: {
@@ -34,9 +36,18 @@ export type Database = {
           id?: string
           name?: string
           price?: number
+          season_id?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "container_types_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       customers: {
         Row: {
@@ -44,6 +55,7 @@ export type Database = {
           id: string
           name: string
           phone: string | null
+          season_id: string | null
           updated_at: string
           user_id: string
         }
@@ -52,6 +64,7 @@ export type Database = {
           id?: string
           name: string
           phone?: string | null
+          season_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -60,10 +73,19 @@ export type Database = {
           id?: string
           name?: string
           phone?: string | null
+          season_id?: string | null
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "customers_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       expenses: {
         Row: {
@@ -72,6 +94,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          season_id: string | null
           user_id: string
         }
         Insert: {
@@ -80,6 +103,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          season_id?: string | null
           user_id: string
         }
         Update: {
@@ -88,13 +112,23 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          season_id?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "expenses_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       inventory: {
         Row: {
           id: string
+          season_id: string | null
           total_cash: number
           total_oil: number
           updated_at: string
@@ -102,6 +136,7 @@ export type Database = {
         }
         Insert: {
           id?: string
+          season_id?: string | null
           total_cash?: number
           total_oil?: number
           updated_at?: string
@@ -109,12 +144,21 @@ export type Database = {
         }
         Update: {
           id?: string
+          season_id?: string | null
           total_cash?: number
           total_oil?: number
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "inventory_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       invoices: {
         Row: {
@@ -128,6 +172,7 @@ export type Database = {
           oil_amount: number
           oil_produced: number
           payment_type: string
+          season_id: string | null
           total_display: string
           user_id: string
         }
@@ -142,6 +187,7 @@ export type Database = {
           oil_amount?: number
           oil_produced: number
           payment_type: string
+          season_id?: string | null
           total_display: string
           user_id: string
         }
@@ -156,6 +202,7 @@ export type Database = {
           oil_amount?: number
           oil_produced?: number
           payment_type?: string
+          season_id?: string | null
           total_display?: string
           user_id?: string
         }
@@ -165,6 +212,13 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
             referencedColumns: ["id"]
           },
         ]
@@ -177,6 +231,7 @@ export type Database = {
           notes: string | null
           party_name: string | null
           price: number
+          season_id: string | null
           total_price: number
           type: string
           user_id: string
@@ -188,6 +243,7 @@ export type Database = {
           notes?: string | null
           party_name?: string | null
           price: number
+          season_id?: string | null
           total_price: number
           type: string
           user_id: string
@@ -199,11 +255,20 @@ export type Database = {
           notes?: string | null
           party_name?: string | null
           price?: number
+          season_id?: string | null
           total_price?: number
           type?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "oil_transactions_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -244,6 +309,7 @@ export type Database = {
           notes: string | null
           phone: string | null
           position: number
+          season_id: string | null
           status: string
           user_id: string
         }
@@ -255,6 +321,7 @@ export type Database = {
           notes?: string | null
           phone?: string | null
           position?: number
+          season_id?: string | null
           status?: string
           user_id: string
         }
@@ -266,7 +333,67 @@ export type Database = {
           notes?: string | null
           phone?: string | null
           position?: number
+          season_id?: string | null
           status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "queue_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seasons: {
+        Row: {
+          cash_return_cost: number
+          created_at: string
+          end_date: string | null
+          id: string
+          metal_container_price: number
+          name: string
+          oil_buy_price: number
+          oil_sell_price: number
+          plastic_container_price: number
+          return_percent: number
+          start_date: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cash_return_cost?: number
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          metal_container_price?: number
+          name: string
+          oil_buy_price?: number
+          oil_sell_price?: number
+          plastic_container_price?: number
+          return_percent?: number
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cash_return_cost?: number
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          metal_container_price?: number
+          name?: string
+          oil_buy_price?: number
+          oil_sell_price?: number
+          plastic_container_price?: number
+          return_percent?: number
+          start_date?: string | null
+          status?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -317,6 +444,7 @@ export type Database = {
           hours: number | null
           id: string
           notes: string | null
+          season_id: string | null
           shifts: number | null
           user_id: string
           worker_id: string
@@ -327,6 +455,7 @@ export type Database = {
           hours?: number | null
           id?: string
           notes?: string | null
+          season_id?: string | null
           shifts?: number | null
           user_id: string
           worker_id: string
@@ -337,11 +466,19 @@ export type Database = {
           hours?: number | null
           id?: string
           notes?: string | null
+          season_id?: string | null
           shifts?: number | null
           user_id?: string
           worker_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "work_records_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "work_records_worker_id_fkey"
             columns: ["worker_id"]
@@ -357,6 +494,7 @@ export type Database = {
           created_at: string
           id: string
           notes: string | null
+          season_id: string | null
           user_id: string
           worker_id: string
         }
@@ -365,6 +503,7 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
+          season_id?: string | null
           user_id: string
           worker_id: string
         }
@@ -373,10 +512,18 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
+          season_id?: string | null
           user_id?: string
           worker_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "worker_payments_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "worker_payments_worker_id_fkey"
             columns: ["worker_id"]
@@ -393,6 +540,7 @@ export type Database = {
           id: string
           name: string
           phone: string | null
+          season_id: string | null
           shift_rate: number | null
           total_earned: number
           total_paid: number
@@ -406,6 +554,7 @@ export type Database = {
           id?: string
           name: string
           phone?: string | null
+          season_id?: string | null
           shift_rate?: number | null
           total_earned?: number
           total_paid?: number
@@ -419,6 +568,7 @@ export type Database = {
           id?: string
           name?: string
           phone?: string | null
+          season_id?: string | null
           shift_rate?: number | null
           total_earned?: number
           total_paid?: number
@@ -426,7 +576,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "workers_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
