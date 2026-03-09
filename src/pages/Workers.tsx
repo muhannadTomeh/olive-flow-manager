@@ -219,6 +219,21 @@ const Workers = () => {
   const selectedWorkerForReg = workers.find(w => w.id === selectedWorkerId);
 
   // Filter sessions
+  // Filter payments
+  const filteredPayments = payments.filter(p => {
+    if (payFilterWorker && p.worker_id !== payFilterWorker) return false;
+    if (payFilterToday) {
+      const today = new Date().toISOString().split('T')[0];
+      const payDate = new Date(p.created_at).toISOString().split('T')[0];
+      if (payDate !== today) return false;
+    }
+    if (payFilterDate) {
+      const payDate = new Date(p.created_at).toISOString().split('T')[0];
+      if (payDate !== payFilterDate) return false;
+    }
+    return true;
+  });
+
   const filteredRecords = workRecords.filter(r => {
     if (filterWorker && r.worker_id !== filterWorker) return false;
     if (filterToday) {
