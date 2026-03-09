@@ -82,6 +82,11 @@ const Workers = () => {
   const [filterDate, setFilterDate] = useState("");
   const [filterToday, setFilterToday] = useState(false);
 
+  // Payment filters
+  const [payFilterWorker, setPayFilterWorker] = useState("");
+  const [payFilterDate, setPayFilterDate] = useState("");
+  const [payFilterToday, setPayFilterToday] = useState(false);
+
   useEffect(() => {
     if (user) { fetchWorkers(); fetchRecords(); fetchPayments(); }
   }, [user]);
@@ -214,6 +219,21 @@ const Workers = () => {
   const selectedWorkerForReg = workers.find(w => w.id === selectedWorkerId);
 
   // Filter sessions
+  // Filter payments
+  const filteredPayments = payments.filter(p => {
+    if (payFilterWorker && p.worker_id !== payFilterWorker) return false;
+    if (payFilterToday) {
+      const today = new Date().toISOString().split('T')[0];
+      const payDate = new Date(p.created_at).toISOString().split('T')[0];
+      if (payDate !== today) return false;
+    }
+    if (payFilterDate) {
+      const payDate = new Date(p.created_at).toISOString().split('T')[0];
+      if (payDate !== payFilterDate) return false;
+    }
+    return true;
+  });
+
   const filteredRecords = workRecords.filter(r => {
     if (filterWorker && r.worker_id !== filterWorker) return false;
     if (filterToday) {
@@ -473,39 +493,94 @@ const Workers = () => {
               </CardTitle>
               <CardDescription>ملخص المستحقات والمدفوعات لكل عامل</CardDescription>
             </CardHeader>
-            <CardContent>
+           <CardContent className="space-y-6">
               {workers.length === 0 ? (
                 <p className="text-center py-8 text-muted-foreground">لا يوجد عمال.</p>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-right">اسم العامل</TableHead>
-                      <TableHead className="text-right">إجمالي المستحقات</TableHead>
-                      <TableHead className="text-right">إجمالي المدفوعات</TableHead>
-                      <TableHead className="text-right">المبلغ المتبقي</TableHead>
-                      <TableHead className="text-right">الإجراءات</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {workers.map(worker => {
-                      const balance = worker.total_earned - worker.total_paid;
-                      return (
-                        <TableRow key={worker.id}>
-                          <TableCell className="text-right font-medium">{worker.name}</TableCell>
-                          <TableCell className="text-right">{worker.total_earned} ش</TableCell>
-                          <TableCell className="text-right">{worker.total_paid} ش</TableCell>
-                          <TableCell className={`text-right font-bold ${balance > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>{balance} ش</TableCell>
-                          <TableCell className="text-right">
-                            <Button size="sm" onClick={() => startPayFromList(worker)} disabled={balance <= 0}>
-                              <DollarSign className="h-3 w-3 me-1" />إجراء دفعة
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
+                <>
+                  {/* Summary table */}
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-right">اسم العامل</TableHead>
+                        <TableHead className="text-right">إجمالي المستحقات</TableHead>
+                        <TableHead className="text-right">إجمالي المدفوعات</TableHead>
+                        <TableHead className="text-right">المبلغ المتبقي</TableHead>
+                        <TableHead className="text-right">الإجراءات</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {workers.map(worker => {
+                        const balance = worker.total_earned - worker.total_paid;
+                        return (
+                          <TableRow key={worker.id}>
+                            <TableCell className="text-right font-medium">{worker.name}</TableCell>
+                            <TableCell className="text-right">{worker.total_earned} ش</TableCell>
+                            <TableCell className="text-right">{worker.total_paid} ش</TableCell>
+                            <TableCell className={`text-right font-bold ${balance > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>{balance} ش</TableCell>
+                            <TableCell className="text-right">
+                              <Button size="sm" onClick={() => startPayFromList(worker)} disabled={balance <= 0}>
+                                <DollarSign className="h-3 w-3 me-1" />إجراء دفعة
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+
+                  {/* Payment records with filters */}
+                  <div className="border-t pt-4">
+                    <h3 className="text-lg font-semibold mb-3">سجل الدفعات التفصيلي</h3>
+                    <div className="flex items-center gap-2 mb-3">
+                      <Filter className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-medium">فلترة الدفعات</span>
+                    </div>
+                    <div className="flex flex-wrap gap-3 mb-4">
+                      <Button size="sm" variant={payFilterToday ? "default" : "outline"} onClick={() => { setPayFilterToday(!payFilterToday); setPayFilterDate(""); }}>
+                        اليوم
+                      </Button>
+                      <Input type="date" value={payFilterDate} onChange={e => { setPayFilterDate(e.target.value); setPayFilterToday(false); }}
+                        className="w-44 h-9" />
+                      <select value={payFilterWorker} onChange={e => setPayFilterWorker(e.target.value)}
+                        className="h-9 p-1 border rounded-md bg-background text-foreground text-sm min-w-[140px]">
+                        <option value="">كل العمال</option>
+                        {workers.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
+                      </select>
+                      {(payFilterWorker || payFilterDate || payFilterToday) && (
+                        <Button size="sm" variant="ghost" onClick={() => { setPayFilterWorker(""); setPayFilterDate(""); setPayFilterToday(false); }}>مسح الفلاتر</Button>
+                      )}
+                    </div>
+
+                    {filteredPayments.length > 0 ? (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="text-right">العامل</TableHead>
+                            <TableHead className="text-right">المبلغ</TableHead>
+                            <TableHead className="text-right">ملاحظات</TableHead>
+                            <TableHead className="text-right">التاريخ</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filteredPayments.map(payment => {
+                            const w = workers.find(x => x.id === payment.worker_id);
+                            return (
+                              <TableRow key={payment.id}>
+                                <TableCell className="text-right font-medium">{w?.name || '—'}</TableCell>
+                                <TableCell className="text-right">{payment.amount} ش</TableCell>
+                                <TableCell className="text-right text-muted-foreground text-xs">{payment.notes || '—'}</TableCell>
+                                <TableCell className="text-right">{new Date(payment.created_at).toLocaleDateString('ar-SA')}</TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
+                    ) : (
+                      <p className="text-center py-4 text-muted-foreground">لا توجد دفعات مطابقة</p>
+                    )}
+                  </div>
+                </>
               )}
             </CardContent>
           </Card>
