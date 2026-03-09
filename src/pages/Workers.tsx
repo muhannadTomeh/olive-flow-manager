@@ -29,6 +29,7 @@ interface WorkRecord {
   hours: number | null;
   shifts: number | null;
   amount: number;
+  notes: string | null;
   created_at: string;
 }
 
@@ -50,6 +51,7 @@ const Workers = () => {
   // Work registration state
   const [selectedWorkerId, setSelectedWorkerId] = useState<string>("");
   const [workValue, setWorkValue] = useState("");
+  const [workNotes, setWorkNotes] = useState("");
 
   useEffect(() => {
     if (user) { fetchWorkers(); fetchRecords(); }
@@ -146,6 +148,7 @@ const Workers = () => {
       user_id: user!.id,
       worker_id: selectedWorkerId,
       amount,
+      notes: workNotes.trim() || null,
     };
     if (worker.type === 'hourly') {
       record.hours = val;
@@ -158,6 +161,7 @@ const Workers = () => {
       await supabase.from("workers").update({ total_earned: worker.total_earned + amount }).eq("id", selectedWorkerId);
       toast({ title: "تم التسجيل", description: `تم تسجيل ${val} ${worker.type === 'hourly' ? 'ساعة' : 'شفت'} للعامل ${worker.name} (${amount} ش)` });
       setWorkValue("");
+      setWorkNotes("");
       fetchWorkers();
       fetchRecords();
     }
@@ -431,6 +435,15 @@ const Workers = () => {
                         </div>
                       )}
 
+                      <div>
+                        <Label>ملاحظات (اختياري)</Label>
+                        <Input
+                          value={workNotes}
+                          onChange={(e) => setWorkNotes(e.target.value)}
+                          placeholder="أضف ملاحظة..."
+                        />
+                      </div>
+
                       <Button onClick={registerWork} className="w-full" disabled={!workValue || parseFloat(workValue) <= 0}>
                         <ClipboardList className="h-4 w-4 me-2" />تسجيل العمل
                       </Button>
@@ -444,10 +457,11 @@ const Workers = () => {
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead className="text-right">العامل</TableHead>
-                            <TableHead className="text-right">العمل</TableHead>
-                            <TableHead className="text-right">المبلغ</TableHead>
-                            <TableHead className="text-right">التاريخ</TableHead>
+                             <TableHead className="text-right">العامل</TableHead>
+                             <TableHead className="text-right">العمل</TableHead>
+                             <TableHead className="text-right">المبلغ</TableHead>
+                             <TableHead className="text-right">ملاحظات</TableHead>
+                             <TableHead className="text-right">التاريخ</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -460,6 +474,7 @@ const Workers = () => {
                                   {record.hours ? `${record.hours} ساعة` : `${record.shifts} شفت`}
                                 </TableCell>
                                 <TableCell className="text-right">{record.amount} ش</TableCell>
+                                <TableCell className="text-right text-muted-foreground text-xs">{record.notes || '—'}</TableCell>
                                 <TableCell className="text-right">{new Date(record.created_at).toLocaleDateString('ar-SA')}</TableCell>
                               </TableRow>
                             );
