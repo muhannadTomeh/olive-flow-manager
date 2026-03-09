@@ -21,7 +21,8 @@ interface ContainerType {
 
 export default function Settings() {
   const { user } = useAuth();
-  const { settings, loading, updateSettings } = useSettings();
+  const { activeSeason, refetch: refetchSeasons } = useSeason();
+  const { settings, loading } = useSettings();
   const { inventory, updateInventory } = useInventory();
   const { toast } = useToast();
 
