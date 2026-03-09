@@ -474,6 +474,7 @@ const Workers = () => {
                                   {record.hours ? `${record.hours} ساعة` : `${record.shifts} شفت`}
                                 </TableCell>
                                 <TableCell className="text-right">{record.amount} ش</TableCell>
+                                <TableCell className="text-right text-muted-foreground text-xs">{record.notes || '—'}</TableCell>
                                 <TableCell className="text-right">{new Date(record.created_at).toLocaleDateString('ar-SA')}</TableCell>
                               </TableRow>
                             );
