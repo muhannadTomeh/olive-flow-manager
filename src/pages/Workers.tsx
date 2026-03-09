@@ -457,10 +457,11 @@ const Workers = () => {
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead className="text-right">العامل</TableHead>
-                            <TableHead className="text-right">العمل</TableHead>
-                            <TableHead className="text-right">المبلغ</TableHead>
-                            <TableHead className="text-right">التاريخ</TableHead>
+                             <TableHead className="text-right">العامل</TableHead>
+                             <TableHead className="text-right">العمل</TableHead>
+                             <TableHead className="text-right">المبلغ</TableHead>
+                             <TableHead className="text-right">ملاحظات</TableHead>
+                             <TableHead className="text-right">التاريخ</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
