@@ -94,18 +94,18 @@ const Workers = () => {
   }, [user]);
 
   const fetchWorkers = async () => {
-    const { data } = await supabase.from("workers").select("*").eq("user_id", user!.id).order("created_at", { ascending: false });
+    const { data } = await supabase.from("workers").select("*").eq("user_id", user!.id).eq("season_id", activeSeason!.id).order("created_at", { ascending: false });
     setWorkers((data as Worker[]) || []);
     setLoading(false);
   };
 
   const fetchRecords = async () => {
-    const { data } = await supabase.from("work_records").select("*").eq("user_id", user!.id).order("created_at", { ascending: false });
+    const { data } = await supabase.from("work_records").select("*").eq("user_id", user!.id).eq("season_id", activeSeason!.id).order("created_at", { ascending: false });
     setWorkRecords((data as WorkRecord[]) || []);
   };
 
   const fetchPayments = async () => {
-    const { data } = await supabase.from("worker_payments").select("*").eq("user_id", user!.id).order("created_at", { ascending: false });
+    const { data } = await supabase.from("worker_payments").select("*").eq("user_id", user!.id).eq("season_id", activeSeason!.id).order("created_at", { ascending: false });
     setPayments((data as WorkerPayment[]) || []);
   };
 
