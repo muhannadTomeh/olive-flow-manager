@@ -356,6 +356,7 @@ export type Database = {
           amount: number
           created_at: string
           id: string
+          notes: string | null
           user_id: string
           worker_id: string
         }
@@ -363,6 +364,7 @@ export type Database = {
           amount: number
           created_at?: string
           id?: string
+          notes?: string | null
           user_id: string
           worker_id: string
         }
@@ -370,6 +372,7 @@ export type Database = {
           amount?: number
           created_at?: string
           id?: string
+          notes?: string | null
           user_id?: string
           worker_id?: string
         }
@@ -389,6 +392,7 @@ export type Database = {
           hourly_rate: number | null
           id: string
           name: string
+          phone: string | null
           shift_rate: number | null
           total_earned: number
           total_paid: number
@@ -401,6 +405,7 @@ export type Database = {
           hourly_rate?: number | null
           id?: string
           name: string
+          phone?: string | null
           shift_rate?: number | null
           total_earned?: number
           total_paid?: number
@@ -413,6 +418,7 @@ export type Database = {
           hourly_rate?: number | null
           id?: string
           name?: string
+          phone?: string | null
           shift_rate?: number | null
           total_earned?: number
           total_paid?: number
