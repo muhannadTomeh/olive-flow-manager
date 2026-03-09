@@ -96,13 +96,15 @@ export default function Settings() {
   };
 
   const saveSettings = async () => {
-    const result = await updateSettings({
+    if (!activeSeason) return;
+    const { error } = await supabase.from("seasons").update({
       return_percent: parseFloat(form.return_percent),
       oil_sell_price: parseFloat(form.oil_sell_price),
       oil_buy_price: parseFloat(form.oil_buy_price),
-      cash_return_cost: parseFloat(form.cash_return_cost)
-    });
-    if (!result?.error) {
+      cash_return_cost: parseFloat(form.cash_return_cost),
+    }).eq("id", activeSeason.id);
+    if (!error) {
+      await refetchSeasons();
       toast({ title: "تم الحفظ", description: "تم حفظ إعدادات المعصرة بنجاح" });
     }
   };
