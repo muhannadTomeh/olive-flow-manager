@@ -19,9 +19,9 @@ export default function Reports() {
     totalOilEarned: 0,
     totalExpenses: 0,
     totalSales: 0,
-    totalPurchases: 0,
+    totalPurchases: 0
   });
-  const [topCustomers, setTopCustomers] = useState<{ name: string; count: number; oil: number }[]>([]);
+  const [topCustomers, setTopCustomers] = useState<{name: string;count: number;oil: number;}[]>([]);
 
   useEffect(() => {
     if (user) fetchReports();
@@ -29,12 +29,12 @@ export default function Reports() {
 
   const fetchReports = async () => {
     const [invoicesRes, customersRes, expensesRes, salesRes, purchasesRes] = await Promise.all([
-      supabase.from("invoices").select("*").eq("user_id", user!.id).eq("season_id", activeSeason!.id),
-      supabase.from("customers").select("id", { count: "exact", head: true }).eq("user_id", user!.id).eq("season_id", activeSeason!.id),
-      supabase.from("expenses").select("amount").eq("user_id", user!.id).eq("season_id", activeSeason!.id),
-      supabase.from("oil_transactions").select("total_price").eq("user_id", user!.id).eq("season_id", activeSeason!.id).eq("type", "sell"),
-      supabase.from("oil_transactions").select("total_price").eq("user_id", user!.id).eq("season_id", activeSeason!.id).eq("type", "buy"),
-    ]);
+    supabase.from("invoices").select("*").eq("user_id", user!.id).eq("season_id", activeSeason!.id),
+    supabase.from("customers").select("id", { count: "exact", head: true }).eq("user_id", user!.id).eq("season_id", activeSeason!.id),
+    supabase.from("expenses").select("amount").eq("user_id", user!.id).eq("season_id", activeSeason!.id),
+    supabase.from("oil_transactions").select("total_price").eq("user_id", user!.id).eq("season_id", activeSeason!.id).eq("type", "sell"),
+    supabase.from("oil_transactions").select("total_price").eq("user_id", user!.id).eq("season_id", activeSeason!.id).eq("type", "buy")]
+    );
 
     const invoices = invoicesRes.data || [];
     const totalOilProduced = invoices.reduce((s, i: any) => s + Number(i.oil_produced), 0);
@@ -52,20 +52,20 @@ export default function Reports() {
       totalOilEarned,
       totalExpenses,
       totalSales,
-      totalPurchases,
+      totalPurchases
     });
 
     // Top customers
-    const customerMap: Record<string, { count: number; oil: number }> = {};
+    const customerMap: Record<string, {count: number;oil: number;}> = {};
     invoices.forEach((inv: any) => {
       if (!customerMap[inv.customer_name]) customerMap[inv.customer_name] = { count: 0, oil: 0 };
       customerMap[inv.customer_name].count++;
       customerMap[inv.customer_name].oil += Number(inv.oil_produced);
     });
-    const top = Object.entries(customerMap)
-      .map(([name, d]) => ({ name, ...d }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 10);
+    const top = Object.entries(customerMap).
+    map(([name, d]) => ({ name, ...d })).
+    sort((a, b) => b.count - a.count).
+    slice(0, 10);
     setTopCustomers(top);
   };
 
@@ -150,36 +150,36 @@ export default function Reports() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>أكثر الزبائن نشاطاً</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {topCustomers.length === 0 ? (
-              <p className="text-center py-8 text-muted-foreground">لا توجد بيانات</p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="text-right">الاسم</TableHead>
-                    <TableHead className="text-right">عدد الفواتير</TableHead>
-                    <TableHead className="text-right">الزيت المنتج</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {topCustomers.map((c, i) => (
-                    <TableRow key={i}>
-                      <TableCell className="text-right font-medium">{c.name}</TableCell>
-                      <TableCell className="text-right">{c.count}</TableCell>
-                      <TableCell className="text-right">{c.oil} كغم</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
       </div>
-    </div>
-  );
+    </div>);
+
 }
