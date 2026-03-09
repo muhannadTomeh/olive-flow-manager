@@ -27,12 +27,12 @@ export default function Settings() {
     return_percent: "",
     oil_sell_price: "",
     oil_buy_price: "",
-    cash_return_cost: "",
+    cash_return_cost: ""
   });
 
   const [inventoryForm, setInventoryForm] = useState({
     total_oil: "",
-    total_cash: "",
+    total_cash: ""
   });
 
   const [containerTypes, setContainerTypes] = useState<ContainerType[]>([]);
@@ -45,11 +45,11 @@ export default function Settings() {
         return_percent: String(settings.return_percent),
         oil_sell_price: String(settings.oil_sell_price),
         oil_buy_price: String(settings.oil_buy_price),
-        cash_return_cost: String(settings.cash_return_cost),
+        cash_return_cost: String(settings.cash_return_cost)
       });
       setInventoryForm({
         total_oil: String(inventory.total_oil),
-        total_cash: String(inventory.total_cash),
+        total_cash: String(inventory.total_cash)
       });
     }
   }, [loading, settings, inventory]);
@@ -60,12 +60,12 @@ export default function Settings() {
 
   const fetchContainerTypes = async () => {
     if (!user) return;
-    const { data } = await supabase
-      .from("container_types")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: true });
-    setContainerTypes((data as ContainerType[]) || []);
+    const { data } = await supabase.
+    from("container_types").
+    select("*").
+    eq("user_id", user.id).
+    order("created_at", { ascending: true });
+    setContainerTypes(data as ContainerType[] || []);
   };
 
   const addContainerType = async () => {
@@ -73,7 +73,7 @@ export default function Settings() {
     const { error } = await supabase.from("container_types").insert({
       user_id: user.id,
       name: newContainerName.trim(),
-      price: parseFloat(newContainerPrice),
+      price: parseFloat(newContainerPrice)
     });
     if (!error) {
       toast({ title: "تمت الإضافة", description: `تم إضافة نوع "${newContainerName}"` });
@@ -93,7 +93,7 @@ export default function Settings() {
       return_percent: parseFloat(form.return_percent),
       oil_sell_price: parseFloat(form.oil_sell_price),
       oil_buy_price: parseFloat(form.oil_buy_price),
-      cash_return_cost: parseFloat(form.cash_return_cost),
+      cash_return_cost: parseFloat(form.cash_return_cost)
     });
     if (!result?.error) {
       toast({ title: "تم الحفظ", description: "تم حفظ إعدادات المعصرة بنجاح" });
@@ -103,7 +103,7 @@ export default function Settings() {
   const saveInventory = async () => {
     const result = await updateInventory({
       total_oil: parseFloat(inventoryForm.total_oil),
-      total_cash: parseFloat(inventoryForm.total_cash),
+      total_cash: parseFloat(inventoryForm.total_cash)
     });
     if (!result?.error) {
       toast({ title: "تم الحفظ", description: "تم تحديث المخزون بنجاح" });
@@ -130,22 +130,22 @@ export default function Settings() {
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label>نسبة الرد (%)</Label>
-              <Input type="number" value={form.return_percent} onChange={(e) => setForm(p => ({ ...p, return_percent: e.target.value }))} min="0" step="0.1" />
+              <Input type="number" value={form.return_percent} onChange={(e) => setForm((p) => ({ ...p, return_percent: e.target.value }))} min="0" step="0.1" />
             </div>
             <div className="space-y-2">
               <Label>تكلفة الرد نقداً (شيكل/كغم)</Label>
-              <Input type="number" value={form.cash_return_cost} onChange={(e) => setForm(p => ({ ...p, cash_return_cost: e.target.value }))} min="0" step="0.1" />
+              <Input type="number" value={form.cash_return_cost} onChange={(e) => setForm((p) => ({ ...p, cash_return_cost: e.target.value }))} min="0" step="0.1" />
             </div>
           </div>
           <Separator />
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label>سعر بيع الزيت (شيكل/كغم)</Label>
-              <Input type="number" value={form.oil_sell_price} onChange={(e) => setForm(p => ({ ...p, oil_sell_price: e.target.value }))} min="0" step="0.1" />
+              <Input type="number" value={form.oil_sell_price} onChange={(e) => setForm((p) => ({ ...p, oil_sell_price: e.target.value }))} min="0" step="0.1" />
             </div>
             <div className="space-y-2">
               <Label>سعر شراء الزيت (شيكل/كغم)</Label>
-              <Input type="number" value={form.oil_buy_price} onChange={(e) => setForm(p => ({ ...p, oil_buy_price: e.target.value }))} min="0" step="0.1" />
+              <Input type="number" value={form.oil_buy_price} onChange={(e) => setForm((p) => ({ ...p, oil_buy_price: e.target.value }))} min="0" step="0.1" />
             </div>
           </div>
           <Button onClick={saveSettings}><Save className="h-4 w-4 me-2" />حفظ الإعدادات</Button>
@@ -158,10 +158,10 @@ export default function Settings() {
           <CardDescription>أضف أنواع التنكات المتوفرة في معصرتك مع أسعارها</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {containerTypes.length > 0 && (
-            <div className="space-y-2">
-              {containerTypes.map((ct) => (
-                <div key={ct.id} className="flex items-center justify-between border rounded-lg p-3">
+          {containerTypes.length > 0 &&
+          <div className="space-y-2">
+              {containerTypes.map((ct) =>
+            <div key={ct.id} className="flex items-center justify-between border rounded-lg p-3">
                   <div>
                     <span className="font-medium">{ct.name}</span>
                     <span className="text-muted-foreground me-2"> — {ct.price} شيكل</span>
@@ -170,9 +170,9 @@ export default function Settings() {
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
                 </div>
-              ))}
+            )}
             </div>
-          )}
+          }
           <Separator />
           <div className="flex gap-2 items-end">
             <div className="flex-1 space-y-1">
@@ -191,24 +191,24 @@ export default function Settings() {
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle>المخزون الحالي</CardTitle>
-          <CardDescription>تعديل كمية الزيت والكاش المتوفر يدوياً</CardDescription>
-        </CardHeader>
+        
+
+
+        
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label>كمية الزيت (كغم)</Label>
-              <Input type="number" value={inventoryForm.total_oil} onChange={(e) => setInventoryForm(p => ({ ...p, total_oil: e.target.value }))} min="0" step="0.1" />
+              <Input type="number" value={inventoryForm.total_oil} onChange={(e) => setInventoryForm((p) => ({ ...p, total_oil: e.target.value }))} min="0" step="0.1" />
             </div>
             <div className="space-y-2">
               <Label>الكاش المتوفر (شيكل)</Label>
-              <Input type="number" value={inventoryForm.total_cash} onChange={(e) => setInventoryForm(p => ({ ...p, total_cash: e.target.value }))} min="0" step="0.1" />
+              <Input type="number" value={inventoryForm.total_cash} onChange={(e) => setInventoryForm((p) => ({ ...p, total_cash: e.target.value }))} min="0" step="0.1" />
             </div>
           </div>
           <Button onClick={saveInventory}><Save className="h-4 w-4 me-2" />حفظ المخزون</Button>
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>);
+
 }
