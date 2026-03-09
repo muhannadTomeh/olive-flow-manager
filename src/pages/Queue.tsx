@@ -194,6 +194,10 @@ const Queue = () => {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
+                        <Button variant="secondary" onClick={() => startProcessing(customer.id)}>
+                          <Play className="h-4 w-4 me-1" />
+                          قيد العصر
+                        </Button>
                         <Button onClick={() => moveToInvoice(customer)} className="bg-primary hover:bg-primary/90">
                           <ArrowLeft className="h-4 w-4 me-1" />
                           إلى الفاتورة
