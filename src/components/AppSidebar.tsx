@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/sidebar"
 
 const items = [
-  { title: "لوحة التحكم", url: "/dashboard", icon: LayoutDashboard },
+  { title: "الرئيسية", url: "/dashboard", icon: LayoutDashboard },
   { title: "الطابور", url: "/queue", icon: Clock },
   { title: "حساب الرد", url: "/invoices", icon: Receipt },
   { title: "الزبائن", url: "/customers", icon: Users },
