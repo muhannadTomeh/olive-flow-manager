@@ -160,6 +160,7 @@ const Workers = () => {
       await supabase.from("workers").update({ total_earned: worker.total_earned + amount }).eq("id", selectedWorkerId);
       toast({ title: "تم التسجيل", description: `تم تسجيل ${val} ${worker.type === 'hourly' ? 'ساعة' : 'شفت'} للعامل ${worker.name} (${amount} ش)` });
       setWorkValue("");
+      setWorkNotes("");
       fetchWorkers();
       fetchRecords();
     }
