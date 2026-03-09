@@ -74,9 +74,10 @@ export default function Settings() {
   };
 
   const addContainerType = async () => {
-    if (!user || !newContainerName.trim() || !newContainerPrice) return;
+    if (!user || !activeSeason || !newContainerName.trim() || !newContainerPrice) return;
     const { error } = await supabase.from("container_types").insert({
       user_id: user.id,
+      season_id: activeSeason.id,
       name: newContainerName.trim(),
       price: parseFloat(newContainerPrice)
     });
