@@ -41,7 +41,7 @@ const Expenses = () => {
   }, [user]);
 
   const fetchExpenses = async () => {
-    const { data } = await supabase.from("expenses").select("*").eq("user_id", user!.id).order("created_at", { ascending: false });
+    const { data } = await supabase.from("expenses").select("*").eq("user_id", user!.id).eq("season_id", activeSeason!.id).order("created_at", { ascending: false });
     setExpenses((data as Expense[]) || []);
     setLoading(false);
   };
