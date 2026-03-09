@@ -434,6 +434,15 @@ const Workers = () => {
                         </div>
                       )}
 
+                      <div>
+                        <Label>ملاحظات (اختياري)</Label>
+                        <Input
+                          value={workNotes}
+                          onChange={(e) => setWorkNotes(e.target.value)}
+                          placeholder="أضف ملاحظة..."
+                        />
+                      </div>
+
                       <Button onClick={registerWork} className="w-full" disabled={!workValue || parseFloat(workValue) <= 0}>
                         <ClipboardList className="h-4 w-4 me-2" />تسجيل العمل
                       </Button>
