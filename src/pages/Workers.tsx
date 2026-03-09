@@ -116,6 +116,7 @@ const Workers = () => {
     }
     const { error } = await supabase.from("workers").insert({
       user_id: user!.id,
+      season_id: activeSeason!.id,
       name: newWorker.name,
       type: newWorker.type,
       phone: newWorker.phone || null,
