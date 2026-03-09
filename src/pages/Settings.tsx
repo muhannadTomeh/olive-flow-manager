@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSeason } from "@/contexts/SeasonContext";
 
 interface ContainerType {
   id: string;
@@ -20,7 +21,8 @@ interface ContainerType {
 
 export default function Settings() {
   const { user } = useAuth();
-  const { settings, loading, updateSettings } = useSettings();
+  const { activeSeason, refetch: refetchSeasons } = useSeason();
+  const { settings, loading } = useSettings();
   const { inventory, updateInventory } = useInventory();
   const { toast } = useToast();
 
@@ -61,19 +63,21 @@ export default function Settings() {
   }, [user]);
 
   const fetchContainerTypes = async () => {
-    if (!user) return;
+    if (!user || !activeSeason) return;
     const { data } = await supabase.
     from("container_types").
     select("*").
     eq("user_id", user.id).
+    eq("season_id", activeSeason.id).
     order("created_at", { ascending: true });
     setContainerTypes(data as ContainerType[] || []);
   };
 
   const addContainerType = async () => {
-    if (!user || !newContainerName.trim() || !newContainerPrice) return;
+    if (!user || !activeSeason || !newContainerName.trim() || !newContainerPrice) return;
     const { error } = await supabase.from("container_types").insert({
       user_id: user.id,
+      season_id: activeSeason.id,
       name: newContainerName.trim(),
       price: parseFloat(newContainerPrice)
     });
@@ -92,13 +96,15 @@ export default function Settings() {
   };
 
   const saveSettings = async () => {
-    const result = await updateSettings({
+    if (!activeSeason) return;
+    const { error } = await supabase.from("seasons").update({
       return_percent: parseFloat(form.return_percent),
       oil_sell_price: parseFloat(form.oil_sell_price),
       oil_buy_price: parseFloat(form.oil_buy_price),
-      cash_return_cost: parseFloat(form.cash_return_cost)
-    });
-    if (!result?.error) {
+      cash_return_cost: parseFloat(form.cash_return_cost),
+    }).eq("id", activeSeason.id);
+    if (!error) {
+      await refetchSeasons();
       toast({ title: "تم الحفظ", description: "تم حفظ إعدادات المعصرة بنجاح" });
     }
   };

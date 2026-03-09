@@ -9,6 +9,7 @@ import { Clock, UserPlus, ArrowLeft, Trash2, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSeason } from "@/contexts/SeasonContext";
 import { useNavigate } from "react-router-dom";
 
 interface QueueItem {
@@ -33,6 +34,7 @@ const Queue = () => {
   const [newCustomer, setNewCustomer] = useState({ name: "", phone: "", bags: "", notes: "" });
   const { toast } = useToast();
   const { user } = useAuth();
+  const { activeSeason } = useSeason();
   const navigate = useNavigate();
 
   const waiting = allItems.filter(i => i.status === "waiting");
@@ -47,6 +49,7 @@ const Queue = () => {
       .from("queue")
       .select("*")
       .eq("user_id", user!.id)
+      .eq("season_id", activeSeason!.id)
       .order("position", { ascending: true });
     setAllItems((data as QueueItem[]) || []);
     setLoading(false);
@@ -61,6 +64,7 @@ const Queue = () => {
     const maxPos = allItems.length > 0 ? Math.max(...allItems.map(q => q.position)) + 1 : 1;
     const { error } = await supabase.from("queue").insert({
       user_id: user!.id,
+      season_id: activeSeason!.id,
       name: newCustomer.name,
       phone: newCustomer.phone || null,
       bags: parseInt(newCustomer.bags),

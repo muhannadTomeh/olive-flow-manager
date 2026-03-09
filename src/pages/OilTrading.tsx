@@ -10,6 +10,7 @@ import { ShoppingCart, TrendingUp, TrendingDown, Package, DollarSign, Calendar }
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSeason } from "@/contexts/SeasonContext";
 import { useInventory } from "@/hooks/useInventory";
 
 interface Transaction {
@@ -25,6 +26,7 @@ interface Transaction {
 
 const OilTrading = () => {
   const { user } = useAuth();
+  const { activeSeason } = useSeason();
   const { toast } = useToast();
   const { inventory, updateInventory, refetch: refetchInventory } = useInventory();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -38,7 +40,7 @@ const OilTrading = () => {
   }, [user]);
 
   const fetchTransactions = async () => {
-    const { data } = await supabase.from("oil_transactions").select("*").eq("user_id", user!.id).order("created_at", { ascending: false });
+    const { data } = await supabase.from("oil_transactions").select("*").eq("user_id", user!.id).eq("season_id", activeSeason!.id).order("created_at", { ascending: false });
     setTransactions(data as Transaction[] || []);
     setLoading(false);
   };
@@ -63,7 +65,7 @@ const OilTrading = () => {
     }
 
     const { error } = await supabase.from("oil_transactions").insert({
-      user_id: user!.id, type: newTransaction.type, amount, price, total_price: totalPrice,
+      user_id: user!.id, season_id: activeSeason!.id, type: newTransaction.type, amount, price, total_price: totalPrice,
       party_name: newTransaction.partyName || null, notes: newTransaction.notes || null
     });
 

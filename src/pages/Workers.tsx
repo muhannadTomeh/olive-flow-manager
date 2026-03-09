@@ -11,6 +11,7 @@ import { UserCheck, Plus, DollarSign, Pencil, ClipboardList, Search, Filter } fr
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSeason } from "@/contexts/SeasonContext";
 import { useInventory } from "@/hooks/useInventory";
 
 interface Worker {
@@ -44,6 +45,7 @@ interface WorkerPayment {
 
 const Workers = () => {
   const { user } = useAuth();
+  const { activeSeason } = useSeason();
   const { toast } = useToast();
   const { inventory, updateInventory } = useInventory();
   const [workers, setWorkers] = useState<Worker[]>([]);
@@ -92,18 +94,18 @@ const Workers = () => {
   }, [user]);
 
   const fetchWorkers = async () => {
-    const { data } = await supabase.from("workers").select("*").eq("user_id", user!.id).order("created_at", { ascending: false });
+    const { data } = await supabase.from("workers").select("*").eq("user_id", user!.id).eq("season_id", activeSeason!.id).order("created_at", { ascending: false });
     setWorkers((data as Worker[]) || []);
     setLoading(false);
   };
 
   const fetchRecords = async () => {
-    const { data } = await supabase.from("work_records").select("*").eq("user_id", user!.id).order("created_at", { ascending: false });
+    const { data } = await supabase.from("work_records").select("*").eq("user_id", user!.id).eq("season_id", activeSeason!.id).order("created_at", { ascending: false });
     setWorkRecords((data as WorkRecord[]) || []);
   };
 
   const fetchPayments = async () => {
-    const { data } = await supabase.from("worker_payments").select("*").eq("user_id", user!.id).order("created_at", { ascending: false });
+    const { data } = await supabase.from("worker_payments").select("*").eq("user_id", user!.id).eq("season_id", activeSeason!.id).order("created_at", { ascending: false });
     setPayments((data as WorkerPayment[]) || []);
   };
 
@@ -114,6 +116,7 @@ const Workers = () => {
     }
     const { error } = await supabase.from("workers").insert({
       user_id: user!.id,
+      season_id: activeSeason!.id,
       name: newWorker.name,
       type: newWorker.type,
       phone: newWorker.phone || null,
@@ -156,7 +159,7 @@ const Workers = () => {
       return;
     }
     const { error } = await supabase.from("worker_payments").insert({
-      user_id: user!.id, worker_id: worker.id, amount, notes: notes.trim() || null,
+      user_id: user!.id, season_id: activeSeason!.id, worker_id: worker.id, amount, notes: notes.trim() || null,
     });
     if (!error) {
       await supabase.from("workers").update({ total_paid: worker.total_paid + amount }).eq("id", worker.id);
@@ -177,7 +180,7 @@ const Workers = () => {
     if (!worker) return;
     const val = parseFloat(workValue);
     const amount = worker.type === 'hourly' ? val * (worker.hourly_rate || 0) : val * (worker.shift_rate || 0);
-    const record: any = { user_id: user!.id, worker_id: selectedWorkerId, amount, notes: workNotes.trim() || null };
+    const record: any = { user_id: user!.id, season_id: activeSeason!.id, worker_id: selectedWorkerId, amount, notes: workNotes.trim() || null };
     if (worker.type === 'hourly') record.hours = val; else record.shifts = val;
 
     const { error } = await supabase.from("work_records").insert(record);

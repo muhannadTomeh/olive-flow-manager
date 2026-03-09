@@ -10,7 +10,8 @@ import {
   Settings,
   Bell,
   Clock,
-  Leaf
+  Leaf,
+  Calendar
 } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 
@@ -42,6 +43,7 @@ const items = [
 const settingsItems = [
   { title: "الإعدادات", url: "/settings", icon: Settings },
   { title: "الإشعارات", url: "/notifications", icon: Bell },
+  { title: "المواسم", url: "/seasons", icon: Calendar },
 ]
 
 export function AppSidebar() {

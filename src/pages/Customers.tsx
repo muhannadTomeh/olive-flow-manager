@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Users, Search, FileText, Phone, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSeason } from "@/contexts/SeasonContext";
 
 interface Customer {
   id: string;
@@ -26,6 +27,7 @@ interface InvoiceRecord {
 
 const Customers = () => {
   const { user } = useAuth();
+  const { activeSeason } = useSeason();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [invoices, setInvoices] = useState<InvoiceRecord[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -40,13 +42,13 @@ const Customers = () => {
   }, [user]);
 
   const fetchCustomers = async () => {
-    const { data } = await supabase.from("customers").select("*").eq("user_id", user!.id).order("created_at", { ascending: false });
+    const { data } = await supabase.from("customers").select("*").eq("user_id", user!.id).eq("season_id", activeSeason!.id).order("created_at", { ascending: false });
     setCustomers((data as Customer[]) || []);
     setLoading(false);
   };
 
   const fetchInvoices = async () => {
-    const { data } = await supabase.from("invoices").select("*").eq("user_id", user!.id).order("created_at", { ascending: false });
+    const { data } = await supabase.from("invoices").select("*").eq("user_id", user!.id).eq("season_id", activeSeason!.id).order("created_at", { ascending: false });
     setInvoices((data as InvoiceRecord[]) || []);
   };
 

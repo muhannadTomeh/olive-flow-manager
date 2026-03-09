@@ -6,8 +6,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AppSidebar } from "@/components/AppSidebar";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { SeasonProvider, useSeason } from "@/contexts/SeasonContext";
 import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { LogOut, Calendar } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import Queue from "./pages/Queue";
 import Invoices from "./pages/Invoices";
@@ -21,12 +24,15 @@ import Notifications from "./pages/Notifications";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import LandingPage from "./pages/LandingPage";
+import Seasons from "./pages/Seasons";
+import SeasonSetup from "./pages/SeasonSetup";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const ProtectedLayout = () => {
-  const { user, loading, signOut } = useAuth();
+const SeasonGate = () => {
+  const { activeSeason, loading } = useSeason();
+  const navigate = useNavigate();
 
   if (loading) {
     return (
@@ -36,8 +42,8 @@ const ProtectedLayout = () => {
     );
   }
 
-  if (!user) {
-    return <Navigate to="/auth" replace />;
+  if (!activeSeason) {
+    return <Navigate to="/seasons" replace />;
   }
 
   return (
@@ -45,21 +51,7 @@ const ProtectedLayout = () => {
       <div className="min-h-screen flex w-full bg-background" dir="rtl">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-14 border-b border-border bg-background/95 backdrop-blur-sm flex items-center justify-between px-4 sticky top-0 z-40">
-            <div className="flex items-center gap-4">
-              <h1 className="text-lg font-semibold text-foreground">نظام إدارة معاصر الزيتون</h1>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground hidden md:block">
-                {user.email}
-              </span>
-              <Button variant="ghost" size="sm" onClick={signOut}>
-                <LogOut className="h-4 w-4 me-1" />
-                خروج
-              </Button>
-              <SidebarTrigger />
-            </div>
-          </header>
+          <HeaderBar />
           <main className="flex-1 overflow-auto p-6">
             <Routes>
               <Route path="/dashboard" element={<Dashboard />} />
@@ -78,6 +70,67 @@ const ProtectedLayout = () => {
         </div>
       </div>
     </SidebarProvider>
+  );
+};
+
+const HeaderBar = () => {
+  const { user, signOut } = useAuth();
+  const { activeSeason } = useSeason();
+  const navigate = useNavigate();
+
+  return (
+    <header className="h-14 border-b border-border bg-background/95 backdrop-blur-sm flex items-center justify-between px-4 sticky top-0 z-40">
+      <div className="flex items-center gap-4">
+        <h1 className="text-lg font-semibold text-foreground">نظام إدارة معاصر الزيتون</h1>
+        {activeSeason && (
+          <Badge
+            variant="outline"
+            className="cursor-pointer hover:bg-accent text-sm px-3 py-1"
+            onClick={() => navigate("/seasons")}
+          >
+            <Calendar className="h-3.5 w-3.5 me-1.5" />
+            {activeSeason.name}
+          </Badge>
+        )}
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-muted-foreground hidden md:block">
+          {user?.email}
+        </span>
+        <Button variant="ghost" size="sm" onClick={signOut}>
+          <LogOut className="h-4 w-4 me-1" />
+          خروج
+        </Button>
+        <SidebarTrigger />
+      </div>
+    </header>
+  );
+};
+
+const ProtectedLayout = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background" dir="rtl">
+        <p className="text-muted-foreground text-lg">جارٍ التحميل...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  return (
+    <SeasonProvider>
+      <Routes>
+        <Route path="/seasons" element={<Seasons />} />
+        <Route path="/seasons/new" element={<SeasonSetup />} />
+        <Route path="/seasons/edit/:id" element={<SeasonSetup />} />
+        <Route path="/*" element={<SeasonGate />} />
+      </Routes>
+    </SeasonProvider>
   );
 };
 

@@ -14,6 +14,7 @@ import { useSettings } from "@/hooks/useSettings";
 import { useInventory } from "@/hooks/useInventory";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSeason } from "@/contexts/SeasonContext";
 import { useLocation } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
 
@@ -55,6 +56,7 @@ const paymentLabel = (type: string) => {
 
 const Invoices = () => {
   const { user } = useAuth();
+  const { activeSeason } = useSeason();
   const { settings } = useSettings();
   const { inventory, updateInventory, refetch: refetchInventory } = useInventory();
   const location = useLocation();
@@ -123,6 +125,7 @@ const Invoices = () => {
       .from("container_types")
       .select("*")
       .eq("user_id", user!.id)
+      .eq("season_id", activeSeason!.id)
       .order("created_at", { ascending: true });
     const types = (data as ContainerType[]) || [];
     setContainerTypes(types);
@@ -140,6 +143,7 @@ const Invoices = () => {
       .from("queue")
       .select("id, name, phone, position")
       .eq("user_id", user!.id)
+      .eq("season_id", activeSeason!.id)
       .eq("status", "waiting")
       .order("position", { ascending: true });
     setQueueCustomers(data || []);
@@ -150,6 +154,7 @@ const Invoices = () => {
       .from("invoices")
       .select("*")
       .eq("user_id", user!.id)
+      .eq("season_id", activeSeason!.id)
       .order("created_at", { ascending: false });
     setInvoices((data as InvoiceRecord[]) || []);
   };
@@ -186,6 +191,7 @@ const Invoices = () => {
       .from("customers")
       .select("id")
       .eq("user_id", user!.id)
+      .eq("season_id", activeSeason!.id)
       .eq("name", invoiceData.customerName)
       .maybeSingle();
 
@@ -194,7 +200,7 @@ const Invoices = () => {
     } else {
       const { data: newCust } = await supabase
         .from("customers")
-        .insert({ user_id: user!.id, name: invoiceData.customerName, phone: invoiceData.customerPhone || null })
+        .insert({ user_id: user!.id, season_id: activeSeason!.id, name: invoiceData.customerName, phone: invoiceData.customerPhone || null })
         .select("id")
         .single();
       if (newCust) customerId = newCust.id;
@@ -204,6 +210,7 @@ const Invoices = () => {
 
     const { error } = await supabase.from("invoices").insert({
       user_id: user!.id,
+      season_id: activeSeason!.id,
       customer_id: customerId,
       customer_name: invoiceData.customerName,
       oil_produced: invoiceData.oilProduced,

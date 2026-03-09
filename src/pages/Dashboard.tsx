@@ -3,12 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Package, DollarSign, Clock, Users, CheckCircle, Sprout, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSeason } from "@/contexts/SeasonContext";
 import { useInventory } from "@/hooks/useInventory";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const { activeSeason } = useSeason();
   const { inventory } = useInventory();
   const [showInventoryDetails, setShowInventoryDetails] = useState(false);
   const [stats, setStats] = useState({
@@ -25,9 +27,9 @@ export default function Dashboard() {
     const today = new Date().toISOString().split('T')[0];
 
     const [waitingRes, doneRes, expenseRes] = await Promise.all([
-    supabase.from("queue").select("id", { count: "exact", head: true }).eq("user_id", user!.id).neq("status", "done"),
-    supabase.from("queue").select("id", { count: "exact", head: true }).eq("user_id", user!.id).eq("status", "done"),
-    supabase.from("expenses").select("amount").eq("user_id", user!.id).gte("created_at", today)]
+    supabase.from("queue").select("id", { count: "exact", head: true }).eq("user_id", user!.id).eq("season_id", activeSeason!.id).neq("status", "done"),
+    supabase.from("queue").select("id", { count: "exact", head: true }).eq("user_id", user!.id).eq("season_id", activeSeason!.id).eq("status", "done"),
+    supabase.from("expenses").select("amount").eq("user_id", user!.id).eq("season_id", activeSeason!.id).gte("created_at", today)]
     );
 
     setStats({

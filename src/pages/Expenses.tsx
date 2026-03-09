@@ -10,6 +10,7 @@ import { Sprout, Plus, Calendar, DollarSign, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSeason } from "@/contexts/SeasonContext";
 import { useInventory } from "@/hooks/useInventory";
 
 interface Expense {
@@ -27,6 +28,7 @@ const EXPENSE_CATEGORIES = [
 
 const Expenses = () => {
   const { user } = useAuth();
+  const { activeSeason } = useSeason();
   const { toast } = useToast();
   const { inventory, updateInventory, refetch: refetchInventory } = useInventory();
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -39,7 +41,7 @@ const Expenses = () => {
   }, [user]);
 
   const fetchExpenses = async () => {
-    const { data } = await supabase.from("expenses").select("*").eq("user_id", user!.id).order("created_at", { ascending: false });
+    const { data } = await supabase.from("expenses").select("*").eq("user_id", user!.id).eq("season_id", activeSeason!.id).order("created_at", { ascending: false });
     setExpenses((data as Expense[]) || []);
     setLoading(false);
   };
@@ -52,7 +54,7 @@ const Expenses = () => {
     const amount = parseFloat(newExpense.amount);
 
     const { error } = await supabase.from("expenses").insert({
-      user_id: user!.id, category: newExpense.category, amount,
+      user_id: user!.id, season_id: activeSeason!.id, category: newExpense.category, amount,
       description: newExpense.description || null,
     });
 
