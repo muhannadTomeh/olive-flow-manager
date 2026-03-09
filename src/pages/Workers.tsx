@@ -159,7 +159,7 @@ const Workers = () => {
       return;
     }
     const { error } = await supabase.from("worker_payments").insert({
-      user_id: user!.id, worker_id: worker.id, amount, notes: notes.trim() || null,
+      user_id: user!.id, season_id: activeSeason!.id, worker_id: worker.id, amount, notes: notes.trim() || null,
     });
     if (!error) {
       await supabase.from("workers").update({ total_paid: worker.total_paid + amount }).eq("id", worker.id);
