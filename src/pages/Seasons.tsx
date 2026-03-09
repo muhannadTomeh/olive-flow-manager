@@ -1,9 +1,10 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import {
   Plus, LogIn, Pencil, Lock, Users, Package, DollarSign, Calendar, Leaf,
-  LogOut, BarChart3, AlertTriangle, Copy,
+  LogOut, BarChart3, AlertTriangle, Copy, ArrowRight,
 } from "lucide-react";
 import { useSeason, Season } from "@/contexts/SeasonContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -86,6 +87,11 @@ export default function Seasons() {
       {/* Header */}
       <header className="h-16 border-b border-border bg-card/80 backdrop-blur-md flex items-center justify-between px-4 md:px-6 sticky top-0 z-40">
         <div className="flex items-center gap-3">
+          <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")} className="gap-1.5">
+            <ArrowRight className="h-4 w-4" />
+            رجوع
+          </Button>
+          <Separator orientation="vertical" className="h-6 hidden sm:block" />
           <div className="w-9 h-9 olive-gradient rounded-xl flex items-center justify-center shadow-sm">
             <Leaf className="h-5 w-5 text-primary-foreground" />
           </div>
