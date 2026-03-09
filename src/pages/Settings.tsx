@@ -176,20 +176,29 @@ export default function Settings() {
             )}
             </div>
           }
-          <Separator />
-          <div className="flex gap-2 items-end">
-            <div className="flex-1 space-y-1">
-              <Label>اسم النوع</Label>
-              <Input value={newContainerName} onChange={(e) => setNewContainerName(e.target.value)} placeholder="مثال: بلاستيك، حديد..." />
-            </div>
-            <div className="w-32 space-y-1">
-              <Label>السعر (شيكل)</Label>
-              <Input type="number" value={newContainerPrice} onChange={(e) => setNewContainerPrice(e.target.value)} min="0" step="0.1" />
-            </div>
-            <Button onClick={addContainerType} disabled={!newContainerName.trim() || !newContainerPrice}>
-              <Plus className="h-4 w-4 me-1" />إضافة
-            </Button>
-          </div>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button><Plus className="h-4 w-4 me-1" />إضافة نوع تنكة</Button>
+            </DialogTrigger>
+            <DialogContent dir="rtl">
+              <DialogHeader>
+                <DialogTitle>إضافة نوع تنكة جديد</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 pt-2">
+                <div className="space-y-2">
+                  <Label>اسم النوع</Label>
+                  <Input value={newContainerName} onChange={(e) => setNewContainerName(e.target.value)} placeholder="مثال: بلاستيك، حديد..." />
+                </div>
+                <div className="space-y-2">
+                  <Label>السعر (شيكل)</Label>
+                  <Input type="number" value={newContainerPrice} onChange={(e) => setNewContainerPrice(e.target.value)} min="0" step="0.1" />
+                </div>
+                <Button onClick={addContainerType} disabled={!newContainerName.trim() || !newContainerPrice} className="w-full">
+                  <Plus className="h-4 w-4 me-1" />إضافة
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </CardContent>
       </Card>
 
