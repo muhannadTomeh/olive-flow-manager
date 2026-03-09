@@ -26,6 +26,7 @@ interface Transaction {
 
 const OilTrading = () => {
   const { user } = useAuth();
+  const { activeSeason } = useSeason();
   const { toast } = useToast();
   const { inventory, updateInventory, refetch: refetchInventory } = useInventory();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
