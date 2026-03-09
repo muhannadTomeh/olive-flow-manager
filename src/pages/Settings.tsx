@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Settings as SettingsIcon, Save, Plus, Trash2 } from "lucide-react";
 import { useSettings } from "@/hooks/useSettings";
 import { useInventory } from "@/hooks/useInventory";
@@ -38,6 +39,7 @@ export default function Settings() {
   const [containerTypes, setContainerTypes] = useState<ContainerType[]>([]);
   const [newContainerName, setNewContainerName] = useState("");
   const [newContainerPrice, setNewContainerPrice] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     if (!loading) {
@@ -79,6 +81,7 @@ export default function Settings() {
       toast({ title: "تمت الإضافة", description: `تم إضافة نوع "${newContainerName}"` });
       setNewContainerName("");
       setNewContainerPrice("");
+      setDialogOpen(false);
       fetchContainerTypes();
     }
   };
@@ -173,20 +176,29 @@ export default function Settings() {
             )}
             </div>
           }
-          <Separator />
-          <div className="flex gap-2 items-end">
-            <div className="flex-1 space-y-1">
-              <Label>اسم النوع</Label>
-              <Input value={newContainerName} onChange={(e) => setNewContainerName(e.target.value)} placeholder="مثال: بلاستيك، حديد..." />
-            </div>
-            <div className="w-32 space-y-1">
-              <Label>السعر (شيكل)</Label>
-              <Input type="number" value={newContainerPrice} onChange={(e) => setNewContainerPrice(e.target.value)} min="0" step="0.1" />
-            </div>
-            <Button onClick={addContainerType} disabled={!newContainerName.trim() || !newContainerPrice}>
-              <Plus className="h-4 w-4 me-1" />إضافة
-            </Button>
-          </div>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button><Plus className="h-4 w-4 me-1" />إضافة نوع تنكة</Button>
+            </DialogTrigger>
+            <DialogContent dir="rtl">
+              <DialogHeader>
+                <DialogTitle>إضافة نوع تنكة جديد</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 pt-2">
+                <div className="space-y-2">
+                  <Label>اسم النوع</Label>
+                  <Input value={newContainerName} onChange={(e) => setNewContainerName(e.target.value)} placeholder="مثال: بلاستيك، حديد..." />
+                </div>
+                <div className="space-y-2">
+                  <Label>السعر (شيكل)</Label>
+                  <Input type="number" value={newContainerPrice} onChange={(e) => setNewContainerPrice(e.target.value)} min="0" step="0.1" />
+                </div>
+                <Button onClick={addContainerType} disabled={!newContainerName.trim() || !newContainerPrice} className="w-full">
+                  <Plus className="h-4 w-4 me-1" />إضافة
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </CardContent>
       </Card>
 
