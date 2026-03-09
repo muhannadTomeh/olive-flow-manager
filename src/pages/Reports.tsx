@@ -9,6 +9,7 @@ import { useInventory } from "@/hooks/useInventory";
 
 export default function Reports() {
   const { user } = useAuth();
+  const { activeSeason } = useSeason();
   const { inventory } = useInventory();
   const [stats, setStats] = useState({
     totalInvoices: 0,
