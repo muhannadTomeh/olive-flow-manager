@@ -1,9 +1,10 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import {
   Plus, LogIn, Pencil, Lock, Users, Package, DollarSign, Calendar, Leaf,
-  LogOut, BarChart3, AlertTriangle, Copy,
+  LogOut, BarChart3, AlertTriangle, Copy, ArrowRight,
 } from "lucide-react";
 import { useSeason, Season } from "@/contexts/SeasonContext";
 import { useAuth } from "@/contexts/AuthContext";
