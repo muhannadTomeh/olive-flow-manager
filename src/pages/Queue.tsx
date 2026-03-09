@@ -33,6 +33,7 @@ const Queue = () => {
   const [allItems, setAllItems] = useState<QueueItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [newCustomer, setNewCustomer] = useState({ name: "", phone: "", bags: "", notes: "" });
+  const [dialogOpen, setDialogOpen] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
   const { activeSeason } = useSeason();
