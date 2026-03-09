@@ -10,6 +10,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const { activeSeason } = useSeason();
   const { inventory } = useInventory();
   const [showInventoryDetails, setShowInventoryDetails] = useState(false);
   const [stats, setStats] = useState({
