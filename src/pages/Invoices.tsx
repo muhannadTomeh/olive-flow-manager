@@ -210,6 +210,7 @@ const Invoices = () => {
 
     const { error } = await supabase.from("invoices").insert({
       user_id: user!.id,
+      season_id: activeSeason!.id,
       customer_id: customerId,
       customer_name: invoiceData.customerName,
       oil_produced: invoiceData.oilProduced,
