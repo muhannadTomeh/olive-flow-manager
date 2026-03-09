@@ -39,7 +39,7 @@ const OilTrading = () => {
 
   const fetchTransactions = async () => {
     const { data } = await supabase.from("oil_transactions").select("*").eq("user_id", user!.id).order("created_at", { ascending: false });
-    setTransactions((data as Transaction[]) || []);
+    setTransactions(data as Transaction[] || []);
     setLoading(false);
   };
 
@@ -64,13 +64,13 @@ const OilTrading = () => {
 
     const { error } = await supabase.from("oil_transactions").insert({
       user_id: user!.id, type: newTransaction.type, amount, price, total_price: totalPrice,
-      party_name: newTransaction.partyName || null, notes: newTransaction.notes || null,
+      party_name: newTransaction.partyName || null, notes: newTransaction.notes || null
     });
 
     if (!error) {
       await updateInventory({
         total_oil: newTransaction.type === 'buy' ? inventory.total_oil + amount : inventory.total_oil - amount,
-        total_cash: newTransaction.type === 'buy' ? inventory.total_cash - totalPrice : inventory.total_cash + totalPrice,
+        total_cash: newTransaction.type === 'buy' ? inventory.total_cash - totalPrice : inventory.total_cash + totalPrice
       });
       setNewTransaction({ type: 'buy', amount: "", price: "", partyName: "", notes: "" });
       toast({ title: "تمت العملية", description: `تم تسجيل عملية ${newTransaction.type === 'buy' ? 'الشراء' : 'البيع'} بنجاح` });
@@ -86,30 +86,30 @@ const OilTrading = () => {
         <h1 className="text-3xl font-bold text-foreground">بيع وشراء الزيت</h1>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <Package className="h-5 w-5 text-primary" />
-              <div>
-                <div className="text-2xl font-bold text-primary">{inventory.total_oil} كغم</div>
-                <p className="text-sm text-muted-foreground">مخزون الزيت</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-primary" />
-              <div>
-                <div className="text-2xl font-bold text-primary">{inventory.total_cash} ش</div>
-                <p className="text-sm text-muted-foreground">الكاش المتوفر</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
 
       <Tabs defaultValue="add-transaction" className="w-full" dir="rtl">
         <TabsList className="grid w-full grid-cols-2">
@@ -128,11 +128,11 @@ const OilTrading = () => {
                 <Label>نوع العملية</Label>
                 <div className="flex gap-4 mt-2">
                   <label className="flex items-center gap-2">
-                    <input type="radio" name="txType" value="buy" checked={newTransaction.type === 'buy'} onChange={() => setNewTransaction(p => ({ ...p, type: 'buy' }))} />
+                    <input type="radio" name="txType" value="buy" checked={newTransaction.type === 'buy'} onChange={() => setNewTransaction((p) => ({ ...p, type: 'buy' }))} />
                     شراء زيت
                   </label>
                   <label className="flex items-center gap-2">
-                    <input type="radio" name="txType" value="sell" checked={newTransaction.type === 'sell'} onChange={() => setNewTransaction(p => ({ ...p, type: 'sell' }))} />
+                    <input type="radio" name="txType" value="sell" checked={newTransaction.type === 'sell'} onChange={() => setNewTransaction((p) => ({ ...p, type: 'sell' }))} />
                     بيع زيت
                   </label>
                 </div>
@@ -140,25 +140,25 @@ const OilTrading = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label>الكمية (كغم)</Label>
-                  <Input type="number" value={newTransaction.amount} onChange={(e) => setNewTransaction(p => ({ ...p, amount: e.target.value }))} placeholder="الكمية" min="0" step="0.1" />
+                  <Input type="number" value={newTransaction.amount} onChange={(e) => setNewTransaction((p) => ({ ...p, amount: e.target.value }))} placeholder="الكمية" min="0" step="0.1" />
                 </div>
                 <div>
                   <Label>السعر (شيكل/كغم)</Label>
-                  <Input type="number" value={newTransaction.price} onChange={(e) => setNewTransaction(p => ({ ...p, price: e.target.value }))} placeholder="السعر" min="0" step="0.1" />
+                  <Input type="number" value={newTransaction.price} onChange={(e) => setNewTransaction((p) => ({ ...p, price: e.target.value }))} placeholder="السعر" min="0" step="0.1" />
                 </div>
               </div>
-              {newTransaction.amount && newTransaction.price && (
-                <div className="p-4 bg-accent/50 rounded-lg">
+              {newTransaction.amount && newTransaction.price &&
+              <div className="p-4 bg-accent/50 rounded-lg">
                   <p className="text-lg font-semibold">الإجمالي: {(parseFloat(newTransaction.amount) * parseFloat(newTransaction.price)).toFixed(2)} شيكل</p>
                 </div>
-              )}
+              }
               <div>
                 <Label>{newTransaction.type === 'buy' ? 'اسم المورد' : 'اسم المشتري'} (اختياري)</Label>
-                <Input value={newTransaction.partyName} onChange={(e) => setNewTransaction(p => ({ ...p, partyName: e.target.value }))} placeholder={newTransaction.type === 'buy' ? 'اسم المورد' : 'اسم المشتري'} />
+                <Input value={newTransaction.partyName} onChange={(e) => setNewTransaction((p) => ({ ...p, partyName: e.target.value }))} placeholder={newTransaction.type === 'buy' ? 'اسم المورد' : 'اسم المشتري'} />
               </div>
               <div>
                 <Label>ملاحظات (اختياري)</Label>
-                <Input value={newTransaction.notes} onChange={(e) => setNewTransaction(p => ({ ...p, notes: e.target.value }))} placeholder="ملاحظات إضافية" />
+                <Input value={newTransaction.notes} onChange={(e) => setNewTransaction((p) => ({ ...p, notes: e.target.value }))} placeholder="ملاحظات إضافية" />
               </div>
               <Button onClick={addTransaction} className="w-full">
                 {newTransaction.type === 'buy' ? <TrendingDown className="h-4 w-4 me-2" /> : <TrendingUp className="h-4 w-4 me-2" />}
@@ -174,13 +174,13 @@ const OilTrading = () => {
               <CardTitle>سجل عمليات البيع والشراء</CardTitle>
             </CardHeader>
             <CardContent>
-              {transactions.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
+              {transactions.length === 0 ?
+              <div className="text-center py-12 text-muted-foreground">
                   <ShoppingCart className="h-16 w-16 mx-auto mb-4 opacity-50" />
                   <p className="text-lg">لا توجد عمليات مسجلة</p>
-                </div>
-              ) : (
-                <Table>
+                </div> :
+
+              <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead className="text-right">التاريخ</TableHead>
@@ -192,8 +192,8 @@ const OilTrading = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {transactions.map((tx) => (
-                      <TableRow key={tx.id}>
+                    {transactions.map((tx) =>
+                  <TableRow key={tx.id}>
                         <TableCell className="text-right">
                           <div className="flex items-center gap-1"><Calendar className="h-4 w-4" />{new Date(tx.created_at).toLocaleDateString('ar-SA')}</div>
                         </TableCell>
@@ -207,16 +207,16 @@ const OilTrading = () => {
                         <TableCell className="text-right font-semibold">{tx.total_price} ش</TableCell>
                         <TableCell className="text-right">{tx.party_name || '-'}</TableCell>
                       </TableRow>
-                    ))}
+                  )}
                   </TableBody>
                 </Table>
-              )}
+              }
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>);
+
 };
 
 export default OilTrading;
