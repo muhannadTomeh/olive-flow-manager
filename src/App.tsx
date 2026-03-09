@@ -9,8 +9,15 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { SeasonProvider, useSeason } from "@/contexts/SeasonContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Calendar } from "lucide-react";
+import { LogOut, Calendar, Plus, Users, Receipt, Wallet, User, ChevronDown, Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import Dashboard from "./pages/Dashboard";
 import Queue from "./pages/Queue";
 import Invoices from "./pages/Invoices";
@@ -32,12 +39,14 @@ const queryClient = new QueryClient();
 
 const SeasonGate = () => {
   const { activeSeason, loading } = useSeason();
-  const navigate = useNavigate();
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background" dir="rtl">
-        <p className="text-muted-foreground text-lg">جارٍ التحميل...</p>
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-muted-foreground text-sm">جارٍ التحميل...</p>
+        </div>
       </div>
     );
   }
@@ -52,7 +61,7 @@ const SeasonGate = () => {
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
           <HeaderBar />
-          <main className="flex-1 overflow-auto p-6">
+          <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
             <Routes>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/queue" element={<Queue />} />
@@ -79,29 +88,76 @@ const HeaderBar = () => {
   const navigate = useNavigate();
 
   return (
-    <header className="h-14 border-b border-border bg-background/95 backdrop-blur-sm flex items-center justify-between px-4 sticky top-0 z-40">
-      <div className="flex items-center gap-4">
-        <h1 className="text-lg font-semibold text-foreground">نظام إدارة معاصر الزيتون</h1>
+    <header className="h-14 border-b border-border/50 bg-card/80 backdrop-blur-md flex items-center justify-between px-4 sticky top-0 z-40">
+      <div className="flex items-center gap-3">
+        <SidebarTrigger className="md:hidden">
+          <Menu className="h-5 w-5" />
+        </SidebarTrigger>
+        
         {activeSeason && (
           <Badge
-            variant="outline"
-            className="cursor-pointer hover:bg-accent text-sm px-3 py-1"
+            variant="secondary"
+            className="cursor-pointer hover:bg-primary/10 text-xs font-medium px-3 py-1.5 rounded-full border border-primary/20 transition-colors"
             onClick={() => navigate("/seasons")}
           >
-            <Calendar className="h-3.5 w-3.5 me-1.5" />
-            {activeSeason.name}
+            <Calendar className="h-3 w-3 me-1.5 text-primary" />
+            <span className="text-primary">{activeSeason.name}</span>
           </Badge>
         )}
       </div>
+
       <div className="flex items-center gap-2">
-        <span className="text-sm text-muted-foreground hidden md:block">
-          {user?.email}
-        </span>
-        <Button variant="ghost" size="sm" onClick={signOut}>
-          <LogOut className="h-4 w-4 me-1" />
-          خروج
-        </Button>
-        <SidebarTrigger />
+        {/* Quick Add */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button size="sm" className="rounded-full gap-1.5 shadow-sm">
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline">إضافة سريعة</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-48">
+            <DropdownMenuItem onClick={() => navigate("/customers")} className="gap-2 py-2.5">
+              <Users className="h-4 w-4 text-primary" />
+              إضافة زبون
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/invoices")} className="gap-2 py-2.5">
+              <Receipt className="h-4 w-4 text-primary" />
+              إنشاء فاتورة
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/expenses")} className="gap-2 py-2.5">
+              <Wallet className="h-4 w-4 text-primary" />
+              إضافة مصروف
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* User Menu */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="gap-1.5 rounded-full">
+              <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
+                <User className="h-3.5 w-3.5 text-primary" />
+              </div>
+              <ChevronDown className="h-3 w-3 text-muted-foreground hidden sm:block" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-56">
+            <div className="px-3 py-2">
+              <p className="text-sm font-medium truncate">{user?.email}</p>
+              <p className="text-xs text-muted-foreground">مالك المعصرة</p>
+            </div>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => navigate("/settings")} className="gap-2">
+              <User className="h-4 w-4" />
+              الإعدادات
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={signOut} className="gap-2 text-destructive focus:text-destructive">
+              <LogOut className="h-4 w-4" />
+              تسجيل الخروج
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );
@@ -113,7 +169,10 @@ const ProtectedLayout = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background" dir="rtl">
-        <p className="text-muted-foreground text-lg">جارٍ التحميل...</p>
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-muted-foreground text-sm">جارٍ التحميل...</p>
+        </div>
       </div>
     );
   }
