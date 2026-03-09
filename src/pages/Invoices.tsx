@@ -125,6 +125,7 @@ const Invoices = () => {
       .from("container_types")
       .select("*")
       .eq("user_id", user!.id)
+      .eq("season_id", activeSeason!.id)
       .order("created_at", { ascending: true });
     const types = (data as ContainerType[]) || [];
     setContainerTypes(types);
