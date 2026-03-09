@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { FileText, DollarSign, Users, Package, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSeason } from "@/contexts/SeasonContext";
 import { useInventory } from "@/hooks/useInventory";
 
 export default function Reports() {
