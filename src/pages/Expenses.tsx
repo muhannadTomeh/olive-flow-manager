@@ -54,7 +54,7 @@ const Expenses = () => {
     const amount = parseFloat(newExpense.amount);
 
     const { error } = await supabase.from("expenses").insert({
-      user_id: user!.id, category: newExpense.category, amount,
+      user_id: user!.id, season_id: activeSeason!.id, category: newExpense.category, amount,
       description: newExpense.description || null,
     });
 

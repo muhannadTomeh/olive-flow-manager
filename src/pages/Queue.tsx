@@ -64,6 +64,7 @@ const Queue = () => {
     const maxPos = allItems.length > 0 ? Math.max(...allItems.map(q => q.position)) + 1 : 1;
     const { error } = await supabase.from("queue").insert({
       user_id: user!.id,
+      season_id: activeSeason!.id,
       name: newCustomer.name,
       phone: newCustomer.phone || null,
       bags: parseInt(newCustomer.bags),

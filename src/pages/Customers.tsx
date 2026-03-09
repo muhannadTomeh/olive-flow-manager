@@ -48,7 +48,7 @@ const Customers = () => {
   };
 
   const fetchInvoices = async () => {
-    const { data } = await supabase.from("invoices").select("*").eq("user_id", user!.id).order("created_at", { ascending: false });
+    const { data } = await supabase.from("invoices").select("*").eq("user_id", user!.id).eq("season_id", activeSeason!.id).order("created_at", { ascending: false });
     setInvoices((data as InvoiceRecord[]) || []);
   };
 

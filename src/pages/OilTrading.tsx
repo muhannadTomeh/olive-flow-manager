@@ -65,7 +65,7 @@ const OilTrading = () => {
     }
 
     const { error } = await supabase.from("oil_transactions").insert({
-      user_id: user!.id, type: newTransaction.type, amount, price, total_price: totalPrice,
+      user_id: user!.id, season_id: activeSeason!.id, type: newTransaction.type, amount, price, total_price: totalPrice,
       party_name: newTransaction.partyName || null, notes: newTransaction.notes || null
     });
 
