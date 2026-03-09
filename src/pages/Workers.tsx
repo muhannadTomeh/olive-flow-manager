@@ -50,6 +50,7 @@ const Workers = () => {
   // Work registration state
   const [selectedWorkerId, setSelectedWorkerId] = useState<string>("");
   const [workValue, setWorkValue] = useState("");
+  const [workNotes, setWorkNotes] = useState("");
 
   useEffect(() => {
     if (user) { fetchWorkers(); fetchRecords(); }
