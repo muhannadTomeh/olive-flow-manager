@@ -115,7 +115,7 @@ const HeaderBar = () => {
               <span className="hidden sm:inline">إضافة سريعة</span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-48" dir="rtl">
+          <DropdownMenuContent align="start" className="w-48">
             <DropdownMenuItem onClick={() => navigate("/customers")} className="gap-2 py-2.5">
               <Users className="h-4 w-4 text-primary" />
               إضافة زبون
