@@ -14,7 +14,7 @@ export default function Dashboard() {
   const [stats, setStats] = useState({
     waitingCount: 0,
     doneCount: 0,
-    todayExpenses: 0,
+    todayExpenses: 0
   });
 
   useEffect(() => {
@@ -25,23 +25,23 @@ export default function Dashboard() {
     const today = new Date().toISOString().split('T')[0];
 
     const [waitingRes, doneRes, expenseRes] = await Promise.all([
-      supabase.from("queue").select("id", { count: "exact", head: true }).eq("user_id", user!.id).neq("status", "done"),
-      supabase.from("queue").select("id", { count: "exact", head: true }).eq("user_id", user!.id).eq("status", "done"),
-      supabase.from("expenses").select("amount").eq("user_id", user!.id).gte("created_at", today),
-    ]);
+    supabase.from("queue").select("id", { count: "exact", head: true }).eq("user_id", user!.id).neq("status", "done"),
+    supabase.from("queue").select("id", { count: "exact", head: true }).eq("user_id", user!.id).eq("status", "done"),
+    supabase.from("expenses").select("amount").eq("user_id", user!.id).gte("created_at", today)]
+    );
 
     setStats({
       waitingCount: waitingRes.count || 0,
       doneCount: doneRes.count || 0,
-      todayExpenses: (expenseRes.data || []).reduce((s: number, e: any) => s + Number(e.amount), 0),
+      todayExpenses: (expenseRes.data || []).reduce((s: number, e: any) => s + Number(e.amount), 0)
     });
   };
 
   const cards = [
-    { title: "الزبائن في الطابور", value: `${stats.waitingCount}`, desc: "ينتظرون (بدون المنجزين)", icon: Clock },
-    { title: "الزبائن المنجزين", value: `${stats.doneCount}`, desc: "تم إنجاز طلباتهم", icon: CheckCircle },
-    { title: "مصاريف اليوم", value: `${stats.todayExpenses} ش`, desc: "تم صرفها اليوم", icon: Sprout },
-  ];
+  { title: "الزبائن في الطابور", value: `${stats.waitingCount}`, desc: "ينتظرون (بدون المنجزين)", icon: Clock },
+  { title: "الزبائن المنجزين", value: `${stats.doneCount}`, desc: "تم إنجاز طلباتهم", icon: CheckCircle },
+  { title: "مصاريف اليوم", value: `${stats.todayExpenses} ش`, desc: "تم صرفها اليوم", icon: Sprout }];
+
 
   return (
     <div className="space-y-6" dir="rtl">
@@ -51,8 +51,8 @@ export default function Dashboard() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {cards.map((card, i) => (
-          <Card key={i}>
+        {cards.map((card, i) =>
+        <Card key={i}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">{card.title}</CardTitle>
               <card.icon className="h-5 w-5 text-muted-foreground" />
@@ -62,31 +62,31 @@ export default function Dashboard() {
               <p className="text-xs text-muted-foreground">{card.desc}</p>
             </CardContent>
           </Card>
-        ))}
+        )}
       </div>
 
       {/* المخزون */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0">
-          <CardTitle className="text-lg font-bold flex items-center gap-2">
-            <Package className="h-5 w-5 text-primary" />
-            المخزون
-          </CardTitle>
-          <Button
-            variant="ghost"
-            size="sm"
-            type="button"
-            className="cursor-pointer z-10"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setShowInventoryDetails((prev) => !prev);
-            }}
-          >
-            {showInventoryDetails ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-            <span className="mr-1 text-sm">{showInventoryDetails ? "إخفاء" : "تفاصيل"}</span>
-          </Button>
-        </CardHeader>
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
         <CardContent>
           <div className="grid gap-4 md:grid-cols-3">
             <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
@@ -112,8 +112,8 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {showInventoryDetails && (
-            <div className="mt-4 p-4 rounded-lg border border-border bg-muted/30 space-y-3">
+          {showInventoryDetails &&
+          <div className="mt-4 p-4 rounded-lg border border-border bg-muted/30 space-y-3">
               <h4 className="font-semibold text-foreground">تفاصيل المخزون</h4>
               <div className="grid gap-2 text-sm">
                 <div className="flex justify-between py-1 border-b border-border">
@@ -130,9 +130,9 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
-          )}
+          }
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>);
+
 }
