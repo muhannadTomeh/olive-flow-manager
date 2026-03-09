@@ -11,6 +11,7 @@ import { UserCheck, Plus, DollarSign, Pencil, ClipboardList, Search, Filter } fr
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSeason } from "@/contexts/SeasonContext";
 import { useInventory } from "@/hooks/useInventory";
 
 interface Worker {
