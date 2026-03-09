@@ -75,7 +75,13 @@ export default function Dashboard() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setShowInventoryDetails(!showInventoryDetails)}
+            type="button"
+            className="cursor-pointer z-10"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setShowInventoryDetails((prev) => !prev);
+            }}
           >
             {showInventoryDetails ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
             <span className="mr-1 text-sm">{showInventoryDetails ? "إخفاء" : "تفاصيل"}</span>
