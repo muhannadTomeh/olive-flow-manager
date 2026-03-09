@@ -14,6 +14,7 @@ import { useSettings } from "@/hooks/useSettings";
 import { useInventory } from "@/hooks/useInventory";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSeason } from "@/contexts/SeasonContext";
 import { useLocation } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
 
