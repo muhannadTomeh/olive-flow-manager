@@ -87,51 +87,51 @@ export default function Dashboard() {
 
 
         
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-              <Package className="h-8 w-8 text-primary" />
-              <div>
-                <p className="text-sm text-muted-foreground">مخزون الزيت</p>
-                <p className="text-xl font-bold">{inventory.total_oil.toFixed(2)} كغم</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-              <DollarSign className="h-8 w-8 text-primary" />
-              <div>
-                <p className="text-sm text-muted-foreground">الكاش</p>
-                <p className="text-xl font-bold">{inventory.total_cash.toFixed(2)} ش</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-              <Package className="h-8 w-8 text-primary" />
-              <div>
-                <p className="text-sm text-muted-foreground">تنك الزيت</p>
-                <p className="text-xl font-bold">{inventory.total_oil.toFixed(2)} كغم</p>
-              </div>
-            </div>
-          </div>
+        
 
-          {showInventoryDetails &&
-          <div className="mt-4 p-4 rounded-lg border border-border bg-muted/30 space-y-3">
-              <h4 className="font-semibold text-foreground">تفاصيل المخزون</h4>
-              <div className="grid gap-2 text-sm">
-                <div className="flex justify-between py-1 border-b border-border">
-                  <span className="text-muted-foreground">مخزون الزيت الكلي</span>
-                  <span className="font-medium">{inventory.total_oil.toFixed(2)} كغم</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-border">
-                  <span className="text-muted-foreground">الكاش المتوفر</span>
-                  <span className="font-medium">{inventory.total_cash.toFixed(2)} ش</span>
-                </div>
-                <div className="flex justify-between py-1">
-                  <span className="text-muted-foreground">تنك الزيت</span>
-                  <span className="font-medium">{inventory.total_oil.toFixed(2)} كغم</span>
-                </div>
-              </div>
-            </div>
-          }
-        </CardContent>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
       </Card>
     </div>);
 
