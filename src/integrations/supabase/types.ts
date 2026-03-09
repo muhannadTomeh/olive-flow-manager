@@ -316,6 +316,7 @@ export type Database = {
           created_at: string
           hours: number | null
           id: string
+          notes: string | null
           shifts: number | null
           user_id: string
           worker_id: string
@@ -325,6 +326,7 @@ export type Database = {
           created_at?: string
           hours?: number | null
           id?: string
+          notes?: string | null
           shifts?: number | null
           user_id: string
           worker_id: string
@@ -334,6 +336,7 @@ export type Database = {
           created_at?: string
           hours?: number | null
           id?: string
+          notes?: string | null
           shifts?: number | null
           user_id?: string
           worker_id?: string
