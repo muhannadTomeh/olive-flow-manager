@@ -45,6 +45,7 @@ interface WorkerPayment {
 
 const Workers = () => {
   const { user } = useAuth();
+  const { activeSeason } = useSeason();
   const { toast } = useToast();
   const { inventory, updateInventory } = useInventory();
   const [workers, setWorkers] = useState<Worker[]>([]);
