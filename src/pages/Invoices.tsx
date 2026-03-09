@@ -143,6 +143,7 @@ const Invoices = () => {
       .from("queue")
       .select("id, name, phone, position")
       .eq("user_id", user!.id)
+      .eq("season_id", activeSeason!.id)
       .eq("status", "waiting")
       .order("position", { ascending: true });
     setQueueCustomers(data || []);
