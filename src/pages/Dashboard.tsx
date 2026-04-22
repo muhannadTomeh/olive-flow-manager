@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Clock, CheckCircle, Sprout, Users, Plus, Receipt, 
-  Wallet, ArrowLeft, Droplets, DollarSign, UserPlus
+import {
+  Clock, CheckCircle, Sprout, Users, Plus, Receipt,
+  Wallet, ArrowLeft, Droplets, DollarSign, UserPlus, Play,
 } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSeason } from "@/contexts/SeasonContext";
@@ -120,10 +121,38 @@ export default function Dashboard() {
       <Card className="border-0 shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between pb-3">
           <CardTitle className="text-base font-semibold">الطابور</CardTitle>
-          <Button variant="ghost" size="sm" onClick={() => navigate("/queue")} className="gap-1 text-primary text-xs">
-            عرض الكل
-            <ArrowLeft className="h-3.5 w-3.5" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="default"
+              size="sm"
+              onClick={async () => {
+                if (queuePreview.length === 0) return;
+                const { data: existingProcessing } = await supabase
+                  .from("queue")
+                  .select("id")
+                  .eq("user_id", user!.id)
+                  .eq("season_id", activeSeason!.id)
+                  .eq("status", "processing")
+                  .maybeSingle();
+                if (existingProcessing) {
+                  toast.error("يوجد زبون قيد العصر بالفعل");
+                  return;
+                }
+                await supabase.from("queue").update({ status: "processing" }).eq("id", queuePreview[0].id);
+                toast.success(`تم بدء عصر ${queuePreview[0].name}`);
+                fetchQueuePreview();
+              }}
+              disabled={queuePreview.length === 0}
+              className="gap-1 text-xs"
+            >
+              <Play className="h-3.5 w-3.5" />
+              ابدأ التالي
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => navigate("/queue")} className="gap-1 text-primary text-xs">
+              عرض الكل
+              <ArrowLeft className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           {queuePreview.length === 0 ? (

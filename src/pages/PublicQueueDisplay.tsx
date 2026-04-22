@@ -10,6 +10,15 @@ interface QueueItem {
   bags: number;
 }
 
+interface SeasonInfo {
+  name: string;
+  oil_buy_price: number;
+  oil_sell_price: number;
+  return_percent: number;
+  plastic_container_price: number;
+  metal_container_price: number;
+}
+
 function useClock() {
   const [time, setTime] = useState(new Date());
   useEffect(() => {
@@ -22,9 +31,10 @@ function useClock() {
 export default function PublicQueueDisplay() {
   const { seasonId } = useParams<{ seasonId: string }>();
   const [items, setItems] = useState<QueueItem[]>([]);
-  const [seasonName, setSeasonName] = useState("");
+  const [season, setSeason] = useState<SeasonInfo | null>(null);
   const [prevProcessingId, setPrevProcessingId] = useState<string | null>(null);
   const [fadeKey, setFadeKey] = useState(0);
+  const [faqIndex, setFaqIndex] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const clock = useClock();
 
@@ -39,13 +49,28 @@ export default function PublicQueueDisplay() {
         .order("position", { ascending: true }),
       supabase
         .from("seasons")
-        .select("name")
+        .select("name, oil_buy_price, oil_sell_price, return_percent, plastic_container_price, metal_container_price")
         .eq("id", seasonId)
         .single(),
     ]);
     setItems(queueRes.data || []);
-    if (seasonRes.data) setSeasonName(seasonRes.data.name);
+    if (seasonRes.data) setSeason(seasonRes.data as SeasonInfo);
   };
+
+  const faqs = season
+    ? [
+        { q: "كيف يُحسب الرد؟", a: `${season.return_percent}% من كمية الزيت المنتج` },
+        { q: "سعر تنكة البلاستيك؟", a: `${season.plastic_container_price} ₪` },
+        { q: "سعر تنكة الحديد؟", a: `${season.metal_container_price} ₪` },
+        { q: "هل يمكن تأجيل الدور؟", a: "نعم، تواصل مع المسؤول" },
+      ]
+    : [];
+
+  useEffect(() => {
+    if (faqs.length === 0) return;
+    const id = setInterval(() => setFaqIndex((i) => (i + 1) % faqs.length), 8000);
+    return () => clearInterval(id);
+  }, [faqs.length]);
 
   useEffect(() => {
     fetchData();
@@ -97,7 +122,7 @@ export default function PublicQueueDisplay() {
         <div className="flex items-center gap-3">
           <span className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
           <span className="text-white/40 text-lg font-medium">
-            {seasonName || "معصرة الزيتون"}
+            {season?.name || "معصرة الزيتون"}
           </span>
         </div>
         <div className="font-mono">
@@ -261,6 +286,52 @@ export default function PublicQueueDisplay() {
         </div>
       </div>
 
+      {/* Bottom info bar — prices + rotating FAQ */}
+      {season && (
+        <div
+          className="mx-10 mb-6 mt-2 rounded-2xl px-8 py-5 flex items-center gap-8"
+          style={{
+            background: "linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))",
+            border: "1px solid rgba(255,255,255,0.06)",
+          }}
+        >
+          <div className="flex items-center gap-6">
+            <div className="text-center">
+              <p className="text-xs uppercase tracking-widest" style={{ color: "rgba(110,231,183,0.7)" }}>
+                شراء الزيت
+              </p>
+              <p className="text-3xl font-bold" style={{ color: "#6ee7b7" }}>
+                {season.oil_buy_price} <span className="text-lg opacity-60">₪/كغم</span>
+              </p>
+            </div>
+            <div className="w-px h-12" style={{ background: "rgba(255,255,255,0.08)" }} />
+            <div className="text-center">
+              <p className="text-xs uppercase tracking-widest" style={{ color: "rgba(251,191,36,0.7)" }}>
+                بيع الزيت
+              </p>
+              <p className="text-3xl font-bold" style={{ color: "#fbbf24" }}>
+                {season.oil_sell_price} <span className="text-lg opacity-60">₪/كغم</span>
+              </p>
+            </div>
+          </div>
+
+          <div className="w-px h-16" style={{ background: "rgba(255,255,255,0.08)" }} />
+
+          <div className="flex-1 overflow-hidden">
+            {faqs.length > 0 && (
+              <div key={faqIndex} style={{ animation: "qd-faq-fade 0.6s ease-out" }}>
+                <p className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.4)" }}>
+                  ❓ {faqs[faqIndex].q}
+                </p>
+                <p className="text-2xl font-bold mt-1" style={{ color: "rgba(255,255,255,0.85)" }}>
+                  {faqs[faqIndex].a}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <style>{`
         @keyframes qd-fade-scale {
           0% { opacity: 0; transform: scale(0.9); }
@@ -268,6 +339,10 @@ export default function PublicQueueDisplay() {
         }
         @keyframes qd-slide-up {
           0% { opacity: 0; transform: translateY(20px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes qd-faq-fade {
+          0% { opacity: 0; transform: translateY(8px); }
           100% { opacity: 1; transform: translateY(0); }
         }
       `}</style>
