@@ -122,7 +122,7 @@ export default function PublicQueueDisplay() {
         <div className="flex items-center gap-3">
           <span className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
           <span className="text-white/40 text-lg font-medium">
-            {seasonName || "معصرة الزيتون"}
+            {season?.name || "معصرة الزيتون"}
           </span>
         </div>
         <div className="font-mono">
@@ -286,6 +286,52 @@ export default function PublicQueueDisplay() {
         </div>
       </div>
 
+      {/* Bottom info bar — prices + rotating FAQ */}
+      {season && (
+        <div
+          className="mx-10 mb-6 mt-2 rounded-2xl px-8 py-5 flex items-center gap-8"
+          style={{
+            background: "linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))",
+            border: "1px solid rgba(255,255,255,0.06)",
+          }}
+        >
+          <div className="flex items-center gap-6">
+            <div className="text-center">
+              <p className="text-xs uppercase tracking-widest" style={{ color: "rgba(110,231,183,0.7)" }}>
+                شراء الزيت
+              </p>
+              <p className="text-3xl font-bold" style={{ color: "#6ee7b7" }}>
+                {season.oil_buy_price} <span className="text-lg opacity-60">₪/كغم</span>
+              </p>
+            </div>
+            <div className="w-px h-12" style={{ background: "rgba(255,255,255,0.08)" }} />
+            <div className="text-center">
+              <p className="text-xs uppercase tracking-widest" style={{ color: "rgba(251,191,36,0.7)" }}>
+                بيع الزيت
+              </p>
+              <p className="text-3xl font-bold" style={{ color: "#fbbf24" }}>
+                {season.oil_sell_price} <span className="text-lg opacity-60">₪/كغم</span>
+              </p>
+            </div>
+          </div>
+
+          <div className="w-px h-16" style={{ background: "rgba(255,255,255,0.08)" }} />
+
+          <div className="flex-1 overflow-hidden">
+            {faqs.length > 0 && (
+              <div key={faqIndex} style={{ animation: "qd-faq-fade 0.6s ease-out" }}>
+                <p className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.4)" }}>
+                  ❓ {faqs[faqIndex].q}
+                </p>
+                <p className="text-2xl font-bold mt-1" style={{ color: "rgba(255,255,255,0.85)" }}>
+                  {faqs[faqIndex].a}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <style>{`
         @keyframes qd-fade-scale {
           0% { opacity: 0; transform: scale(0.9); }
@@ -293,6 +339,10 @@ export default function PublicQueueDisplay() {
         }
         @keyframes qd-slide-up {
           0% { opacity: 0; transform: translateY(20px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes qd-faq-fade {
+          0% { opacity: 0; transform: translateY(8px); }
           100% { opacity: 1; transform: translateY(0); }
         }
       `}</style>
