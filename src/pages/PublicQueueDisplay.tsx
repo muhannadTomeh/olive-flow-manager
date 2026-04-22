@@ -10,6 +10,15 @@ interface QueueItem {
   bags: number;
 }
 
+interface SeasonInfo {
+  name: string;
+  oil_buy_price: number;
+  oil_sell_price: number;
+  return_percent: number;
+  plastic_container_price: number;
+  metal_container_price: number;
+}
+
 function useClock() {
   const [time, setTime] = useState(new Date());
   useEffect(() => {
@@ -22,9 +31,10 @@ function useClock() {
 export default function PublicQueueDisplay() {
   const { seasonId } = useParams<{ seasonId: string }>();
   const [items, setItems] = useState<QueueItem[]>([]);
-  const [seasonName, setSeasonName] = useState("");
+  const [season, setSeason] = useState<SeasonInfo | null>(null);
   const [prevProcessingId, setPrevProcessingId] = useState<string | null>(null);
   const [fadeKey, setFadeKey] = useState(0);
+  const [faqIndex, setFaqIndex] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const clock = useClock();
 
@@ -39,13 +49,28 @@ export default function PublicQueueDisplay() {
         .order("position", { ascending: true }),
       supabase
         .from("seasons")
-        .select("name")
+        .select("name, oil_buy_price, oil_sell_price, return_percent, plastic_container_price, metal_container_price")
         .eq("id", seasonId)
         .single(),
     ]);
     setItems(queueRes.data || []);
-    if (seasonRes.data) setSeasonName(seasonRes.data.name);
+    if (seasonRes.data) setSeason(seasonRes.data as SeasonInfo);
   };
+
+  const faqs = season
+    ? [
+        { q: "كيف يُحسب الرد؟", a: `${season.return_percent}% من كمية الزيت المنتج` },
+        { q: "سعر تنكة البلاستيك؟", a: `${season.plastic_container_price} ₪` },
+        { q: "سعر تنكة الحديد؟", a: `${season.metal_container_price} ₪` },
+        { q: "هل يمكن تأجيل الدور؟", a: "نعم، تواصل مع المسؤول" },
+      ]
+    : [];
+
+  useEffect(() => {
+    if (faqs.length === 0) return;
+    const id = setInterval(() => setFaqIndex((i) => (i + 1) % faqs.length), 8000);
+    return () => clearInterval(id);
+  }, [faqs.length]);
 
   useEffect(() => {
     fetchData();
