@@ -572,6 +572,15 @@ const Invoices = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <Dialog open={!!previewInvoice} onOpenChange={(o) => !o && setPreviewInvoice(null)}>
+        <DialogContent dir="rtl" className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>الفاتورة</DialogTitle>
+          </DialogHeader>
+          {previewInvoice && <InvoicePreview data={previewInvoice} />}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
