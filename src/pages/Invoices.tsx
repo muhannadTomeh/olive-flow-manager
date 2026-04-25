@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Receipt, FileText, Calendar, CheckCircle } from "lucide-react";
+import { Receipt, FileText, Calendar, CheckCircle, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useSettings } from "@/hooks/useSettings";
 import { useInventory } from "@/hooks/useInventory";
@@ -17,6 +17,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSeason } from "@/contexts/SeasonContext";
 import { useLocation } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { InvoicePreview } from "@/components/invoices/InvoicePreview";
 
 interface PaymentMethod {
   type: 'oil' | 'cash' | 'mixed';
@@ -76,6 +78,7 @@ const Invoices = () => {
   const [queueId, setQueueId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [queueCustomers, setQueueCustomers] = useState<{ id: string; name: string; phone: string | null; position: number }[]>([]);
+  const [previewInvoice, setPreviewInvoice] = useState<InvoiceRecord | null>(null);
 
   useEffect(() => {
     if (location.state) {
@@ -533,6 +536,7 @@ const Invoices = () => {
                       <TableHead className="text-right">التنكات</TableHead>
                       <TableHead className="text-right">طريقة الدفع</TableHead>
                       <TableHead className="text-right">الإجمالي</TableHead>
+                      <TableHead className="text-right">الفاتورة</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -553,6 +557,12 @@ const Invoices = () => {
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right font-semibold">{inv.total_display}</TableCell>
+                        <TableCell className="text-right">
+                          <Button size="sm" variant="outline" onClick={() => setPreviewInvoice(inv)}>
+                            <Eye className="h-4 w-4 me-1" />
+                            إظهار
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
