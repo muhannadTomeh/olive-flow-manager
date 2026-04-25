@@ -1,7 +1,7 @@
-import { 
-  LayoutDashboard, 
-  Users, 
-  FileText, 
+import {
+  LayoutDashboard,
+  Users,
+  FileText,
   UserCheck,
   ShoppingCart,
   Sprout,
@@ -13,7 +13,8 @@ import {
   BarChart3,
   TrendingUp,
   Wallet,
-  Cog
+  Cog,
+  Warehouse,
 } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 
@@ -40,6 +41,7 @@ const mainItems = [
 ]
 
 const operationsItems = [
+  { title: "المخزن", url: "/inventory", icon: Warehouse },
   { title: "بيع/شراء الزيت", url: "/oil-trading", icon: ShoppingCart },
   { title: "المصاريف", url: "/expenses", icon: Wallet },
 ]
