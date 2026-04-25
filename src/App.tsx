@@ -25,6 +25,7 @@ import Customers from "./pages/Customers";
 import Workers from "./pages/Workers";
 import OilTrading from "./pages/OilTrading";
 import Expenses from "./pages/Expenses";
+import Inventory from "./pages/Inventory";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import Notifications from "./pages/Notifications";
@@ -72,6 +73,7 @@ const SeasonGate = () => {
               <Route path="/workers" element={<Workers />} />
               <Route path="/oil-trading" element={<OilTrading />} />
               <Route path="/expenses" element={<Expenses />} />
+              <Route path="/inventory" element={<Inventory />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/notifications" element={<Notifications />} />
