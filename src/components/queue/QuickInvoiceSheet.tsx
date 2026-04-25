@@ -1,17 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Droplets, Package, Wallet, CheckCircle2, Plus, Minus, Share2 } from "lucide-react";
+import { Droplets, Package, Wallet, CheckCircle2, Plus, Minus, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSeason } from "@/contexts/SeasonContext";
 import { useSettings } from "@/hooks/useSettings";
 import { useInventory } from "@/hooks/useInventory";
+import { InvoicePreview } from "@/components/invoices/InvoicePreview";
 
 interface ContainerType {
   id: string;
@@ -39,6 +41,7 @@ export function QuickInvoiceSheet({ open, onOpenChange, customer, onCompleted }:
   const [containerCounts, setContainerCounts] = useState<Record<string, number>>({});
   const [paymentType, setPaymentType] = useState<PaymentType | null>(null);
   const [saving, setSaving] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   useEffect(() => {
     if (open && user && activeSeason) {
