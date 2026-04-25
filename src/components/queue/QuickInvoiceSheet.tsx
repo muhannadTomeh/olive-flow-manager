@@ -295,16 +295,66 @@ export function QuickInvoiceSheet({ open, onOpenChange, customer, onCompleted }:
 
           <Separator />
 
-          <Button
-            size="lg"
-            className="w-full h-14 text-lg font-bold"
-            disabled={!paymentType || !oilProduced || saving}
-            onClick={handleConfirm}
-          >
-            <CheckCircle2 className="h-5 w-5 me-2" />
-            {saving ? "جارٍ الحفظ..." : "تأكيد الفاتورة وإنهاء الدور"}
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              size="lg"
+              className="sm:w-auto h-14 text-base"
+              disabled={!paymentType || !oilProduced}
+              onClick={() => setShowPreview(true)}
+            >
+              <Eye className="h-5 w-5 me-2" />
+              إظهار الفاتورة
+            </Button>
+            <Button
+              size="lg"
+              className="flex-1 h-14 text-lg font-bold"
+              disabled={!paymentType || !oilProduced || saving}
+              onClick={handleConfirm}
+            >
+              <CheckCircle2 className="h-5 w-5 me-2" />
+              {saving ? "جارٍ الحفظ..." : "تأكيد الفاتورة وإنهاء الدور"}
+            </Button>
+          </div>
         </div>
+
+        {/* Invoice preview dialog (shown to customer) */}
+        <Dialog open={showPreview} onOpenChange={setShowPreview}>
+          <DialogContent dir="rtl" className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>معاينة الفاتورة</DialogTitle>
+            </DialogHeader>
+            {customer && paymentType && calc && (
+              <InvoicePreview
+                data={{
+                  customer_name: customer.name,
+                  oil_produced: oilProduced,
+                  container_count: totalContainerCount,
+                  container_type: containerSummary,
+                  payment_type: paymentType,
+                  oil_amount:
+                    paymentType === "oil"
+                      ? calc.oilOnly.oilAmount
+                      : paymentType === "cash"
+                      ? calc.cashOnly.oilAmount
+                      : calc.mixed.oilAmount,
+                  cash_amount:
+                    paymentType === "oil"
+                      ? calc.oilOnly.cashAmount
+                      : paymentType === "cash"
+                      ? calc.cashOnly.cashAmount
+                      : calc.mixed.cashAmount,
+                  total_display:
+                    paymentType === "oil"
+                      ? calc.oilOnly.label
+                      : paymentType === "cash"
+                      ? calc.cashOnly.label
+                      : calc.mixed.label,
+                }}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
       </SheetContent>
     </Sheet>
   );
