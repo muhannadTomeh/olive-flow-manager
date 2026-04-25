@@ -96,11 +96,9 @@ export function InvoicePreview({ data, millName = "معصرة الزيتون" }:
           <span>{data.total_display}</span>
         </div>
 
-        <div className="flex justify-between text-base font-bold">
-          <span className="text-emerald-700 dark:text-emerald-400">صافي الزيت للزبون:</span>
-          <span className="text-emerald-700 dark:text-emerald-400">
-            {netOilForCustomer.toFixed(2)} كغم
-          </span>
+        <div className="flex justify-between text-base font-bold text-foreground">
+          <span>صافي الزيت للزبون:</span>
+          <span>{netOilForCustomer.toFixed(2)} كغم</span>
         </div>
 
         {data.notes && (
