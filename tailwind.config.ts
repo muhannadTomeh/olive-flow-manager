@@ -18,7 +18,12 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				sans: ['Figtree', 'system-ui', 'sans-serif'],
+				display: ['Outfit', 'Figtree', 'system-ui', 'sans-serif'],
+			},
 			colors: {
+
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
