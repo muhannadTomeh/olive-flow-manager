@@ -92,7 +92,7 @@ const HeaderBar = () => {
   const navigate = useNavigate();
 
   return (
-    <header className="h-14 border-b border-border/50 bg-card/80 backdrop-blur-md flex items-center justify-between px-4 sticky top-0 z-40">
+    <header className="h-16 border-b glass-bar flex items-center justify-between px-4 md:px-6 sticky top-0 z-40">
       <div className="flex items-center gap-3">
         <SidebarTrigger className="md:hidden">
           <Menu className="h-5 w-5" />
