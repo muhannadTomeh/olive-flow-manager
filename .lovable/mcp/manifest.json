@@ -1,0 +1,301 @@
+{
+  "version": 1,
+  "sdk_version": "0.26.1",
+  "path": "/functions/v1/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://cfrxehfzrjbzxqgxpgcv.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "olive-flow-manager",
+      "version": "0.1.0",
+      "title": "olive-flow-manager"
+    },
+    "tools": [
+      {
+        "name": "list_seasons",
+        "title": "List seasons",
+        "description": "List the olive mill seasons owned by the signed-in user, including pricing settings.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_queue",
+        "title": "List queue",
+        "description": "List customers in the mill queue for a season (waiting, processing, done).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "season_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Season id. Defaults to the active season."
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "waiting",
+                "processing",
+                "done"
+              ],
+              "description": "Filter by queue status."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "add_to_queue",
+        "title": "Add customer to queue",
+        "description": "Add a customer to the end of the mill queue for a season.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Customer name."
+            },
+            "bags": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Number of olive bags."
+            },
+            "phone": {
+              "type": "string"
+            },
+            "notes": {
+              "type": "string"
+            },
+            "season_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Season id. Defaults to the active season."
+            }
+          },
+          "required": [
+            "name",
+            "bags"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "update_queue_status",
+        "title": "Update queue status",
+        "description": "Change a queue entry's status to waiting, processing, or done.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "queue_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Queue entry id."
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "waiting",
+                "processing",
+                "done"
+              ]
+            }
+          },
+          "required": [
+            "queue_id",
+            "status"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_customers",
+        "title": "List customers",
+        "description": "List or search customers of a season by name.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "search": {
+              "type": "string",
+              "description": "Filter by name (partial match)."
+            },
+            "season_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Season id. Defaults to the active season."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_invoices",
+        "title": "List invoices",
+        "description": "List invoices for a season, newest first.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "season_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Season id. Defaults to the active season."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 25
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_inventory",
+        "title": "Get inventory",
+        "description": "Get the current oil (kg) and cash (₪) balances for a season.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "season_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Season id. Defaults to the active season."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "add_expense",
+        "title": "Add expense",
+        "description": "Record an expense for a season.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "amount": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "Amount in shekels."
+            },
+            "category": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Expense category."
+            },
+            "description": {
+              "type": "string"
+            },
+            "season_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Season id. Defaults to the active season."
+            }
+          },
+          "required": [
+            "amount",
+            "category"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_expenses",
+        "title": "List expenses",
+        "description": "List expenses recorded for a season, newest first.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "season_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Season id. Defaults to the active season."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
