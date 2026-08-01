@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import AuthBranding from "@/components/auth/AuthBranding";
@@ -14,6 +14,12 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+
+  // Only same-origin relative paths are accepted as a post-login destination.
+  const rawNext = params.get("next") ?? "";
+  const nextPath = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "";
+  const returnUrl = nextPath ? `${window.location.origin}${nextPath}` : window.location.origin;
 
   const handleLogin = async (email: string, password: string) => {
     setLoading(true);
@@ -23,7 +29,8 @@ const Auth = () => {
       toast({ title: "خطأ في تسجيل الدخول", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "تم تسجيل الدخول بنجاح" });
-      navigate("/seasons");
+      if (nextPath) window.location.href = nextPath;
+      else navigate("/seasons");
     }
   };
 
@@ -44,7 +51,7 @@ const Auth = () => {
           mill_name: data.millName,
           phone: data.phone,
         },
-        emailRedirectTo: window.location.origin,
+        emailRedirectTo: returnUrl,
       },
     });
     setLoading(false);

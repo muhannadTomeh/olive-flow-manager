@@ -37,6 +37,7 @@ import SeasonSetup from "./pages/SeasonSetup";
 import NotFound from "./pages/NotFound";
 import QueueDisplay from "./pages/QueueDisplay";
 import PublicQueueDisplay from "./pages/PublicQueueDisplay";
+import OAuthConsent from "./pages/OAuthConsent";
 
 const queryClient = new QueryClient();
 
@@ -210,6 +211,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/display/:seasonId" element={<PublicQueueDisplay />} />
+            <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
             <Route path="/*" element={<ProtectedLayout />} />
           </Routes>
         </AuthProvider>
