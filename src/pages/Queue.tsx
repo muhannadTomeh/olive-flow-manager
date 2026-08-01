@@ -106,19 +106,27 @@ const Queue = () => {
       setShowExtra(false);
       setDialogOpen(false);
       toast.success(`تم إضافة ${newCustomer.name} إلى الطابور`);
+      await fetchQueue();
+    } else {
+      toast.error("تعذر إضافة الزبون");
     }
   };
 
   const confirmDelete = async () => {
     if (!deleteTarget) return;
+    setAllItems((prev) => prev.filter((i) => i.id !== deleteTarget.id));
     await supabase.from("queue").delete().eq("id", deleteTarget.id);
     toast.success("تم حذف الزبون من الطابور");
     setDeleteTarget(null);
+    await fetchQueue();
   };
 
   const startProcessing = async (id: string) => {
-    await supabase.from("queue").update({ status: "processing" }).eq("id", id);
-    toast.success("تم بدء العصر");
+    setAllItems((prev) => prev.map((i) => (i.id === id ? { ...i, status: "processing" } : i)));
+    const { error } = await supabase.from("queue").update({ status: "processing" }).eq("id", id);
+    if (error) toast.error("تعذر بدء العصر");
+    else toast.success("تم بدء العصر");
+    await fetchQueue();
   };
 
   const openInvoiceFor = (customer: QueueItem) => {
