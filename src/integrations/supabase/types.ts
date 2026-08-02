@@ -398,45 +398,6 @@ export type Database = {
         }
         Relationships: []
       }
-      settings: {
-        Row: {
-          cash_return_cost: number
-          created_at: string
-          id: string
-          metal_container_price: number
-          oil_buy_price: number
-          oil_sell_price: number
-          plastic_container_price: number
-          return_percent: number
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          cash_return_cost?: number
-          created_at?: string
-          id?: string
-          metal_container_price?: number
-          oil_buy_price?: number
-          oil_sell_price?: number
-          plastic_container_price?: number
-          return_percent?: number
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          cash_return_cost?: number
-          created_at?: string
-          id?: string
-          metal_container_price?: number
-          oil_buy_price?: number
-          oil_sell_price?: number
-          plastic_container_price?: number
-          return_percent?: number
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       work_records: {
         Row: {
           amount: number

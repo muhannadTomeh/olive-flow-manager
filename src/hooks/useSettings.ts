@@ -32,11 +32,6 @@ export function useSettings() {
       }
     : DEFAULT_SETTINGS;
 
-  const updateSettings = async (newSettings: Partial<MillSettings>) => {
-    // Settings are now managed per season via SeasonSetup
-    // This is kept for backward compatibility but does nothing
-    return { error: null };
-  };
-
-  return { settings, loading: false, updateSettings, refetch: async () => {} };
+  // الإعدادات تُدار لكل موسم عبر جدول المواسم (SeasonSetup)
+  return { settings, loading: false };
 }
