@@ -54,7 +54,7 @@
               "enum": [
                 "waiting",
                 "processing",
-                "done"
+                "completed"
               ],
               "description": "Filter by queue status."
             }
@@ -110,7 +110,7 @@
       {
         "name": "update_queue_status",
         "title": "Update queue status",
-        "description": "Change a queue entry's status to waiting, processing, or done.",
+        "description": "Change a queue entry's status to waiting, processing, or completed.",
         "annotations": {
           "readOnlyHint": false,
           "destructiveHint": false,
@@ -129,7 +129,7 @@
               "enum": [
                 "waiting",
                 "processing",
-                "done"
+                "completed"
               ]
             }
           },

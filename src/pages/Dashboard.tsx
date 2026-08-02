@@ -36,8 +36,8 @@ export default function Dashboard() {
   const fetchStats = async () => {
     const today = new Date().toISOString().split("T")[0];
     const [waitingRes, doneRes, expenseRes, customerRes] = await Promise.all([
-      supabase.from("queue").select("id", { count: "exact", head: true }).eq("user_id", user!.id).eq("season_id", activeSeason!.id).neq("status", "done"),
-      supabase.from("queue").select("id", { count: "exact", head: true }).eq("user_id", user!.id).eq("season_id", activeSeason!.id).eq("status", "done"),
+      supabase.from("queue").select("id", { count: "exact", head: true }).eq("user_id", user!.id).eq("season_id", activeSeason!.id).neq("status", "completed"),
+      supabase.from("queue").select("id", { count: "exact", head: true }).eq("user_id", user!.id).eq("season_id", activeSeason!.id).eq("status", "completed"),
       supabase.from("expenses").select("amount").eq("user_id", user!.id).eq("season_id", activeSeason!.id).gte("created_at", today),
       supabase.from("customers").select("id", { count: "exact", head: true }).eq("user_id", user!.id).eq("season_id", activeSeason!.id),
     ]);
@@ -55,7 +55,7 @@ export default function Dashboard() {
       .select("id, name, position")
       .eq("user_id", user!.id)
       .eq("season_id", activeSeason!.id)
-      .neq("status", "done")
+      .neq("status", "completed")
       .order("position", { ascending: true })
       .limit(5);
     setQueuePreview(data || []);
