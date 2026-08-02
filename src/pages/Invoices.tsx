@@ -54,7 +54,7 @@ const Invoices = () => {
   const { user } = useAuth();
   const { activeSeason } = useSeason();
   const { settings } = useSettings();
-  const { inventory, updateInventory, refetch: refetchInventory } = useInventory();
+  const { refetch: refetchInventory } = useInventory();
   const location = useLocation();
   const { toast } = useToast();
 

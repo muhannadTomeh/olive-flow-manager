@@ -35,7 +35,7 @@ export function QuickInvoiceSheet({ open, onOpenChange, customer, onCompleted }:
   const { user } = useAuth();
   const { activeSeason } = useSeason();
   const { settings } = useSettings();
-  const { inventory, updateInventory, refetch: refetchInventory } = useInventory();
+  const { refetch: refetchInventory } = useInventory();
 
   const [oilProduced, setOilProduced] = useState<number>(0);
   const [containerTypes, setContainerTypes] = useState<ContainerType[]>([]);
