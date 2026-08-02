@@ -25,7 +25,7 @@ interface Props {
   millName?: string;
 }
 
-export function InvoicePreview({ data, millName = "معصرة الزيتون" }: Props) {
+export function InvoicePreview({ data, millName = "Smart Mill" }: Props) {
   const dateStr = data.created_at
     ? new Date(data.created_at).toLocaleString("ar-SA", {
         year: "numeric",

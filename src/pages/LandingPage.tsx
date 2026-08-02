@@ -68,7 +68,7 @@ const LandingPage = () => {
             <div className="w-9 h-9 olive-gradient rounded-lg flex items-center justify-center">
               <Leaf className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="text-lg font-bold text-foreground">معصرة الزيتون</span>
+            <span className="text-lg font-bold text-foreground">Smart Mill</span>
           </div>
           <div className="flex items-center gap-3">
             <Button variant="ghost" onClick={() => navigate("/auth")}>
