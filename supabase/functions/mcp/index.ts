@@ -163,10 +163,10 @@ import { z as z3 } from "npm:zod@^3.25.76";
 var update_queue_status_default = defineTool4({
   name: "update_queue_status",
   title: "Update queue status",
-  description: "Change a queue entry's status to waiting, processing, or done.",
+  description: "Change a queue entry's status to waiting, processing, or completed.",
   inputSchema: {
     queue_id: z3.string().uuid().describe("Queue entry id."),
-    status: z3.enum(["waiting", "processing", "done"])
+    status: z3.enum(["waiting", "processing", "completed"])
   },
   annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
   handler: async ({ queue_id, status }, ctx) => {
