@@ -8,7 +8,7 @@ export default defineTool({
   description: "List customers in the mill queue for a season (waiting, processing, done).",
   inputSchema: {
     season_id: z.string().uuid().optional().describe("Season id. Defaults to the active season."),
-    status: z.enum(["waiting", "processing", "done"]).optional().describe("Filter by queue status."),
+    status: z.enum(["waiting", "processing", "completed"]).optional().describe("Filter by queue status."),
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ season_id, status }, ctx) => {

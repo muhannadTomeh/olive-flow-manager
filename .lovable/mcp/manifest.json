@@ -54,7 +54,7 @@
               "enum": [
                 "waiting",
                 "processing",
-                "done"
+                "completed"
               ],
               "description": "Filter by queue status."
             }
