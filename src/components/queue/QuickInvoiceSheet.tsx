@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { calculatePaymentOptions } from "@/lib/invoiceCalculations";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -85,15 +86,11 @@ export function QuickInvoiceSheet({ open, onOpenChange, customer, onCompleted }:
 
   const calc = useMemo(() => {
     if (!oilProduced) return null;
-    const oilReturn = (oilProduced * settings.return_percent) / 100;
-    const containerInOil = totalContainerCost / settings.oil_buy_price;
-    const totalOilPayment = oilReturn + containerInOil;
-    const cashReturn = oilProduced * settings.cash_return_cost;
-    const totalCashPayment = cashReturn + totalContainerCost;
+    const opts = calculatePaymentOptions(oilProduced, totalContainerCost, settings);
     return {
-      oilOnly: { oilAmount: totalOilPayment, cashAmount: 0, label: `${totalOilPayment.toFixed(2)} كغم زيت` },
-      cashOnly: { oilAmount: 0, cashAmount: totalCashPayment, label: `${totalCashPayment.toFixed(2)} ₪` },
-      mixed: { oilAmount: oilReturn, cashAmount: totalContainerCost, label: `${oilReturn.toFixed(2)} كغم + ${totalContainerCost.toFixed(2)} ₪` },
+      oilOnly: { ...opts.oil, label: `${opts.oil.oilAmount.toFixed(2)} كغم زيت` },
+      cashOnly: { ...opts.cash, label: `${opts.cash.cashAmount.toFixed(2)} ₪` },
+      mixed: { ...opts.mixed, label: `${opts.mixed.oilAmount.toFixed(2)} كغم + ${opts.mixed.cashAmount.toFixed(2)} ₪` },
     };
   }, [oilProduced, totalContainerCost, settings]);
 

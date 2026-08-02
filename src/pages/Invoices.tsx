@@ -19,16 +19,10 @@ import { useLocation } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { InvoicePreview } from "@/components/invoices/InvoicePreview";
+import { calculatePaymentOptions, type PaymentBreakdown } from "@/lib/invoiceCalculations";
 
-interface PaymentMethod {
-  type: 'oil' | 'cash' | 'mixed';
-  oilAmount: number;
-  cashAmount: number;
+interface PaymentMethod extends PaymentBreakdown {
   total: string;
-  oilReturn: number;
-  containerOilEquiv: number;
-  cashReturn: number;
-  containerCashCost: number;
 }
 
 interface InvoiceRecord {
@@ -104,16 +98,12 @@ const Invoices = () => {
       return;
     }
     const totalContainerCost = getTotalContainerCost();
-    const oilReturn = (invoiceData.oilProduced * settings.return_percent) / 100;
-    const containerReturnInOil = totalContainerCost / settings.oil_buy_price;
-    const totalOilPayment = oilReturn + containerReturnInOil;
-    const cashReturn = invoiceData.oilProduced * settings.cash_return_cost;
-    const totalCashPayment = cashReturn + totalContainerCost;
+    const opts = calculatePaymentOptions(invoiceData.oilProduced, totalContainerCost, settings);
 
     const methods: PaymentMethod[] = [
-      { type: 'oil', oilAmount: totalOilPayment, cashAmount: 0, total: `${totalOilPayment.toFixed(2)} كغم زيت`, oilReturn, containerOilEquiv: containerReturnInOil, cashReturn: 0, containerCashCost: 0 },
-      { type: 'cash', oilAmount: 0, cashAmount: totalCashPayment, total: `${totalCashPayment.toFixed(2)} شيكل`, oilReturn: 0, containerOilEquiv: 0, cashReturn, containerCashCost: totalContainerCost },
-      { type: 'mixed', oilAmount: oilReturn, cashAmount: totalContainerCost, total: `${oilReturn.toFixed(2)} كغم زيت + ${totalContainerCost.toFixed(2)} شيكل`, oilReturn, containerOilEquiv: 0, cashReturn: 0, containerCashCost: totalContainerCost },
+      { ...opts.oil, total: `${opts.oil.oilAmount.toFixed(2)} كغم زيت` },
+      { ...opts.cash, total: `${opts.cash.cashAmount.toFixed(2)} شيكل` },
+      { ...opts.mixed, total: `${opts.mixed.oilAmount.toFixed(2)} كغم زيت + ${opts.mixed.cashAmount.toFixed(2)} شيكل` },
     ];
     setPaymentMethods(methods);
     // Keep selection if still valid
