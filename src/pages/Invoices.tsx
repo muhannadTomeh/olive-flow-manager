@@ -19,16 +19,10 @@ import { useLocation } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { InvoicePreview } from "@/components/invoices/InvoicePreview";
+import { calculatePaymentOptions, type PaymentBreakdown } from "@/lib/invoiceCalculations";
 
-interface PaymentMethod {
-  type: 'oil' | 'cash' | 'mixed';
-  oilAmount: number;
-  cashAmount: number;
+interface PaymentMethod extends PaymentBreakdown {
   total: string;
-  oilReturn: number;
-  containerOilEquiv: number;
-  cashReturn: number;
-  containerCashCost: number;
 }
 
 interface InvoiceRecord {
