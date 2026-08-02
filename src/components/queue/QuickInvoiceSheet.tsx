@@ -35,7 +35,7 @@ export function QuickInvoiceSheet({ open, onOpenChange, customer, onCompleted }:
   const { user } = useAuth();
   const { activeSeason } = useSeason();
   const { settings } = useSettings();
-  const { inventory, updateInventory, refetch: refetchInventory } = useInventory();
+  const { refetch: refetchInventory } = useInventory();
 
   const [oilProduced, setOilProduced] = useState<number>(0);
   const [containerTypes, setContainerTypes] = useState<ContainerType[]>([]);
@@ -130,18 +130,18 @@ export function QuickInvoiceSheet({ open, onOpenChange, customer, onCompleted }:
       if (newCust) customerId = newCust.id;
     }
 
-    const { error } = await supabase.from("invoices").insert({
-      user_id: user!.id,
-      season_id: activeSeason!.id,
-      customer_id: customerId,
-      customer_name: customer.name,
-      oil_produced: oilProduced,
-      container_count: totalContainerCount,
-      container_type: containerSummary,
-      payment_type: paymentType,
-      oil_amount: selected.oilAmount,
-      cash_amount: selected.cashAmount,
-      total_display: selected.label,
+    const { error } = await supabase.rpc("create_invoice_and_settle", {
+      p_season_id: activeSeason!.id,
+      p_customer_id: customerId,
+      p_customer_name: customer.name,
+      p_oil_produced: oilProduced,
+      p_container_count: totalContainerCount,
+      p_container_type: containerSummary,
+      p_payment_type: paymentType,
+      p_oil_amount: selected.oilAmount,
+      p_cash_amount: selected.cashAmount,
+      p_total_display: selected.label,
+      p_queue_id: customer.id,
     });
 
     if (error) {
@@ -150,15 +150,6 @@ export function QuickInvoiceSheet({ open, onOpenChange, customer, onCompleted }:
       return;
     }
 
-    // Update inventory
-    const oilChange = oilProduced - selected.oilAmount;
-    await updateInventory({
-      total_oil: inventory.total_oil + oilChange,
-      total_cash: inventory.total_cash + selected.cashAmount,
-    });
-
-    // Mark queue as completed
-    await supabase.from("queue").update({ status: "completed" }).eq("id", customer.id);
     refetchInventory();
 
     const shareMsg = `فاتورة ${customer.name}\nالزيت المنتج: ${oilProduced} كغم\nالتنكات: ${containerSummary}\nالمستحق: ${selected.label}`;

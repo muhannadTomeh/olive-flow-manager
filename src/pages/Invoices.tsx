@@ -54,7 +54,7 @@ const Invoices = () => {
   const { user } = useAuth();
   const { activeSeason } = useSeason();
   const { settings } = useSettings();
-  const { inventory, updateInventory, refetch: refetchInventory } = useInventory();
+  const { refetch: refetchInventory } = useInventory();
   const location = useLocation();
   const { toast } = useToast();
 
@@ -201,18 +201,18 @@ const Invoices = () => {
 
     const containerSummary = getContainerSummary() || "بدون تنكات";
 
-    const { error } = await supabase.from("invoices").insert({
-      user_id: user!.id,
-      season_id: activeSeason!.id,
-      customer_id: customerId,
-      customer_name: invoiceData.customerName,
-      oil_produced: invoiceData.oilProduced,
-      container_count: getTotalContainerCount(),
-      container_type: containerSummary,
-      payment_type: selectedPayment.type,
-      oil_amount: selectedPayment.oilAmount,
-      cash_amount: selectedPayment.cashAmount,
-      total_display: selectedPayment.total,
+    const { error } = await supabase.rpc("create_invoice_and_settle", {
+      p_season_id: activeSeason!.id,
+      p_customer_id: customerId,
+      p_customer_name: invoiceData.customerName,
+      p_oil_produced: invoiceData.oilProduced,
+      p_container_count: getTotalContainerCount(),
+      p_container_type: containerSummary,
+      p_payment_type: selectedPayment.type,
+      p_oil_amount: selectedPayment.oilAmount,
+      p_cash_amount: selectedPayment.cashAmount,
+      p_total_display: selectedPayment.total,
+      p_queue_id: queueId && queueId !== "manual" ? queueId : null,
     });
 
     if (error) {
@@ -220,16 +220,7 @@ const Invoices = () => {
       return;
     }
 
-    const oilChange = invoiceData.oilProduced - selectedPayment.oilAmount;
-    await updateInventory({
-      total_oil: inventory.total_oil + oilChange,
-      total_cash: inventory.total_cash + selectedPayment.cashAmount,
-    });
-
-    if (queueId && queueId !== "manual") {
-      await supabase.from("queue").update({ status: "completed" }).eq("id", queueId);
-      setQueueId(null);
-    }
+    if (queueId && queueId !== "manual") setQueueId(null);
 
     toast({ title: "تم تأكيد الفاتورة", description: `تم إنشاء فاتورة لـ ${invoiceData.customerName}` });
     setInvoiceData({ customerName: "", customerPhone: "", oilProduced: 0, notes: "" });

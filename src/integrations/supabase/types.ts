@@ -552,7 +552,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_invoice_and_settle: {
+        Args: {
+          p_cash_amount: number
+          p_container_count: number
+          p_container_type: string
+          p_customer_id?: string
+          p_customer_name: string
+          p_oil_amount: number
+          p_oil_produced: number
+          p_payment_type: string
+          p_queue_id?: string
+          p_season_id: string
+          p_total_display: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
