@@ -95,7 +95,7 @@ import { z } from "npm:zod@^3.25.76";
 var list_queue_default = defineTool2({
   name: "list_queue",
   title: "List queue",
-  description: "List customers in the mill queue for a season (waiting, processing, done).",
+  description: "List customers in the mill queue for a season (waiting, processing, completed).",
   inputSchema: {
     season_id: z.string().uuid().optional().describe("Season id. Defaults to the active season."),
     status: z.enum(["waiting", "processing", "completed"]).optional().describe("Filter by queue status.")
