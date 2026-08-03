@@ -137,8 +137,6 @@ var add_to_queue_default = defineTool3({
     const supabase = supabaseForUser(ctx);
     try {
       const seasonId = await resolveSeasonId(supabase, season_id);
-      const { data: last } = await supabase.from("queue").select("position").eq("season_id", seasonId).order("position", { ascending: false }).limit(1).maybeSingle();
-      const position = (last?.position ?? 0) + 1;
       const { data, error } = await supabase.from("queue").insert({
         user_id: ctx.getUserId(),
         season_id: seasonId,
@@ -146,7 +144,6 @@ var add_to_queue_default = defineTool3({
         bags,
         phone: phone || null,
         notes: notes || null,
-        position,
         status: "waiting"
       }).select().single();
       if (error) return errorResult(error.message);

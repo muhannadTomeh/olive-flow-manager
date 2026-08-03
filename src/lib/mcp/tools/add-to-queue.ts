@@ -19,14 +19,6 @@ export default defineTool({
     const supabase = supabaseForUser(ctx);
     try {
       const seasonId = await resolveSeasonId(supabase, season_id);
-      const { data: last } = await supabase
-        .from("queue")
-        .select("position")
-        .eq("season_id", seasonId)
-        .order("position", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      const position = ((last?.position as number | undefined) ?? 0) + 1;
       const { data, error } = await supabase
         .from("queue")
         .insert({
@@ -36,7 +28,6 @@ export default defineTool({
           bags,
           phone: phone || null,
           notes: notes || null,
-          position,
           status: "waiting",
         })
         .select()
