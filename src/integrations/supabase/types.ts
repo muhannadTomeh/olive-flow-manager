@@ -308,7 +308,7 @@ export type Database = {
           name: string
           notes: string | null
           phone: string | null
-          position: number
+          position: number | null
           season_id: string | null
           status: string
           user_id: string
@@ -320,7 +320,7 @@ export type Database = {
           name: string
           notes?: string | null
           phone?: string | null
-          position?: number
+          position?: number | null
           season_id?: string | null
           status?: string
           user_id: string
@@ -332,7 +332,7 @@ export type Database = {
           name?: string
           notes?: string | null
           phone?: string | null
-          position?: number
+          position?: number | null
           season_id?: string | null
           status?: string
           user_id?: string
