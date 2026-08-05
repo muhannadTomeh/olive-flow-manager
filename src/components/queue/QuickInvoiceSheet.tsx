@@ -145,7 +145,8 @@ export function QuickInvoiceSheet({ open, onOpenChange, customer, onCompleted }:
     });
 
     if (error) {
-      toast.error("حدث خطأ أثناء حفظ الفاتورة");
+      console.error("create_invoice_and_settle error", error);
+      toast.error(error.message || "حدث خطأ أثناء حفظ الفاتورة");
       setSaving(false);
       return;
     }

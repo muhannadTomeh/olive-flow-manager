@@ -216,7 +216,8 @@ const Invoices = () => {
     });
 
     if (error) {
-      toast({ title: "خطأ", description: "حدث خطأ أثناء حفظ الفاتورة", variant: "destructive" });
+      console.error("create_invoice_and_settle error", error);
+      toast({ title: "خطأ", description: error.message || "حدث خطأ أثناء حفظ الفاتورة", variant: "destructive" });
       return;
     }
 
