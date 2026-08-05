@@ -568,6 +568,27 @@ export type Database = {
         }
         Returns: string
       }
+      get_public_queue: {
+        Args: { p_season_id: string }
+        Returns: {
+          bags: number
+          id: string
+          name: string
+          position: number
+          status: string
+        }[]
+      }
+      get_public_season_display: {
+        Args: { p_season_id: string }
+        Returns: {
+          metal_container_price: number
+          name: string
+          oil_buy_price: number
+          oil_sell_price: number
+          plastic_container_price: number
+          return_percent: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
