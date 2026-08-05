@@ -41,21 +41,14 @@ export default function PublicQueueDisplay() {
   const fetchData = async () => {
     if (!seasonId) return;
     const [queueRes, seasonRes] = await Promise.all([
-      supabase
-        .from("queue")
-        .select("id, name, position, status, bags")
-        .eq("season_id", seasonId)
-        .in("status", ["waiting", "processing"])
-        .order("position", { ascending: true }),
-      supabase
-        .from("seasons")
-        .select("name, oil_buy_price, oil_sell_price, return_percent, plastic_container_price, metal_container_price")
-        .eq("id", seasonId)
-        .single(),
+      supabase.rpc("get_public_queue", { p_season_id: seasonId }),
+      supabase.rpc("get_public_season_display", { p_season_id: seasonId }),
     ]);
-    setItems(queueRes.data || []);
-    if (seasonRes.data) setSeason(seasonRes.data as SeasonInfo);
+    setItems((queueRes.data as QueueItem[]) || []);
+    const seasonRow = (seasonRes.data as SeasonInfo[] | null)?.[0];
+    if (seasonRow) setSeason(seasonRow);
   };
+
 
   const faqs = season
     ? [
