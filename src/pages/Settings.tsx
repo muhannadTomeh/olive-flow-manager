@@ -4,6 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Settings as SettingsIcon, Save, Plus, Trash2 } from "lucide-react";
 import { useSettings } from "@/hooks/useSettings";
 import { useInventory } from "@/hooks/useInventory";
@@ -45,6 +49,9 @@ export default function Settings() {
   const [expenseCategories, setExpenseCategories] = useState<{ id: string, name: string }[]>([]);
   const [newExpenseCategoryName, setNewExpenseCategoryName] = useState("");
   const [expenseDialogOpen, setExpenseDialogOpen] = useState(false);
+  
+  const [containerDeleteTarget, setContainerDeleteTarget] = useState<ContainerType | null>(null);
+  const [expenseDeleteTarget, setExpenseDeleteTarget] = useState<{ id: string, name: string } | null>(null);
 
   useEffect(() => {
     if (!loading) {
@@ -94,8 +101,10 @@ export default function Settings() {
     }
   };
 
-  const deleteExpenseCategory = async (id: string) => {
-    await supabase.from("expense_categories").delete().eq("id", id);
+  const deleteExpenseCategory = async () => {
+    if (!expenseDeleteTarget) return;
+    await supabase.from("expense_categories").delete().eq("id", expenseDeleteTarget.id);
+    setExpenseDeleteTarget(null);
     fetchExpenseCategories();
   };
 
@@ -127,8 +136,10 @@ export default function Settings() {
     }
   };
 
-  const deleteContainerType = async (id: string) => {
-    await supabase.from("container_types").delete().eq("id", id);
+  const deleteContainerType = async () => {
+    if (!containerDeleteTarget) return;
+    await supabase.from("container_types").delete().eq("id", containerDeleteTarget.id);
+    setContainerDeleteTarget(null);
     fetchContainerTypes();
   };
 
@@ -212,7 +223,7 @@ export default function Settings() {
                     <span className="font-medium">{ct.name}</span>
                     <span className="text-muted-foreground me-2"> — {ct.price} شيكل</span>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={() => deleteContainerType(ct.id)}>
+                  <Button variant="ghost" size="icon" onClick={() => setContainerDeleteTarget(ct)}>
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
                 </div>
@@ -258,7 +269,7 @@ export default function Settings() {
                   <div>
                     <span className="font-medium">{ec.name}</span>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={() => deleteExpenseCategory(ec.id)}>
+                  <Button variant="ghost" size="icon" onClick={() => setExpenseDeleteTarget(ec)}>
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
                 </div>
@@ -306,6 +317,39 @@ export default function Settings() {
           <Button onClick={saveInventory} variant="outline"><Save className="h-4 w-4 me-2" />تحديث المخزون</Button>
         </CardContent>
       </Card>
-    </div>);
 
+      <AlertDialog open={!!containerDeleteTarget} onOpenChange={(o) => !o && setContainerDeleteTarget(null)}>
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>تأكيد حذف نوع التنكة</AlertDialogTitle>
+            <AlertDialogDescription>
+              هل تريد حذف نوع التنكة <strong>{containerDeleteTarget?.name}</strong>؟ لا يمكن التراجع عن هذا الإجراء وقد يؤثر على الفواتير المستقبلية.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <AlertDialogAction onClick={deleteContainerType} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              حذف النوع
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!expenseDeleteTarget} onOpenChange={(o) => !o && setExpenseDeleteTarget(null)}>
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>تأكيد حذف نوع المصروف</AlertDialogTitle>
+            <AlertDialogDescription>
+              هل تريد حذف نوع المصروف <strong>{expenseDeleteTarget?.name}</strong>؟ لا يمكن التراجع عن هذا الإجراء.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <AlertDialogAction onClick={deleteExpenseCategory} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              حذف النوع
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>);
 }
