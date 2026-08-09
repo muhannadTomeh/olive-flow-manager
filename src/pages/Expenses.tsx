@@ -21,10 +21,10 @@ interface Expense {
   created_at: string;
 }
 
-const EXPENSE_CATEGORIES = [
-  "صيانة المعدات", "فطور العمال", "مواد التشحيم", "النقل والمواصلات",
-  "فواتير الكهرباء", "مواد التنظيف", "أدوات ومستلزمات", "أخرى"
-];
+interface ExpenseCategory {
+  id: string;
+  name: string;
+}
 
 const Expenses = () => {
   const { user } = useAuth();
@@ -32,13 +32,27 @@ const Expenses = () => {
   const { toast } = useToast();
   const { inventory, updateInventory, refetch: refetchInventory } = useInventory();
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [categories, setCategories] = useState<ExpenseCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [newExpense, setNewExpense] = useState({ category: "", amount: "", description: "" });
   const [filter, setFilter] = useState({ category: "", dateFrom: "", dateTo: "" });
 
   useEffect(() => {
-    if (user) fetchExpenses();
-  }, [user]);
+    if (user && activeSeason) {
+      fetchExpenses();
+      fetchCategories();
+    }
+  }, [user, activeSeason]);
+
+  const fetchCategories = async () => {
+    const { data } = await supabase
+      .from("expense_categories")
+      .select("*")
+      .eq("user_id", user!.id)
+      .eq("season_id", activeSeason!.id)
+      .order("name", { ascending: true });
+    setCategories((data as ExpenseCategory[]) || []);
+  };
 
   const fetchExpenses = async () => {
     const { data } = await supabase.from("expenses").select("*").eq("user_id", user!.id).eq("season_id", activeSeason!.id).order("created_at", { ascending: false });
@@ -129,7 +143,7 @@ const Expenses = () => {
               <Label>نوع المصروف</Label>
               <select value={newExpense.category} onChange={(e) => setNewExpense(p => ({ ...p, category: e.target.value }))} className="w-full p-2 border rounded-md bg-background text-foreground">
                 <option value="">اختر نوع المصروف</option>
-                {EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
               </select>
             </div>
             <div>
@@ -152,7 +166,7 @@ const Expenses = () => {
                 <Label>فلترة حسب النوع</Label>
                 <select value={filter.category} onChange={(e) => setFilter(p => ({ ...p, category: e.target.value }))} className="w-full p-2 border rounded-md text-sm bg-background text-foreground">
                   <option value="">جميع الأنواع</option>
-                  {EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
                 </select>
               </div>
               <div>

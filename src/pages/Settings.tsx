@@ -42,6 +42,9 @@ export default function Settings() {
   const [newContainerName, setNewContainerName] = useState("");
   const [newContainerPrice, setNewContainerPrice] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [expenseCategories, setExpenseCategories] = useState<{ id: string, name: string }[]>([]);
+  const [newExpenseCategoryName, setNewExpenseCategoryName] = useState("");
+  const [expenseDialogOpen, setExpenseDialogOpen] = useState(false);
 
   useEffect(() => {
     if (!loading) {
@@ -59,8 +62,42 @@ export default function Settings() {
   }, [loading, settings, inventory]);
 
   useEffect(() => {
-    if (user) fetchContainerTypes();
-  }, [user]);
+    if (user && activeSeason) {
+      fetchContainerTypes();
+      fetchExpenseCategories();
+    }
+  }, [user, activeSeason]);
+
+  const fetchExpenseCategories = async () => {
+    if (!user || !activeSeason) return;
+    const { data } = await supabase
+      .from("expense_categories")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("season_id", activeSeason.id)
+      .order("name", { ascending: true });
+    setExpenseCategories(data || []);
+  };
+
+  const addExpenseCategory = async () => {
+    if (!user || !activeSeason || !newExpenseCategoryName.trim()) return;
+    const { error } = await supabase.from("expense_categories").insert({
+      user_id: user.id,
+      season_id: activeSeason.id,
+      name: newExpenseCategoryName.trim()
+    });
+    if (!error) {
+      toast({ title: "تمت الإضافة", description: `تم إضافة نوع المصروف "${newExpenseCategoryName}"` });
+      setNewExpenseCategoryName("");
+      setExpenseDialogOpen(false);
+      fetchExpenseCategories();
+    }
+  };
+
+  const deleteExpenseCategory = async (id: string) => {
+    await supabase.from("expense_categories").delete().eq("id", id);
+    fetchExpenseCategories();
+  };
 
   const fetchContainerTypes = async () => {
     if (!user || !activeSeason) return;
@@ -209,23 +246,65 @@ export default function Settings() {
       </Card>
 
       <Card>
-        
-
-
-        
-        
-
-
-
-
-
-
-
-
-
-
-
-        
+        <CardHeader>
+          <CardTitle>أنواع المصاريف</CardTitle>
+          <CardDescription>أضف أو عدل أنواع المصاريف التي تستخدمها في المعصرة</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {expenseCategories.length > 0 &&
+          <div className="space-y-2">
+              {expenseCategories.map((ec) =>
+            <div key={ec.id} className="flex items-center justify-between border rounded-lg p-3">
+                  <div>
+                    <span className="font-medium">{ec.name}</span>
+                  </div>
+                  <Button variant="ghost" size="icon" onClick={() => deleteExpenseCategory(ec.id)}>
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
+            )}
+            </div>
+          }
+          <Dialog open={expenseDialogOpen} onOpenChange={setExpenseDialogOpen}>
+            <DialogTrigger asChild>
+              <Button><Plus className="h-4 w-4 me-1" />إضافة نوع مصروف</Button>
+            </DialogTrigger>
+            <DialogContent dir="rtl">
+              <DialogHeader>
+                <DialogTitle>إضافة نوع مصروف جديد</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 pt-2">
+                <div className="space-y-2">
+                  <Label>اسم المصروف</Label>
+                  <Input value={newExpenseCategoryName} onChange={(e) => setNewExpenseCategoryName(e.target.value)} placeholder="مثال: فطور، قطع غيار..." />
+                </div>
+                <Button onClick={addExpenseCategory} disabled={!newExpenseCategoryName.trim()} className="w-full">
+                  <Plus className="h-4 w-4 me-1" />إضافة
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>المخزون والسيولة</CardTitle>
+          <CardDescription>تعديل يدوي لرصيد الزيت والنقدية في المعصرة</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label>إجمالي الزيت (كغم)</Label>
+              <Input type="number" value={inventoryForm.total_oil} onChange={(e) => setInventoryForm((p) => ({ ...p, total_oil: e.target.value }))} min="0" step="0.1" />
+            </div>
+            <div className="space-y-2">
+              <Label>إجمالي النقدية (شيكل)</Label>
+              <Input type="number" value={inventoryForm.total_cash} onChange={(e) => setInventoryForm((p) => ({ ...p, total_cash: e.target.value }))} min="0" step="0.1" />
+            </div>
+          </div>
+          <Button onClick={saveInventory} variant="outline"><Save className="h-4 w-4 me-2" />تحديث المخزون</Button>
+        </CardContent>
       </Card>
     </div>);
 
