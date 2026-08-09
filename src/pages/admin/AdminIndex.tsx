@@ -108,7 +108,12 @@ export default function AdminIndex() {
 
   return (
     <div className="space-y-6" dir="rtl">
-      <h1 className="text-3xl font-bold">لوحة تحكم المشرف</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">لوحة تحكم المشرف</h1>
+        <Button variant="outline" onClick={() => navigate("/dashboard")}>
+          العودة للرئيسية
+        </Button>
+      </div>
 
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

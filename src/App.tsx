@@ -45,51 +45,7 @@ import { AdminRoute } from "./components/AdminRoute";
 
 const queryClient = new QueryClient();
 
-const SeasonGate = () => {
-  const { activeSeason, loading } = useSeason();
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background" dir="rtl">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-muted-foreground text-sm">جارٍ التحميل...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!activeSeason) {
-    return <Navigate to="/seasons" replace />;
-  }
-
-  return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background" dir="rtl">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col min-w-0">
-          <HeaderBar />
-          <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
-            <Routes>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/queue" element={<Queue />} />
-              <Route path="/invoices" element={<Invoices />} />
-              <Route path="/customers" element={<Customers />} />
-              <Route path="/workers" element={<Workers />} />
-              <Route path="/oil-trading" element={<OilTrading />} />
-              <Route path="/expenses" element={<Expenses />} />
-              <Route path="/inventory" element={<Inventory />} />
-              <Route path="/reports" element={<Reports />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/notifications" element={<Notifications />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </main>
-        </div>
-      </div>
-    </SidebarProvider>
-  );
-};
+// SeasonGate was modified above to SeasonGateContent and moved inside ProtectedLayout structure
 
 const HeaderBar = () => {
   const { user, signOut } = useAuth();
@@ -192,21 +148,67 @@ const ProtectedLayout = () => {
 
   return (
     <SeasonProvider>
-      <Routes>
-        <Route path="/seasons" element={<Seasons />} />
-        <Route path="/seasons/new" element={<SeasonSetup />} />
-        <Route path="/seasons/edit/:id" element={<SeasonSetup />} />
-        <Route path="/queue-display" element={<QueueDisplay />} />
-        
-        {/* Admin Routes */}
-        <Route element={<AdminRoute />}>
-          <Route path="/admin" element={<AdminIndex />} />
-          <Route path="/admin/mill/:id" element={<MillDetails />} />
-        </Route>
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-background" dir="rtl">
+          <AppSidebar />
+          <div className="flex-1 flex flex-col min-w-0">
+            <HeaderBar />
+            <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
+              <Routes>
+                {/* Admin Routes */}
+                <Route element={<AdminRoute />}>
+                  <Route path="/admin" element={<AdminIndex />} />
+                  <Route path="/admin/mill/:id" element={<MillDetails />} />
+                </Route>
 
-        <Route path="/*" element={<SeasonGate />} />
-      </Routes>
+                <Route path="/seasons" element={<Seasons />} />
+                <Route path="/seasons/new" element={<SeasonSetup />} />
+                <Route path="/seasons/edit/:id" element={<SeasonSetup />} />
+                <Route path="/queue-display" element={<QueueDisplay />} />
+                
+                <Route path="/*" element={<SeasonGateContent />} />
+              </Routes>
+            </main>
+          </div>
+        </div>
+      </SidebarProvider>
     </SeasonProvider>
+  );
+};
+
+const SeasonGateContent = () => {
+  const { activeSeason, loading } = useSeason();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-muted-foreground text-sm">جارٍ التحميل...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!activeSeason) {
+    return <Navigate to="/seasons" replace />;
+  }
+
+  return (
+    <Routes>
+      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/queue" element={<Queue />} />
+      <Route path="/invoices" element={<Invoices />} />
+      <Route path="/customers" element={<Customers />} />
+      <Route path="/workers" element={<Workers />} />
+      <Route path="/oil-trading" element={<OilTrading />} />
+      <Route path="/expenses" element={<Expenses />} />
+      <Route path="/inventory" element={<Inventory />} />
+      <Route path="/reports" element={<Reports />} />
+      <Route path="/settings" element={<Settings />} />
+      <Route path="/notifications" element={<Notifications />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
 };
 
