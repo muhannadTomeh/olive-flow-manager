@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          action: string
+          admin_user_id: string
+          created_at: string | null
+          id: string
+          viewed_user_id: string
+        }
+        Insert: {
+          action: string
+          admin_user_id: string
+          created_at?: string | null
+          id?: string
+          viewed_user_id: string
+        }
+        Update: {
+          action?: string
+          admin_user_id?: string
+          created_at?: string | null
+          id?: string
+          viewed_user_id?: string
+        }
+        Relationships: []
+      }
       container_types: {
         Row: {
           created_at: string
@@ -616,6 +640,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      log_admin_access: {
+        Args: { admin_action: string; target_user_id: string }
+        Returns: undefined
       }
     }
     Enums: {
