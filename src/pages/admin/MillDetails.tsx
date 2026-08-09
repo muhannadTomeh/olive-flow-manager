@@ -29,7 +29,7 @@ export default function MillDetails() {
         // Log administrative access
         await supabase.rpc('log_admin_access', {
           target_user_id: millId,
-          action: 'viewed_mill_details'
+          admin_action: 'viewed_mill_details'
         });
 
         // Fetch profile

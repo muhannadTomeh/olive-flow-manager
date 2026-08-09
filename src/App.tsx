@@ -39,6 +39,9 @@ import NotFound from "./pages/NotFound";
 import QueueDisplay from "./pages/QueueDisplay";
 import PublicQueueDisplay from "./pages/PublicQueueDisplay";
 import OAuthConsent from "./pages/OAuthConsent";
+import AdminIndex from "./pages/admin/AdminIndex";
+import MillDetails from "./pages/admin/MillDetails";
+import { AdminRoute } from "./components/AdminRoute";
 
 const queryClient = new QueryClient();
 
@@ -194,6 +197,13 @@ const ProtectedLayout = () => {
         <Route path="/seasons/new" element={<SeasonSetup />} />
         <Route path="/seasons/edit/:id" element={<SeasonSetup />} />
         <Route path="/queue-display" element={<QueueDisplay />} />
+        
+        {/* Admin Routes */}
+        <Route element={<AdminRoute />}>
+          <Route path="/admin" element={<AdminIndex />} />
+          <Route path="/admin/mill/:id" element={<MillDetails />} />
+        </Route>
+
         <Route path="/*" element={<SeasonGate />} />
       </Routes>
     </SeasonProvider>

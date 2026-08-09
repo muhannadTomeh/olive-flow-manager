@@ -15,8 +15,10 @@ import {
   Wallet,
   Cog,
   Warehouse,
+  ShieldCheck,
 } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
+import { useRole } from "@/contexts/RoleContext"
 
 import {
   Sidebar,
@@ -100,6 +102,7 @@ function MenuGroup({ label, items, isCollapsed }: { label: string; items: typeof
 
 export function AppSidebar() {
   const { state } = useSidebar()
+  const { isAdmin } = useRole()
   const isCollapsed = state === "collapsed"
 
   return (
@@ -131,6 +134,13 @@ export function AppSidebar() {
         <MenuGroup label="العمليات" items={operationsItems} isCollapsed={isCollapsed} />
         <MenuGroup label="التحليلات" items={analyticsItems} isCollapsed={isCollapsed} />
         <MenuGroup label="النظام" items={systemItems} isCollapsed={isCollapsed} />
+        {isAdmin && (
+          <MenuGroup 
+            label="الإشراف" 
+            items={[{ title: "لوحة المشرف", url: "/admin", icon: ShieldCheck }]} 
+            isCollapsed={isCollapsed} 
+          />
+        )}
       </SidebarContent>
 
       <SidebarFooter className="p-4 border-t border-sidebar-border/60">
