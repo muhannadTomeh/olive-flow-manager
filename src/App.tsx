@@ -280,14 +280,16 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <RoleProvider>
-            <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/display/:seasonId" element={<PublicQueueDisplay />} />
-              <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
-              <Route path="/*" element={<ProtectedLayout />} />
-            </Routes>
+            <SubscriptionProvider>
+              <Routes>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/display/:seasonId" element={<PublicQueueDisplay />} />
+                <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
+                <Route path="/*" element={<ProtectedLayout />} />
+              </Routes>
+            </SubscriptionProvider>
           </RoleProvider>
         </AuthProvider>
       </BrowserRouter>
