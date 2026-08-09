@@ -333,6 +333,7 @@ export type Database = {
           display_name: string | null
           id: string
           phone: string | null
+          report_pin: string | null
           updated_at: string
           user_id: string
         }
@@ -342,6 +343,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           phone?: string | null
+          report_pin?: string | null
           updated_at?: string
           user_id: string
         }
@@ -351,6 +353,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           phone?: string | null
+          report_pin?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -677,6 +680,8 @@ export type Database = {
         Args: { admin_action: string; target_user_id: string }
         Returns: undefined
       }
+      set_report_pin: { Args: { new_pin: string }; Returns: undefined }
+      verify_report_pin: { Args: { input_pin: string }; Returns: boolean }
     }
     Enums: {
       app_role: "platform_admin" | "mill_owner"

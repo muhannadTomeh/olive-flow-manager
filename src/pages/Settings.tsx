@@ -52,6 +52,8 @@ export default function Settings() {
   
   const [containerDeleteTarget, setContainerDeleteTarget] = useState<ContainerType | null>(null);
   const [expenseDeleteTarget, setExpenseDeleteTarget] = useState<{ id: string, name: string } | null>(null);
+  const [reportPin, setReportPin] = useState("");
+  const [isUpdatingPin, setIsUpdatingPin] = useState(false);
 
   useEffect(() => {
     if (!loading) {
@@ -164,6 +166,30 @@ export default function Settings() {
     });
     if (!result?.error) {
       toast({ title: "تم الحفظ", description: "تم تحديث المخزون بنجاح" });
+    }
+  };
+
+  const updateReportPin = async () => {
+    setIsUpdatingPin(true);
+    try {
+      const { error } = await supabase.rpc("set_report_pin", {
+        new_pin: reportPin
+      });
+      if (error) throw error;
+      toast({ 
+        title: "تم تحديث رمز الحماية", 
+        description: reportPin ? "تم تفعيل حماية التقارير بالرمز الجديد" : "تم إلغاء حماية التقارير" 
+      });
+      setReportPin("");
+    } catch (error) {
+      console.error("Error updating PIN:", error);
+      toast({ 
+        title: "خطأ", 
+        description: "حدث خطأ أثناء تحديث رمز الحماية",
+        variant: "destructive" 
+      });
+    } finally {
+      setIsUpdatingPin(false);
     }
   };
 
@@ -315,6 +341,32 @@ export default function Settings() {
             </div>
           </div>
           <Button onClick={saveInventory} variant="outline"><Save className="h-4 w-4 me-2" />تحديث المخزون</Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>أمن التقارير</CardTitle>
+          <CardDescription>تعيين رمز حماية (PIN) لصفحة التقارير المالية</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>رمز الحماية الجديد (4 أرقام)</Label>
+            <Input 
+              type="password" 
+              maxLength={4} 
+              value={reportPin} 
+              onChange={(e) => setReportPin(e.target.value.replace(/\D/g, ""))} 
+              placeholder="أدخل 4 أرقام..."
+              className="max-w-[200px]"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              إذا تُرك الحقل فارغاً، ستبقى صفحة التقارير مفتوحة بدون حماية.
+            </p>
+          </div>
+          <Button onClick={updateReportPin} disabled={isUpdatingPin}>
+            {isUpdatingPin ? "جارٍ التحديث..." : "حفظ رمز الحماية"}
+          </Button>
         </CardContent>
       </Card>
 

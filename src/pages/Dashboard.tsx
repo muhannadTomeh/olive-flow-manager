@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Clock, CheckCircle, Sprout, Users, Plus, Receipt,
-  Wallet, ArrowLeft, Droplets, DollarSign, UserPlus, Play,
+  Wallet, ArrowLeft, Droplets, DollarSign, UserPlus, Play, Eye, EyeOff
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,6 +25,7 @@ export default function Dashboard() {
     totalCustomers: 0,
   });
   const [queuePreview, setQueuePreview] = useState<{ id: string; name: string; position: number }[]>([]);
+  const [showSensitive, setShowSensitive] = useState(false);
 
   useEffect(() => {
     if (user && activeSeason) {
@@ -62,11 +63,11 @@ export default function Dashboard() {
   };
 
   const statCards = [
-    { label: "الرصيد", hint: "نقداً", value: `${inventory.total_cash.toFixed(0)} ₪`, icon: DollarSign, tone: "text-primary", bg: "bg-primary/10" },
+    { label: "الرصيد", hint: "نقداً", value: `${inventory.total_cash.toFixed(0)} ₪`, icon: DollarSign, tone: "text-primary", bg: "bg-primary/10", sensitive: true },
     { label: "الزيت", hint: "كغم", value: inventory.total_oil.toFixed(1), icon: Droplets, tone: "text-[hsl(var(--primary-glow))]", bg: "bg-[hsl(var(--primary-glow))]/12" },
     { label: "في الطابور", hint: "زبون", value: stats.waitingCount, icon: Clock, tone: "text-[hsl(var(--warning))]", bg: "bg-[hsl(var(--warning))]/12" },
     { label: "تم الإنجاز", hint: "اليوم", value: stats.doneCount, icon: CheckCircle, tone: "text-[hsl(var(--success))]", bg: "bg-[hsl(var(--success))]/12" },
-    { label: "مصاريف اليوم", hint: "شيكل", value: `${stats.todayExpenses} ₪`, icon: Wallet, tone: "text-destructive", bg: "bg-destructive/10" },
+    { label: "مصاريف اليوم", hint: "شيكل", value: `${stats.todayExpenses} ₪`, icon: Wallet, tone: "text-destructive", bg: "bg-destructive/10", sensitive: true },
     { label: "الزبائن", hint: "الموسم", value: stats.totalCustomers, icon: Users, tone: "text-[hsl(var(--info))]", bg: "bg-[hsl(var(--info))]/12" },
   ];
 
@@ -104,12 +105,29 @@ export default function Dashboard() {
             key={i}
             className="surface-card p-5 hover:-translate-y-0.5 hover:shadow-olive transition-all duration-300"
           >
-            <div className={`w-11 h-11 rounded-2xl ${card.bg} flex items-center justify-center mb-4`}>
-              <card.icon className={`h-5 w-5 ${card.tone}`} />
+            <div className="flex items-start justify-between mb-4">
+              <div className={`w-11 h-11 rounded-2xl ${card.bg} flex items-center justify-center`}>
+                <card.icon className={`h-5 w-5 ${card.tone}`} />
+              </div>
+              {card.sensitive && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowSensitive(!showSensitive);
+                  }}
+                >
+                  {showSensitive ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </Button>
+              )}
             </div>
             <p className="text-xs font-medium text-muted-foreground">{card.label}</p>
             <div className="flex items-baseline gap-1.5 mt-1">
-              <span className="text-2xl font-display font-bold text-foreground leading-none">{card.value}</span>
+              <span className="text-2xl font-display font-bold text-foreground leading-none">
+                {card.sensitive && !showSensitive ? "•••• ₪" : card.value}
+              </span>
               <span className="text-[11px] text-muted-foreground/70">{card.hint}</span>
             </div>
           </div>
