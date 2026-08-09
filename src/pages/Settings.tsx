@@ -246,26 +246,6 @@ export default function Settings() {
       </Card>
 
       <Card>
-        
-
-
-        
-        
-
-
-
-
-
-
-
-
-
-
-
-        
-      </Card>
-
-      <Card>
         <CardHeader>
           <CardTitle>أنواع المصاريف</CardTitle>
           <CardDescription>أضف أو عدل أنواع المصاريف التي تستخدمها في المعصرة</CardDescription>
@@ -305,6 +285,27 @@ export default function Settings() {
             </DialogContent>
           </Dialog>
         </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>المخزون والسيولة</CardTitle>
+          <CardDescription>تعديل يدوي لرصيد الزيت والنقدية في المعصرة</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label>إجمالي الزيت (كغم)</Label>
+              <Input type="number" value={inventoryForm.total_oil} onChange={(e) => setInventoryForm((p) => ({ ...p, total_oil: e.target.value }))} min="0" step="0.1" />
+            </div>
+            <div className="space-y-2">
+              <Label>إجمالي النقدية (شيكل)</Label>
+              <Input type="number" value={inventoryForm.total_cash} onChange={(e) => setInventoryForm((p) => ({ ...p, total_cash: e.target.value }))} min="0" step="0.1" />
+            </div>
+          </div>
+          <Button onClick={saveInventory} variant="outline"><Save className="h-4 w-4 me-2" />تحديث المخزون</Button>
+        </CardContent>
+      </Card>
     </div>);
 
 }
