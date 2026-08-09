@@ -4,6 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Settings as SettingsIcon, Save, Plus, Trash2 } from "lucide-react";
 import { useSettings } from "@/hooks/useSettings";
 import { useInventory } from "@/hooks/useInventory";
@@ -45,6 +49,9 @@ export default function Settings() {
   const [expenseCategories, setExpenseCategories] = useState<{ id: string, name: string }[]>([]);
   const [newExpenseCategoryName, setNewExpenseCategoryName] = useState("");
   const [expenseDialogOpen, setExpenseDialogOpen] = useState(false);
+  
+  const [containerDeleteTarget, setContainerDeleteTarget] = useState<ContainerType | null>(null);
+  const [expenseDeleteTarget, setExpenseDeleteTarget] = useState<{ id: string, name: string } | null>(null);
 
   useEffect(() => {
     if (!loading) {
@@ -212,7 +219,7 @@ export default function Settings() {
                     <span className="font-medium">{ct.name}</span>
                     <span className="text-muted-foreground me-2"> — {ct.price} شيكل</span>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={() => deleteContainerType(ct.id)}>
+                  <Button variant="ghost" size="icon" onClick={() => setContainerDeleteTarget(ct)}>
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
                 </div>
@@ -258,7 +265,7 @@ export default function Settings() {
                   <div>
                     <span className="font-medium">{ec.name}</span>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={() => deleteExpenseCategory(ec.id)}>
+                  <Button variant="ghost" size="icon" onClick={() => setExpenseDeleteTarget(ec)}>
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
                 </div>

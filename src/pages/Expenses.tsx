@@ -7,6 +7,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Sprout, Plus, Calendar, DollarSign, Trash2 } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -36,6 +40,7 @@ const Expenses = () => {
   const [loading, setLoading] = useState(true);
   const [newExpense, setNewExpense] = useState({ category: "", amount: "", description: "" });
   const [filter, setFilter] = useState({ category: "", dateFrom: "", dateTo: "" });
+  const [deleteTarget, setDeleteTarget] = useState<Expense | null>(null);
 
   useEffect(() => {
     if (user && activeSeason) {
@@ -81,11 +86,14 @@ const Expenses = () => {
     }
   };
 
-  const deleteExpense = async (id: string, amount: number) => {
+  const deleteExpense = async () => {
+    if (!deleteTarget) return;
+    const { id, amount } = deleteTarget;
     const { error } = await supabase.from("expenses").delete().eq("id", id);
     if (!error) {
       await updateInventory({ total_cash: inventory.total_cash + amount });
       toast({ title: "تم الحذف", description: "تم حذف المصروف" });
+      setDeleteTarget(null);
       fetchExpenses();
       refetchInventory();
     }
@@ -206,7 +214,7 @@ const Expenses = () => {
                       <TableCell className="text-right font-semibold text-destructive">{exp.amount} ش</TableCell>
                       <TableCell className="text-right">{exp.description || <span className="text-muted-foreground">-</span>}</TableCell>
                       <TableCell className="text-right">
-                        <Button size="sm" variant="outline" onClick={() => deleteExpense(exp.id, exp.amount)}><Trash2 className="h-4 w-4" /></Button>
+                        <Button size="sm" variant="outline" onClick={() => setDeleteTarget(exp)}><Trash2 className="h-4 w-4" /></Button>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -216,6 +224,23 @@ const Expenses = () => {
           </CardContent>
         </Card>
       </div>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>تأكيد الحذف</AlertDialogTitle>
+            <AlertDialogDescription>
+              هل تريد حذف مصروف <strong>{deleteTarget?.category}</strong> بقيمة <strong>{deleteTarget?.amount} شيكل</strong>؟ لا يمكن التراجع عن هذا الإجراء.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <AlertDialogAction onClick={deleteExpense} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              حذف المصروف
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
