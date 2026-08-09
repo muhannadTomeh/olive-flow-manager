@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AppSidebar } from "@/components/AppSidebar";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { RoleProvider, useRole } from "@/contexts/RoleContext";
 import { SeasonProvider, useSeason } from "@/contexts/SeasonContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +39,9 @@ import NotFound from "./pages/NotFound";
 import QueueDisplay from "./pages/QueueDisplay";
 import PublicQueueDisplay from "./pages/PublicQueueDisplay";
 import OAuthConsent from "./pages/OAuthConsent";
+import AdminIndex from "./pages/admin/AdminIndex";
+import MillDetails from "./pages/admin/MillDetails";
+import { AdminRoute } from "./components/AdminRoute";
 
 const queryClient = new QueryClient();
 
@@ -193,6 +197,13 @@ const ProtectedLayout = () => {
         <Route path="/seasons/new" element={<SeasonSetup />} />
         <Route path="/seasons/edit/:id" element={<SeasonSetup />} />
         <Route path="/queue-display" element={<QueueDisplay />} />
+        
+        {/* Admin Routes */}
+        <Route element={<AdminRoute />}>
+          <Route path="/admin" element={<AdminIndex />} />
+          <Route path="/admin/mill/:id" element={<MillDetails />} />
+        </Route>
+
         <Route path="/*" element={<SeasonGate />} />
       </Routes>
     </SeasonProvider>
@@ -206,14 +217,16 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/display/:seasonId" element={<PublicQueueDisplay />} />
-            <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
-            <Route path="/*" element={<ProtectedLayout />} />
-          </Routes>
+          <RoleProvider>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/display/:seasonId" element={<PublicQueueDisplay />} />
+              <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
+              <Route path="/*" element={<ProtectedLayout />} />
+            </Routes>
+          </RoleProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
