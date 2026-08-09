@@ -10,7 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSeason } from "@/contexts/SeasonContext";
 import { useInventory } from "@/hooks/useInventory";
 
-const REPORT_PASSWORD = "1234";
+
 
 type Period = "daily" | "weekly" | "monthly" | "yearly";
 
@@ -113,11 +113,22 @@ export default function Reports() {
   const totalIncoming = stats.totalCashEarned + stats.totalOilSales;
   const netProfit = totalIncoming - totalOutgoing;
 
-  const handleUnlock = () => {
-    if (password === REPORT_PASSWORD) {
-      setIsUnlocked(true);
-      setPasswordError(false);
-    } else {
+  const handleUnlock = async () => {
+    try {
+      const { data, error } = await supabase.rpc("verify_report_pin", {
+        input_pin: password,
+      });
+
+      if (error) throw error;
+
+      if (data === true) {
+        setIsUnlocked(true);
+        setPasswordError(false);
+      } else {
+        setPasswordError(true);
+      }
+    } catch (error) {
+      console.error("Error verifying PIN:", error);
       setPasswordError(true);
     }
   };
