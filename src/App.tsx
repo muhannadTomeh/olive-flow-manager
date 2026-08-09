@@ -7,10 +7,11 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AppSidebar } from "@/components/AppSidebar";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RoleProvider, useRole } from "@/contexts/RoleContext";
+import { SubscriptionProvider, useSubscription } from "@/contexts/SubscriptionContext";
 import { SeasonProvider, useSeason } from "@/contexts/SeasonContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Calendar, Plus, Users, Receipt, Wallet, User, ChevronDown, Menu } from "lucide-react";
+import { LogOut, Calendar, Plus, Users, Receipt, Wallet, User, ChevronDown, Menu, Lock, Phone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
@@ -128,6 +129,61 @@ const HeaderBar = () => {
   );
 };
 
+const SubscriptionGate = ({ children }: { children: React.ReactNode }) => {
+  const { status, loading } = useSubscription();
+  const { isAdmin } = useRole();
+  const { signOut } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background" dir="rtl">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-muted-foreground text-sm">جارٍ التحقق من حالة الاشتراك...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isAdmin !== true && status !== 'active') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-6" dir="rtl">
+        <div className="w-full max-w-md space-y-8 text-center bg-card p-8 rounded-2xl border shadow-sm">
+          <div className="mx-auto w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center">
+            <Lock className="h-8 w-8 text-amber-600" />
+          </div>
+          
+          <div className="space-y-3">
+            <h1 className="text-2xl font-bold tracking-tight">
+              {status === 'suspended' ? 'تم إيقاف حسابك مؤقتاً' : 'حسابك بانتظار التفعيل'}
+            </h1>
+            <p className="text-muted-foreground">
+              {status === 'suspended' 
+                ? 'يرجى مراجعة الإدارة لتفعيل حسابك ومتابعة العمل.' 
+                : 'نحن نقوم بمراجعة بياناتك حالياً. سيتم تفعيل حسابك قريباً.'}
+            </p>
+          </div>
+
+          <div className="bg-muted/50 p-4 rounded-xl flex items-center justify-center gap-3">
+            <Phone className="h-5 w-5 text-primary" />
+            <div className="text-right">
+              <p className="text-xs text-muted-foreground">للمساعدة والتفعيل اتصل بنا:</p>
+              <p className="font-bold text-lg ltr">059-832-6014</p>
+            </div>
+          </div>
+
+          <Button variant="outline" onClick={signOut} className="w-full gap-2">
+            <LogOut className="h-4 w-4" />
+            تسجيل الخروج
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+};
+
 const ProtectedLayout = () => {
   const { user, loading } = useAuth();
 
@@ -147,32 +203,36 @@ const ProtectedLayout = () => {
   }
 
   return (
-    <SeasonProvider>
-      <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-background" dir="rtl">
-          <AppSidebar />
-          <div className="flex-1 flex flex-col min-w-0">
-            <HeaderBar />
-            <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
-              <Routes>
-                {/* Admin Routes */}
-                <Route element={<AdminRoute />}>
-                  <Route path="/admin" element={<AdminIndex />} />
-                  <Route path="/admin/mill/:id" element={<MillDetails />} />
-                </Route>
+    <SubscriptionProvider>
+      <SubscriptionGate>
+        <SeasonProvider>
+          <SidebarProvider>
+            <div className="min-h-screen flex w-full bg-background" dir="rtl">
+              <AppSidebar />
+              <div className="flex-1 flex flex-col min-w-0">
+                <HeaderBar />
+                <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
+                  <Routes>
+                    {/* Admin Routes */}
+                    <Route element={<AdminRoute />}>
+                      <Route path="/admin" element={<AdminIndex />} />
+                      <Route path="/admin/mill/:id" element={<MillDetails />} />
+                    </Route>
 
-                <Route path="/seasons" element={<Seasons />} />
-                <Route path="/seasons/new" element={<SeasonSetup />} />
-                <Route path="/seasons/edit/:id" element={<SeasonSetup />} />
-                <Route path="/queue-display" element={<QueueDisplay />} />
-                
-                <Route path="/*" element={<SeasonGateContent />} />
-              </Routes>
-            </main>
-          </div>
-        </div>
-      </SidebarProvider>
-    </SeasonProvider>
+                    <Route path="/seasons" element={<Seasons />} />
+                    <Route path="/seasons/new" element={<SeasonSetup />} />
+                    <Route path="/seasons/edit/:id" element={<SeasonSetup />} />
+                    <Route path="/queue-display" element={<QueueDisplay />} />
+                    
+                    <Route path="/*" element={<SeasonGateContent />} />
+                  </Routes>
+                </main>
+              </div>
+            </div>
+          </SidebarProvider>
+        </SeasonProvider>
+      </SubscriptionGate>
+    </SubscriptionProvider>
   );
 };
 
@@ -220,14 +280,16 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <RoleProvider>
-            <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/display/:seasonId" element={<PublicQueueDisplay />} />
-              <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
-              <Route path="/*" element={<ProtectedLayout />} />
-            </Routes>
+            <SubscriptionProvider>
+              <Routes>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/display/:seasonId" element={<PublicQueueDisplay />} />
+                <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
+                <Route path="/*" element={<ProtectedLayout />} />
+              </Routes>
+            </SubscriptionProvider>
           </RoleProvider>
         </AuthProvider>
       </BrowserRouter>
