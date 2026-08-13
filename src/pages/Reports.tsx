@@ -9,6 +9,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSeason } from "@/contexts/SeasonContext";
 import { useInventory } from "@/hooks/useInventory";
+import { useRole } from "@/contexts/RoleContext";
+import { Navigate } from "react-router-dom";
 
 
 
@@ -46,6 +48,8 @@ const periodLabels: Record<Period, string> = {
 
 export default function Reports() {
   const { user } = useAuth();
+  const { isEmployee } = useRole();
+  if (isEmployee) return <Navigate to="/queue" replace />;
   const { activeSeason } = useSeason();
   const { inventory } = useInventory();
   const [period, setPeriod] = useState<Period>("daily");

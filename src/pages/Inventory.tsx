@@ -13,6 +13,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSeason } from "@/contexts/SeasonContext";
 import { useInventory } from "@/hooks/useInventory";
+import { useRole } from "@/contexts/RoleContext";
+import { Navigate } from "react-router-dom";
 import { InvoicePreview, InvoicePreviewData } from "@/components/invoices/InvoicePreview";
 
 type MovementKind = "invoice" | "oil_buy" | "oil_sell" | "expense" | "worker_payment";
@@ -37,6 +39,8 @@ const kindMeta: Record<MovementKind, { label: string; icon: any; color: string }
 };
 
 const Inventory = () => {
+  const { isEmployee } = useRole();
+  if (isEmployee) return <Navigate to="/queue" replace />;
   const { user } = useAuth();
   const { activeSeason } = useSeason();
   const { inventory, loading: invLoading } = useInventory();
