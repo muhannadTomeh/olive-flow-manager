@@ -7,45 +7,53 @@ import {
   Leaf,
   BarChart3,
   Users,
-  Receipt,
   Clock,
   ShieldCheck,
   ArrowLeft,
-  Droplets,
 } from "lucide-react";
 
-const features = [
+const marketingFeatures = [
   {
     icon: Clock,
-    title: "إدارة الطابور",
-    description: "تنظيم دور الزبائن ومتابعة حالة العصر لحظة بلحظة",
-  },
-  {
-    icon: Receipt,
-    title: "الفواتير والحسابات",
-    description: "إنشاء فواتير تلقائية وتتبع المدفوعات والمستحقات",
+    title: "توفير الوقت",
+    description: "حساب الفاتورة تلقائياً بدل اليدوي المعقد، سرعة في الإنجاز ودقة في الحسابات.",
   },
   {
     icon: Users,
-    title: "إدارة الزبائن",
-    description: "قاعدة بيانات شاملة للزبائن مع سجل كامل لكل عميل",
-  },
-  {
-    icon: Droplets,
-    title: "بيع وشراء الزيت",
-    description: "متابعة عمليات بيع وشراء الزيت وإدارة المخزون",
+    title: "تنظيم الطابور",
+    description: "وداعاً لفوضى الزبائن، نظام ذكي لإدارة الأدوار وتتبع حالة كل دور لحظة بلحظة.",
   },
   {
     icon: BarChart3,
-    title: "التقارير والإحصائيات",
-    description: "تقارير مفصّلة عن الإنتاج والمبيعات والأرباح",
+    title: "تقارير مالية فورية",
+    description: "اعرف أرباحك، مصاريفك، وكميات الزيت الناتجة لحظة بلحظة ومن أي مكان.",
   },
   {
     icon: ShieldCheck,
-    title: "أمان وخصوصية",
-    description: "حماية كاملة للبيانات مع صلاحيات مخصصة لكل مستخدم",
+    title: "أرشفة كاملة",
+    description: "سجل كامل لكل الزبائن والمواسم السابقة، بياناتك محفوظة ومنظمة للرجوع إليها دائماً.",
   },
 ];
+
+const howItWorks = [
+  {
+    step: "1",
+    title: "تسجيل الزبون",
+    description: "سجل بيانات الزبون وعدد الشوالات في الطابور بضغطة زر.",
+  },
+  {
+    step: "2",
+    title: "إدخال كمية الزيت",
+    description: "بعد العصر، أدخل كمية الزيت المستخرج في شاشة الفاتورة السريعة.",
+  },
+  {
+    step: "3",
+    title: "حساب الفاتورة",
+    description: "يتم حساب الفاتورة تلقائياً مع خيارات دفع متعددة (زيت، نقدي، أو مختلط).",
+  },
+];
+
+const CONTACT_WHATSAPP = "https://wa.me/970598326014?text=" + encodeURIComponent("مرحباً، أريد الاشتراك بنظام Smart Mill");
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -74,8 +82,8 @@ const LandingPage = () => {
             <Button variant="ghost" onClick={() => navigate("/auth")}>
               تسجيل الدخول
             </Button>
-            <Button onClick={() => navigate("/auth")}>
-              ابدأ الآن
+            <Button onClick={() => window.open(CONTACT_WHATSAPP, "_blank")}>
+              اطلب اشتراكك
             </Button>
           </div>
         </div>
@@ -90,45 +98,68 @@ const LandingPage = () => {
             نظام إدارة معاصر الزيتون الحديث
           </div>
           <h1 className="text-4xl md:text-6xl font-extrabold text-foreground leading-tight mb-6 max-w-3xl mx-auto">
-            أدِر معصرتك بـ<span className="text-primary">ذكاء</span> وكفاءة
+            تخلص من فوضى الدفاتر والحسابات اليدوية — <span className="text-primary">شغّل معصرتك بذكاء</span>
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
-            منصة متكاملة لإدارة جميع عمليات المعصرة — من استقبال الزبائن وحتى الفواتير والتقارير — في مكان واحد.
+            نظم الطابور، احسب الفواتير أوتوماتيكياً، واحصل على تقارير فورية عن أرباحك وإنتاجك في مكان واحد.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button size="lg" className="text-base px-8 h-12" onClick={() => navigate("/auth")}>
-              ابدأ مجاناً
+            <Button size="lg" className="text-base px-8 h-12" onClick={() => window.open(CONTACT_WHATSAPP, "_blank")}>
+              اطلب اشتراكك الآن
               <ArrowLeft className="h-5 w-5 mr-2" />
             </Button>
             <Button size="lg" variant="outline" className="text-base px-8 h-12" onClick={() => {
-              document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
+              document.getElementById("why-us")?.scrollIntoView({ behavior: "smooth" });
             }}>
-              اكتشف المميزات
+              ليش هذا النظام؟
             </Button>
           </div>
         </div>
       </section>
 
-      {/* Features */}
-      <section id="features" className="max-w-6xl mx-auto px-6 py-20">
+      {/* Why Us Section */}
+      <section id="why-us" className="max-w-6xl mx-auto px-6 py-20 bg-muted/30 rounded-3xl">
         <div className="text-center mb-14">
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">كل ما تحتاجه في مكان واحد</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">ليش هذا النظام؟</h2>
           <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-            أدوات متقدمة صُمّمت خصيصاً لتلبية احتياجات أصحاب المعاصر
+            القيمة الحقيقية التي ستحصل عليها لإدارة معصرتك بكفاءة
           </p>
         </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((f) => (
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {marketingFeatures.map((f) => (
             <Card key={f.title} className="group hover:shadow-olive transition-smooth border-border">
               <CardContent className="p-6">
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-smooth">
                   <f.icon className="h-6 w-6 text-primary" />
                 </div>
                 <h3 className="text-lg font-semibold text-foreground mb-2">{f.title}</h3>
-                <p className="text-muted-foreground leading-relaxed">{f.description}</p>
+                <p className="text-muted-foreground leading-relaxed text-sm">{f.description}</p>
               </CardContent>
             </Card>
           ))}
+        </div>
+      </section>
+
+      {/* How it Works Section */}
+      <section className="max-w-6xl mx-auto px-6 py-20">
+        <div className="text-center mb-14">
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">كيف يعمل؟</h2>
+          <p className="text-muted-foreground text-lg max-w-xl mx-auto">
+            3 خطوات بسيطة لإدارة عملية العصر بالكامل
+          </p>
+        </div>
+        <div className="grid md:grid-cols-3 gap-12 relative">
+          {howItWorks.map((step, index) => (
+            <div key={index} className="flex flex-col items-center text-center relative z-10">
+              <div className="w-16 h-16 rounded-full olive-gradient flex items-center justify-center text-2xl font-bold text-primary-foreground mb-6 shadow-lg">
+                {step.step}
+              </div>
+              <h3 className="text-xl font-bold text-foreground mb-3">{step.title}</h3>
+              <p className="text-muted-foreground leading-relaxed">{step.description}</p>
+            </div>
+          ))}
+          {/* Connector line for desktop */}
+          <div className="hidden md:block absolute top-8 left-[20%] right-[20%] h-0.5 bg-border -z-0" />
         </div>
       </section>
 
@@ -139,15 +170,15 @@ const LandingPage = () => {
             جاهز لتطوير إدارة معصرتك؟
           </h2>
           <p className="text-primary-foreground/80 text-lg mb-8 max-w-xl mx-auto">
-            انضم الآن وابدأ بإدارة معصرتك بطريقة احترافية وسهلة
+            تواصل معنا الآن لتفعيل حسابك والبدء في تنظيم معصرتك بذكاء.
           </p>
           <Button
             size="lg"
             variant="secondary"
             className="text-base px-8 h-12"
-            onClick={() => navigate("/auth")}
+            onClick={() => window.open(CONTACT_WHATSAPP, "_blank")}
           >
-            سجّل حسابك الآن
+            اطلب اشتراكك عبر واتساب
             <ArrowLeft className="h-5 w-5 mr-2" />
           </Button>
         </div>
@@ -158,9 +189,9 @@ const LandingPage = () => {
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-muted-foreground text-sm">
             <Leaf className="h-4 w-4 text-primary" />
-            نظام إدارة معاصر الزيتون © {new Date().getFullYear()}
+            نظام إدارة معاصر الزيتون Smart Mill © {new Date().getFullYear()}
           </div>
-          <p className="text-muted-foreground text-sm">صُنع بعناية لأصحاب المعاصر</p>
+          <p className="text-muted-foreground text-sm">صُنع بعناية لأصحاب المعاصر في فلسطين والوطن العربي</p>
         </div>
       </footer>
     </div>
