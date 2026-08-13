@@ -153,17 +153,18 @@ const Workers = () => {
 
   const payWorker = async (worker: Worker, amount: number, notes: string, onDone: () => void) => {
     if (amount <= 0) return;
-    const balance = worker.total_earned - worker.total_paid;
-    if (amount > balance) {
-      toast({ title: "خطأ", description: "المبلغ أكبر من الرصيد المستحق", variant: "destructive" });
-      return;
-    }
-    const { error } = await supabase.from("worker_payments").insert({
-      user_id: user!.id, season_id: activeSeason!.id, worker_id: worker.id, amount, notes: notes.trim() || null,
+    
+    const { error } = await supabase.rpc("pay_worker_and_settle", {
+      p_user_id: user!.id,
+      p_season_id: activeSeason!.id,
+      p_worker_id: worker.id,
+      p_amount: amount,
+      p_notes: notes.trim() || null
     });
-    if (!error) {
-      await supabase.from("workers").update({ total_paid: worker.total_paid + amount }).eq("id", worker.id);
-      await updateInventory({ total_cash: inventory.total_cash - amount });
+
+    if (error) {
+      toast({ title: "خطأ", description: error.message, variant: "destructive" });
+    } else {
       toast({ title: "تم الدفع", description: `تم دفع ${amount} شيكل للعامل ${worker.name}` });
       fetchWorkers();
       fetchPayments();
