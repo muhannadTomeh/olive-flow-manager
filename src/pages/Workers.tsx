@@ -180,13 +180,18 @@ const Workers = () => {
     const worker = workers.find(w => w.id === selectedWorkerId);
     if (!worker) return;
     const val = parseFloat(workValue);
-    const amount = worker.type === 'hourly' ? val * (worker.hourly_rate || 0) : val * (worker.shift_rate || 0);
-    const record: any = { user_id: user!.id, season_id: activeSeason!.id, worker_id: selectedWorkerId, amount, notes: workNotes.trim() || null };
-    if (worker.type === 'hourly') record.hours = val; else record.shifts = val;
 
-    const { error } = await supabase.from("work_records").insert(record);
-    if (!error) {
-      await supabase.from("workers").update({ total_earned: worker.total_earned + amount }).eq("id", selectedWorkerId);
+    const { error } = await (supabase.rpc as any)("register_worker_session", {
+      p_user_id: user!.id,
+      p_season_id: activeSeason!.id,
+      p_worker_id: selectedWorkerId,
+      p_val: val,
+      p_notes: workNotes.trim() || null
+    });
+
+    if (error) {
+      toast({ title: "خطأ", description: error.message, variant: "destructive" });
+    } else {
       toast({ title: "تم التسجيل", description: `تم تسجيل ${val} ${worker.type === 'hourly' ? 'ساعة' : 'شفت'} للعامل ${worker.name}` });
       setWorkValue("");
       setWorkNotes("");
