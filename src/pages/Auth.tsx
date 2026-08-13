@@ -89,6 +89,32 @@ const Auth = () => {
     }
   };
 
+  const handleEmployeeLogin = async () => {
+    if (!employeeOwnerId || !employeePin) return;
+    setIsVerifyingEmployee(true);
+    try {
+      const { data, error } = await supabase.rpc("verify_employee_pin" as any, {
+        owner_id: employeeOwnerId,
+        input_pin: employeePin
+      });
+      
+      if (error) throw error;
+      
+      if (data) {
+        localStorage.setItem('employee_owner_id', employeeOwnerId);
+        toast({ title: "تم تسجيل الدخول", description: "مرحباً بك في وضع الموظف" });
+        window.location.href = "/queue";
+      } else {
+        toast({ title: "خطأ", description: "رمز الدخول غير صحيح", variant: "destructive" });
+      }
+    } catch (err) {
+      console.error(err);
+      toast({ title: "خطأ", description: "فشل التحقق من الرمز", variant: "destructive" });
+    } finally {
+      setIsVerifyingEmployee(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col lg:flex-row" dir="rtl">
       {/* Branding Panel */}
@@ -105,6 +131,40 @@ const Auth = () => {
           )}
           {view === "forgot-password" && (
             <ForgotPasswordForm loading={loading} onSubmit={handleForgotPassword} onNavigate={setView} />
+          )}
+          {view === "employee" && (
+            <div className="space-y-6">
+              <div className="text-center space-y-2">
+                <h2 className="text-2xl font-bold">دخول الموظف</h2>
+                <p className="text-muted-foreground">أدخل الرمز المكون من 4 أرقام للمتابعة</p>
+              </div>
+              <div className="space-y-4">
+                <div className="flex justify-center">
+                  <input
+                    type="password"
+                    maxLength={6}
+                    value={employeePin}
+                    onChange={(e) => setEmployeePin(e.target.value.replace(/\D/g, ""))}
+                    className="w-48 h-14 text-center text-3xl tracking-[1em] font-bold border-2 border-primary/20 rounded-xl focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+                    autoFocus
+                  />
+                </div>
+                <Button 
+                  onClick={handleEmployeeLogin} 
+                  disabled={isVerifyingEmployee || employeePin.length < 4} 
+                  className="w-full h-12 text-lg"
+                >
+                  {isVerifyingEmployee ? "جارٍ التحقق..." : "تسجيل الدخول"}
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setView("login")} 
+                  className="w-full"
+                >
+                  الرجوع لتسجيل دخول المالك
+                </Button>
+              </div>
+            </div>
           )}
         </div>
       </div>
