@@ -203,7 +203,7 @@ export default function Settings() {
     }
     setIsUpdatingEmployeePin(true);
     try {
-      const { error } = await supabase.rpc("set_employee_pin", {
+      const { error } = await supabase.rpc("set_employee_pin" as any, {
         new_pin: employeePin
       });
       if (error) throw error;

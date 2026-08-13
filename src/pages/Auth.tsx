@@ -10,7 +10,17 @@ import ForgotPasswordForm from "@/components/auth/ForgotPasswordForm";
 export type AuthView = "login" | "register" | "forgot-password";
 
 const Auth = () => {
-  const [view, setView] = useState<AuthView>("login");
+  const [view, setView] = useState<AuthView | "employee">("login");
+  const [employeePin, setEmployeePin] = useState("");
+  const [isVerifyingEmployee, setIsVerifyingEmployee] = useState(false);
+  const [searchParams] = useSearchParams();
+  const employeeOwnerId = searchParams.get("employee");
+
+  useState(() => {
+    if (employeeOwnerId) {
+      setView("employee");
+    }
+  });
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
