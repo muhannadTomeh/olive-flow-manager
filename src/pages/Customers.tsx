@@ -8,6 +8,7 @@ import { Users, Search, FileText, Phone, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSeason } from "@/contexts/SeasonContext";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 interface Customer {
   id: string;
@@ -140,16 +141,24 @@ const Customers = () => {
         </CardContent>
       </Card>
 
-      {selectedCustomer && (
-        <Card>
-          <CardHeader>
-            <CardTitle>سجل فواتير {selectedCustomer.name}</CardTitle>
-            {selectedCustomer.phone && <CardDescription>📱 {selectedCustomer.phone}</CardDescription>}
-          </CardHeader>
-          <CardContent>
-            {customerInvoices.length === 0 ? (
-              <p className="text-center py-8 text-muted-foreground">لا توجد فواتير لهذا الزبون</p>
-            ) : (
+      <Dialog open={!!selectedCustomerId} onOpenChange={(open) => !open && setSelectedCustomerId(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="text-right flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" />
+              سجل فواتير {selectedCustomer?.name}
+            </DialogTitle>
+            {selectedCustomer?.phone && (
+              <DialogDescription className="text-right">
+                📱 {selectedCustomer.phone}
+              </DialogDescription>
+            )}
+          </DialogHeader>
+
+          {customerInvoices.length === 0 ? (
+            <p className="text-center py-8 text-muted-foreground">لا توجد فواتير لهذا الزبون</p>
+          ) : (
+            <div className="mt-4">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -174,10 +183,10 @@ const Customers = () => {
                   ))}
                 </TableBody>
               </Table>
-            )}
-          </CardContent>
-        </Card>
-      )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
