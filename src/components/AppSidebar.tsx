@@ -102,7 +102,7 @@ function MenuGroup({ label, items, isCollapsed }: { label: string; items: typeof
 
 export function AppSidebar() {
   const { state } = useSidebar()
-  const { isAdmin } = useRole()
+  const { isAdmin, isEmployee } = useRole()
   const isCollapsed = state === "collapsed"
 
   return (
@@ -130,10 +130,14 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="px-3 py-4 space-y-3">
-        <MenuGroup label="الرئيسية" items={mainItems} isCollapsed={isCollapsed} />
-        <MenuGroup label="العمليات" items={operationsItems} isCollapsed={isCollapsed} />
-        <MenuGroup label="التحليلات" items={analyticsItems} isCollapsed={isCollapsed} />
-        <MenuGroup label="النظام" items={systemItems} isCollapsed={isCollapsed} />
+        <MenuGroup label="الرئيسية" items={isEmployee ? mainItems.filter(i => ['الطابور', 'حساب الرد'].includes(i.title)) : mainItems} isCollapsed={isCollapsed} />
+        {!isEmployee && (
+          <>
+            <MenuGroup label="العمليات" items={operationsItems} isCollapsed={isCollapsed} />
+            <MenuGroup label="التحليلات" items={analyticsItems} isCollapsed={isCollapsed} />
+            <MenuGroup label="النظام" items={systemItems} isCollapsed={isCollapsed} />
+          </>
+        )}
         {isAdmin && (
           <MenuGroup 
             label="الإشراف" 

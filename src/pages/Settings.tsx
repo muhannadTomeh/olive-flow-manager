@@ -8,7 +8,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Settings as SettingsIcon, Save, Plus, Trash2 } from "lucide-react";
+import { Settings as SettingsIcon, Save, Plus, Trash2, Key, Link as LinkIcon, LogOut } from "lucide-react";
 import { useSettings } from "@/hooks/useSettings";
 import { useInventory } from "@/hooks/useInventory";
 import { useToast } from "@/hooks/use-toast";
@@ -54,6 +54,9 @@ export default function Settings() {
   const [expenseDeleteTarget, setExpenseDeleteTarget] = useState<{ id: string, name: string } | null>(null);
   const [reportPin, setReportPin] = useState("");
   const [isUpdatingPin, setIsUpdatingPin] = useState(false);
+  const [employeePin, setEmployeePin] = useState("");
+  const [isUpdatingEmployeePin, setIsUpdatingEmployeePin] = useState(false);
+  const [employeeLoginUrl, setEmployeeLoginUrl] = useState("");
 
   useEffect(() => {
     if (!loading) {
@@ -191,6 +194,39 @@ export default function Settings() {
     } finally {
       setIsUpdatingPin(false);
     }
+  };
+
+  const updateEmployeePin = async () => {
+    if (!employeePin || employeePin.length < 4) {
+      toast({ title: "خطأ", description: "يجب أن يكون الرمز 4 أرقام على الأقل", variant: "destructive" });
+      return;
+    }
+    setIsUpdatingEmployeePin(true);
+    try {
+      const { error } = await supabase.rpc("set_employee_pin", {
+        new_pin: employeePin
+      });
+      if (error) throw error;
+      toast({ title: "تم التحديث", description: "تم تحديث رمز دخول الموظف" });
+      setEmployeePin("");
+    } catch (error) {
+      console.error("Error:", error);
+      toast({ title: "خطأ", description: "فشل تحديث الرمز", variant: "destructive" });
+    } finally {
+      setIsUpdatingEmployeePin(false);
+    }
+  };
+
+  const generateEmployeeUrl = () => {
+    if (!user) return;
+    const url = `${window.location.origin}/auth?employee=${user.id}`;
+    setEmployeeLoginUrl(url);
+    toast({ title: "تم التوليد", description: "تم توليد رابط دخول الموظف" });
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast({ title: "تم النسخ", description: "تم نسخ النص إلى الحافظة" });
   };
 
   if (loading) return <p className="text-center py-8 text-muted-foreground">جارٍ التحميل...</p>;
@@ -367,6 +403,55 @@ export default function Settings() {
           <Button onClick={updateReportPin} disabled={isUpdatingPin}>
             {isUpdatingPin ? "جارٍ التحديث..." : "حفظ رمز الحماية"}
           </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>دخول الموظفين (Employee Login)</CardTitle>
+          <CardDescription>إنشاء رمز ورابط لدخول الموظفين بصلاحيات محدودة (الطابور والفواتير فقط)</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>تعيين رمز دخول جديد (PIN)</Label>
+              <div className="flex gap-2">
+                <Input 
+                  type="password" 
+                  maxLength={6} 
+                  value={employeePin} 
+                  onChange={(e) => setEmployeePin(e.target.value.replace(/\D/g, ""))} 
+                  placeholder="أدخل رمز الموظف..."
+                  className="max-w-[200px]"
+                />
+                <Button onClick={updateEmployeePin} disabled={isUpdatingEmployeePin} size="sm">
+                  {isUpdatingEmployeePin ? "جارٍ التحديث..." : "تحديث الرمز"}
+                </Button>
+              </div>
+            </div>
+
+            <Separator />
+
+            <div className="space-y-2">
+              <Label>رابط دخول الموظف</Label>
+              <div className="flex flex-col gap-3">
+                <Button onClick={generateEmployeeUrl} variant="outline" className="w-fit gap-2">
+                  <LinkIcon className="h-4 w-4" />
+                  توليد رابط الدخول
+                </Button>
+                
+                {employeeLoginUrl && (
+                  <div className="p-3 bg-muted rounded-lg flex items-center justify-between gap-4">
+                    <code className="text-xs break-all text-primary font-mono">{employeeLoginUrl}</code>
+                    <Button size="sm" variant="secondary" onClick={() => copyToClipboard(employeeLoginUrl)}>نسخ</Button>
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                شارك هذا الرابط مع الموظف ليتمكن من الدخول باستخدام الرمز (PIN) الذي حددته أعلاه.
+              </p>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
