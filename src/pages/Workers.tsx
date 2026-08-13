@@ -154,7 +154,7 @@ const Workers = () => {
   const payWorker = async (worker: Worker, amount: number, notes: string, onDone: () => void) => {
     if (amount <= 0) return;
     
-    const { error } = await supabase.rpc("pay_worker_and_settle", {
+    const { error } = await (supabase.rpc as any)("pay_worker_and_settle", {
       p_user_id: user!.id,
       p_season_id: activeSeason!.id,
       p_worker_id: worker.id,
