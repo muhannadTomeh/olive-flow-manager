@@ -2,7 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Leaf,
   BarChart3,
@@ -53,11 +54,25 @@ const howItWorks = [
   },
 ];
 
-const CONTACT_WHATSAPP = "https://wa.me/970598326014?text=" + encodeURIComponent("مرحباً، أريد الاشتراك بنظام Smart Mill");
-
 const LandingPage = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const [contactLink, setContactLink] = useState("https://wa.me/970598326014?text=" + encodeURIComponent("مرحباً، أريد الاشتراك بنظام Smart Mill"));
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      const { data } = await supabase
+        .from("system_settings")
+        .select("value")
+        .eq("key", "contact_link")
+        .single();
+      
+      if (data?.value) {
+        setContactLink(data.value);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   useEffect(() => {
     if (!loading && user) {
@@ -82,7 +97,7 @@ const LandingPage = () => {
             <Button variant="ghost" onClick={() => navigate("/auth")}>
               تسجيل الدخول
             </Button>
-            <Button onClick={() => window.open(CONTACT_WHATSAPP, "_blank")}>
+            <Button onClick={() => window.open(contactLink, "_blank")}>
               اطلب اشتراكك
             </Button>
           </div>
@@ -104,7 +119,7 @@ const LandingPage = () => {
             نظم الطابور، احسب الفواتير أوتوماتيكياً، واحصل على تقارير فورية عن أرباحك وإنتاجك في مكان واحد.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button size="lg" className="text-base px-8 h-12" onClick={() => window.open(CONTACT_WHATSAPP, "_blank")}>
+            <Button size="lg" className="text-base px-8 h-12" onClick={() => window.open(contactLink, "_blank")}>
               اطلب اشتراكك الآن
               <ArrowLeft className="h-5 w-5 mr-2" />
             </Button>
@@ -176,9 +191,9 @@ const LandingPage = () => {
             size="lg"
             variant="secondary"
             className="text-base px-8 h-12"
-            onClick={() => window.open(CONTACT_WHATSAPP, "_blank")}
+            onClick={() => window.open(contactLink, "_blank")}
           >
-            اطلب اشتراكك عبر واتساب
+            اطلب اشتراكك الآن
             <ArrowLeft className="h-5 w-5 mr-2" />
           </Button>
         </div>

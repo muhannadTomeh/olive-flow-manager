@@ -25,6 +25,8 @@ export default function AdminIndex() {
   });
   const [mills, setMills] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [contactLink, setContactLink] = useState("");
+  const [updatingLink, setUpdatingLink] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -101,8 +103,35 @@ export default function AdminIndex() {
       }
     };
 
+    const fetchContactLink = async () => {
+      const { data } = await supabase
+        .from("system_settings")
+        .select("value")
+        .eq("key", "contact_link")
+        .single();
+      if (data) setContactLink(data.value);
+    };
+
     fetchData();
+    fetchContactLink();
   }, []);
+
+  const handleUpdateContactLink = async () => {
+    setUpdatingLink(true);
+    const { error } = await supabase
+      .from("system_settings")
+      .upsert({ 
+        key: "contact_link", 
+        value: contactLink,
+        updated_at: new Date().toISOString(),
+        updated_by: (await supabase.auth.getUser()).data.user?.id
+      });
+    
+    setUpdatingLink(false);
+    if (!error) {
+      alert("تم تحديث رابط التواصل بنجاح");
+    }
+  };
 
   if (loading) return <div>جارٍ التحميل...</div>;
 
@@ -114,6 +143,36 @@ export default function AdminIndex() {
           العودة للرئيسية
         </Button>
       </div>
+
+      {/* Global Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-right">إعدادات النظام العالمية</CardTitle>
+        </CardHeader>
+        <CardContent className="text-right">
+          <div className="flex flex-col space-y-4">
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium">رابط التواصل (واتساب، مسنجر، إلخ)</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={contactLink}
+                  onChange={(e) => setContactLink(e.target.value)}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  placeholder="https://wa.me/..."
+                  dir="ltr"
+                />
+                <Button onClick={handleUpdateContactLink} disabled={updatingLink}>
+                  {updatingLink ? "جاري الحفظ..." : "حفظ الرابط"}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                هذا الرابط سيظهر لجميع المستخدمين في الصفحة الرئيسية عند النقر على "اطلب اشتراكك".
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
