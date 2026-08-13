@@ -153,17 +153,18 @@ const Workers = () => {
 
   const payWorker = async (worker: Worker, amount: number, notes: string, onDone: () => void) => {
     if (amount <= 0) return;
-    const balance = worker.total_earned - worker.total_paid;
-    if (amount > balance) {
-      toast({ title: "خطأ", description: "المبلغ أكبر من الرصيد المستحق", variant: "destructive" });
-      return;
-    }
-    const { error } = await supabase.from("worker_payments").insert({
-      user_id: user!.id, season_id: activeSeason!.id, worker_id: worker.id, amount, notes: notes.trim() || null,
+    
+    const { error } = await (supabase.rpc as any)("pay_worker_and_settle", {
+      p_user_id: user!.id,
+      p_season_id: activeSeason!.id,
+      p_worker_id: worker.id,
+      p_amount: amount,
+      p_notes: notes.trim() || null
     });
-    if (!error) {
-      await supabase.from("workers").update({ total_paid: worker.total_paid + amount }).eq("id", worker.id);
-      await updateInventory({ total_cash: inventory.total_cash - amount });
+
+    if (error) {
+      toast({ title: "خطأ", description: error.message, variant: "destructive" });
+    } else {
       toast({ title: "تم الدفع", description: `تم دفع ${amount} شيكل للعامل ${worker.name}` });
       fetchWorkers();
       fetchPayments();
@@ -179,13 +180,18 @@ const Workers = () => {
     const worker = workers.find(w => w.id === selectedWorkerId);
     if (!worker) return;
     const val = parseFloat(workValue);
-    const amount = worker.type === 'hourly' ? val * (worker.hourly_rate || 0) : val * (worker.shift_rate || 0);
-    const record: any = { user_id: user!.id, season_id: activeSeason!.id, worker_id: selectedWorkerId, amount, notes: workNotes.trim() || null };
-    if (worker.type === 'hourly') record.hours = val; else record.shifts = val;
 
-    const { error } = await supabase.from("work_records").insert(record);
-    if (!error) {
-      await supabase.from("workers").update({ total_earned: worker.total_earned + amount }).eq("id", selectedWorkerId);
+    const { error } = await (supabase.rpc as any)("register_worker_session", {
+      p_user_id: user!.id,
+      p_season_id: activeSeason!.id,
+      p_worker_id: selectedWorkerId,
+      p_val: val,
+      p_notes: workNotes.trim() || null
+    });
+
+    if (error) {
+      toast({ title: "خطأ", description: error.message, variant: "destructive" });
+    } else {
       toast({ title: "تم التسجيل", description: `تم تسجيل ${val} ${worker.type === 'hourly' ? 'ساعة' : 'شفت'} للعامل ${worker.name}` });
       setWorkValue("");
       setWorkNotes("");
