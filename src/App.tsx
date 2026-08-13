@@ -211,6 +211,8 @@ const ProtectedLayout = () => {
     return <Navigate to="/auth" replace />;
   }
 
+  const { isEmployee } = useRole();
+
   return (
     <SubscriptionProvider>
       <SubscriptionGate>
