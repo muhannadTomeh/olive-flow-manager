@@ -85,8 +85,8 @@ const LandingPage = () => {
             <Button variant="ghost" onClick={() => navigate("/auth")}>
               تسجيل الدخول
             </Button>
-            <Button onClick={() => navigate("/auth")}>
-              ابدأ الآن
+            <Button onClick={() => window.open(CONTACT_WHATSAPP, "_blank")}>
+              اطلب اشتراكك
             </Button>
           </div>
         </div>
