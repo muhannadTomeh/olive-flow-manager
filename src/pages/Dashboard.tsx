@@ -13,7 +13,12 @@ import { useSeason } from "@/contexts/SeasonContext";
 import { useInventory } from "@/hooks/useInventory";
 import { useNavigate } from "react-router-dom";
 
+import { useRole } from "@/contexts/RoleContext";
+import { Navigate } from "react-router-dom";
+
 export default function Dashboard() {
+  const { isEmployee } = useRole();
+  if (isEmployee) return <Navigate to="/queue" replace />;
   const { user } = useAuth();
   const { activeSeason } = useSeason();
   const { inventory } = useInventory();

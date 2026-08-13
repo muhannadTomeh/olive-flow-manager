@@ -131,8 +131,17 @@ const HeaderBar = () => {
 
 const SubscriptionGate = ({ children }: { children: React.ReactNode }) => {
   const { status, loading } = useSubscription();
-  const { isAdmin } = useRole();
-  const { signOut } = useAuth();
+  const { isAdmin, isEmployee } = useRole();
+  const { signOut: authSignOut } = useAuth();
+
+  const signOut = async () => {
+    if (isEmployee) {
+      localStorage.removeItem('employee_owner_id');
+      window.location.href = '/auth';
+    } else {
+      await authSignOut();
+    }
+  };
 
   if (loading) {
     return (
@@ -202,6 +211,8 @@ const ProtectedLayout = () => {
     return <Navigate to="/auth" replace />;
   }
 
+  const { isEmployee } = useRole();
+
   return (
     <SubscriptionProvider>
       <SubscriptionGate>
@@ -219,12 +230,18 @@ const ProtectedLayout = () => {
                       <Route path="/admin/mill/:id" element={<MillDetails />} />
                     </Route>
 
-                    <Route path="/seasons" element={<Seasons />} />
-                    <Route path="/seasons/new" element={<SeasonSetup />} />
-                    <Route path="/seasons/edit/:id" element={<SeasonSetup />} />
-                    <Route path="/queue-display" element={<QueueDisplay />} />
-                    
-                    <Route path="/*" element={<SeasonGateContent />} />
+                    {/* Restricted routes for employees */}
+                    {!isEmployee ? (
+                      <>
+                        <Route path="/seasons" element={<Seasons />} />
+                        <Route path="/seasons/new" element={<SeasonSetup />} />
+                        <Route path="/seasons/edit/:id" element={<SeasonSetup />} />
+                        <Route path="/queue-display" element={<QueueDisplay />} />
+                        <Route path="/*" element={<SeasonGateContent />} />
+                      </>
+                    ) : (
+                      <Route path="/*" element={<EmployeeLayout />} />
+                    )}
                   </Routes>
                 </main>
               </div>
@@ -233,6 +250,38 @@ const ProtectedLayout = () => {
         </SeasonProvider>
       </SubscriptionGate>
     </SubscriptionProvider>
+  );
+};
+
+const EmployeeLayout = () => {
+  const { activeSeason, loading } = useSeason();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-muted-foreground text-sm">جارٍ التحميل...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!activeSeason) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 text-center">
+        <h2 className="text-xl font-bold mb-2">لا يوجد موسم نشط</h2>
+        <p className="text-muted-foreground">يجب على صاحب المعصرة تفعيل موسم أولاً.</p>
+      </div>
+    );
+  }
+
+  return (
+    <Routes>
+      <Route path="/queue" element={<Queue />} />
+      <Route path="/invoices" element={<Invoices />} />
+      <Route path="*" element={<Navigate to="/queue" replace />} />
+    </Routes>
   );
 };
 
