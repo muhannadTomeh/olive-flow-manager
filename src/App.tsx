@@ -117,6 +117,13 @@ const HeaderBar = () => {
               <User className="h-4 w-4" />
               الإعدادات
             </DropdownMenuItem>
+            {isAdmin && (
+              <DropdownMenuItem onClick={() => navigate("/admin")} className="gap-2">
+                <ShieldCheck className="h-4 w-4 text-primary" />
+                لوحة المشرف
+              </DropdownMenuItem>
+            )}
+
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={signOut} className="gap-2 text-destructive focus:text-destructive">
               <LogOut className="h-4 w-4" />
