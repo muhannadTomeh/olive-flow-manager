@@ -87,7 +87,7 @@ export default function MillDetails() {
     fetchData();
   }, [millId]);
 
-  const updateSubscription = async (status: string) => {
+  const updateSubscription = async (status: 'active' | 'suspended' | 'pending') => {
     if (!millId) return;
     setUpdating(true);
     try {
