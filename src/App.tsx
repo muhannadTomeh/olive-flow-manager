@@ -11,7 +11,7 @@ import { SubscriptionProvider, useSubscription } from "@/contexts/SubscriptionCo
 import { SeasonProvider, useSeason } from "@/contexts/SeasonContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Calendar, Plus, Users, Receipt, Wallet, User, ChevronDown, Menu, Lock, Phone } from "lucide-react";
+import { LogOut, Calendar, Plus, Users, Receipt, Wallet, User, ChevronDown, Menu, Lock, Phone, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
