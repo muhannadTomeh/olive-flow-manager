@@ -11,7 +11,7 @@ import { SubscriptionProvider, useSubscription } from "@/contexts/SubscriptionCo
 import { SeasonProvider, useSeason } from "@/contexts/SeasonContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Calendar, Plus, Users, Receipt, Wallet, User, ChevronDown, Menu, Lock, Phone } from "lucide-react";
+import { LogOut, Calendar, Plus, Users, Receipt, Wallet, User, ChevronDown, Menu, Lock, Phone, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
@@ -52,6 +52,8 @@ const HeaderBar = () => {
   const { user, signOut } = useAuth();
   const { activeSeason } = useSeason();
   const navigate = useNavigate();
+  const { isAdmin } = useRole();
+
 
   return (
     <header className="h-16 border-b glass-bar flex items-center justify-between px-4 md:px-6 sticky top-0 z-40">
@@ -117,6 +119,13 @@ const HeaderBar = () => {
               <User className="h-4 w-4" />
               الإعدادات
             </DropdownMenuItem>
+            {isAdmin && (
+              <DropdownMenuItem onClick={() => navigate("/admin")} className="gap-2">
+                <ShieldCheck className="h-4 w-4 text-primary" />
+                لوحة المشرف
+              </DropdownMenuItem>
+            )}
+
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={signOut} className="gap-2 text-destructive focus:text-destructive">
               <LogOut className="h-4 w-4" />
