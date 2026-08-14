@@ -52,6 +52,8 @@ const HeaderBar = () => {
   const { user, signOut } = useAuth();
   const { activeSeason } = useSeason();
   const navigate = useNavigate();
+  const { isAdmin } = useRole();
+
 
   return (
     <header className="h-16 border-b glass-bar flex items-center justify-between px-4 md:px-6 sticky top-0 z-40">
