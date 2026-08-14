@@ -11,7 +11,14 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, Building2, Receipt, Droplets, CalendarCheck } from "lucide-react";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Users, Building2, Receipt, Droplets, CalendarCheck, Filter } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function AdminIndex() {
@@ -27,6 +34,7 @@ export default function AdminIndex() {
   const [loading, setLoading] = useState(true);
   const [contactLink, setContactLink] = useState("");
   const [updatingLink, setUpdatingLink] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -90,6 +98,7 @@ export default function AdminIndex() {
             email: "---", // Auth email not directly in profiles table usually
             createdAt: profile.created_at,
             isActive: activeUserIds.has(profile.user_id),
+            subscriptionStatus: profile.subscription_status || 'pending',
             invoiceCount: userInvoices.length,
             lastActivity,
           };
@@ -133,7 +142,24 @@ export default function AdminIndex() {
     }
   };
 
-  if (loading) return <div>جارٍ التحميل...</div>;
+  if (loading) return <div className="p-8 text-center">جارٍ التحميل...</div>;
+
+  const filteredMills = statusFilter === "all" 
+    ? mills 
+    : mills.filter(mill => mill.subscriptionStatus === statusFilter);
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'active':
+        return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">نشط</Badge>;
+      case 'suspended':
+        return <Badge className="bg-red-100 text-red-700 hover:bg-red-100">موقف</Badge>;
+      case 'pending':
+        return <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">قيد الانتظار</Badge>;
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
+    }
+  };
 
   return (
     <div className="space-y-6" dir="rtl">
@@ -229,8 +255,22 @@ export default function AdminIndex() {
 
       {/* Mills Table */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>كل المعاصر</CardTitle>
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="تصفية حسب الحالة" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">كل الحالات</SelectItem>
+                <SelectItem value="active">نشط</SelectItem>
+                <SelectItem value="pending">قيد الانتظار</SelectItem>
+                <SelectItem value="suspended">موقف</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -238,26 +278,28 @@ export default function AdminIndex() {
               <TableRow>
                 <TableHead className="text-right">اسم المعصرة</TableHead>
                 <TableHead className="text-right">تاريخ التسجيل</TableHead>
+                <TableHead className="text-right">حالة الاشتراك</TableHead>
                 <TableHead className="text-right">موسم نشط</TableHead>
                 <TableHead className="text-right">عدد الفواتير</TableHead>
-                <TableHead className="text-right">آخر نشاط</TableHead>
                 <TableHead className="text-right">الإجراءات</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mills.map((mill) => (
+              {filteredMills.map((mill) => (
                 <TableRow key={mill.id}>
                   <TableCell className="font-medium">{mill.name}</TableCell>
                   <TableCell>{new Date(mill.createdAt).toLocaleDateString("ar-EG")}</TableCell>
                   <TableCell>
+                    {getStatusBadge(mill.subscriptionStatus)}
+                  </TableCell>
+                  <TableCell>{mill.invoiceCount}</TableCell>
+                  <TableCell>
                     {mill.isActive ? (
-                      <Badge className="bg-green-100 text-green-700 hover:bg-green-100">نعم</Badge>
+                      <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">نعم</Badge>
                     ) : (
                       <Badge variant="secondary">لا</Badge>
                     )}
                   </TableCell>
-                  <TableCell>{mill.invoiceCount}</TableCell>
-                  <TableCell>{mill.lastActivity.toLocaleDateString("ar-EG")}</TableCell>
                   <TableCell>
                     <Button 
                       variant="outline" 
