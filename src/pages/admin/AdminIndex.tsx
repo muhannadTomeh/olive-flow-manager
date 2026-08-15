@@ -56,7 +56,9 @@ export default function AdminIndex() {
     password: "",
     mill_name: "",
     owner_name: "",
-    phone: ""
+    phone: "",
+    secondary_phone: "",
+    country: ""
   });
   const [createdCredentials, setCreatedCredentials] = useState<{email: string, password: string} | null>(null);
 
@@ -94,7 +96,9 @@ export default function AdminIndex() {
         password: "",
         mill_name: "",
         owner_name: "",
-        phone: ""
+        phone: "",
+        secondary_phone: "",
+        country: ""
       });
       
       // We'll defer the reload to when they close the success view
@@ -178,7 +182,9 @@ export default function AdminIndex() {
           return {
             id: profile.user_id,
             name: profile.display_name || "معصرة غير مسمى",
-            email: "---", // Auth email not directly in profiles table usually
+            millName: profile.mill_name,
+            country: profile.country,
+            email: "---",
             createdAt: profile.created_at,
             isActive: activeUserIds.has(profile.user_id),
             subscriptionStatus: profile.subscription_status || 'pending',
@@ -186,6 +192,14 @@ export default function AdminIndex() {
             lastActivity,
             lastPaymentDate,
           };
+        });
+
+        // Sort by Country then Name
+        millList.sort((a, b) => {
+          const countryA = a.country || "";
+          const countryB = b.country || "";
+          if (countryA !== countryB) return countryA.localeCompare(countryB, 'ar');
+          return (a.millName || "").localeCompare(b.millName || "", 'ar');
         });
 
         setMills(millList);
@@ -313,11 +327,28 @@ export default function AdminIndex() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="phone">رقم الهاتف</Label>
+                    <Label htmlFor="phone">رقم الهاتف الأساسي</Label>
                     <Input 
                       id="phone" 
                       value={newAccountData.phone}
                       onChange={e => setNewAccountData(prev => ({...prev, phone: e.target.value}))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="secondary_phone">رقم هاتف إضافي (اختياري)</Label>
+                    <Input 
+                      id="secondary_phone" 
+                      value={newAccountData.secondary_phone}
+                      onChange={e => setNewAccountData(prev => ({...prev, secondary_phone: e.target.value}))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="country">البلد / المدينة</Label>
+                    <Input 
+                      id="country" 
+                      value={newAccountData.country}
+                      placeholder="مثال: فلسطين - جنين"
+                      onChange={e => setNewAccountData(prev => ({...prev, country: e.target.value}))}
                     />
                   </div>
                   <div className="space-y-2">

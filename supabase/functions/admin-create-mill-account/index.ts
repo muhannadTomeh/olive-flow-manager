@@ -50,7 +50,7 @@ serve(async (req) => {
 
     // Get request body
     const body = await req.json();
-    const { email, password, mill_name, owner_name, phone } = body;
+    const { email, password, mill_name, owner_name, phone, secondary_phone, country } = body;
 
     if (!email || !password || !mill_name || !owner_name) {
       throw new Error('Missing required fields');
@@ -74,7 +74,9 @@ serve(async (req) => {
       user_metadata: {
         display_name: owner_name,
         mill_name: mill_name,
-        phone: phone || ''
+        phone: phone || '',
+        secondary_phone: secondary_phone || '',
+        country: country || ''
       }
     });
 
@@ -94,6 +96,8 @@ serve(async (req) => {
         display_name: owner_name,
         mill_name: mill_name,
         phone: phone || null,
+        secondary_phone: secondary_phone || null,
+        country: country || null,
         subscription_status: 'active',
         updated_at: new Date().toISOString()
       }, { onConflict: 'user_id' }),
