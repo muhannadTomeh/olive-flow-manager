@@ -115,7 +115,7 @@ export function AppSidebar() {
         {!isCollapsed ? (
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-sidebar-primary flex items-center justify-center shadow-olive">
-              <Leaf className="h-5 w-5 text-sidebar-primary-foreground" />
+              <Sprout className="h-5 w-5 text-sidebar-primary-foreground" />
             </div>
             <div>
               <h2 className="text-base font-bold text-sidebar-foreground tracking-tight leading-tight">المعصرة الذكية</h2>
@@ -124,7 +124,7 @@ export function AppSidebar() {
           </div>
         ) : (
           <div className="w-10 h-10 rounded-2xl bg-sidebar-primary flex items-center justify-center mx-auto shadow-olive">
-            <Leaf className="h-5 w-5 text-sidebar-primary-foreground" />
+            <Sprout className="h-5 w-5 text-sidebar-primary-foreground" />
           </div>
         )}
       </SidebarHeader>
