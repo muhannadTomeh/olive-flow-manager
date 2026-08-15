@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Mail, MessageSquare, Phone, Send } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
 
 const ContactForm = () => {
   const [name, setName] = useState("");
@@ -14,17 +15,49 @@ const ContactForm = () => {
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  
+  const [settings, setSettings] = useState({
+    email: "muhannad.tomeh22@gmail.com",
+    phone: "0569945677",
+    whatsapp: "+972594596906"
+  });
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      const { data } = await supabase
+        .from("system_settings")
+        .select("key, value");
+      
+      if (data) {
+        const newSettings = { ...settings };
+        data.forEach(s => {
+          if (s.key === "contact_email") newSettings.email = s.value;
+          if (s.key === "contact_phone") newSettings.phone = s.value;
+          if (s.key === "contact_whatsapp") newSettings.whatsapp = s.value;
+        });
+        setSettings(newSettings);
+      }
+    };
+
+    const fetchUserEmail = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.email) {
+        setEmail(user.email);
+      }
+    };
+
+    fetchSettings();
+    fetchUserEmail();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate sending email
-    // In a real app, this would call an Edge Function or Email API
-    const mailtoLink = `mailto:muhannad.tomeh22@gmail.com?subject=${encodeURIComponent(
+    const mailtoLink = `mailto:${settings.email}?subject=${encodeURIComponent(
       subject || "رسالة من موقع المعصرة الذكية"
     )}&body=${encodeURIComponent(
-      `الاسم: ${name}\nالبريد الإلكتروني: ${email}\n\nالوصف:\n${message}`
+      `الاسم: ${name}\nالبريد الإلكتروني: ${email}\n\nالموضوع: ${subject}\n\nالوصف:\n${message}`
     )}`;
     
     window.location.href = mailtoLink;
@@ -54,7 +87,7 @@ const ContactForm = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground font-medium">البريد الإلكتروني الرسمي</p>
-                  <p className="font-bold">muhannad.tomeh22@gmail.com</p>
+                  <p className="font-bold">{settings.email}</p>
                 </div>
               </div>
               
@@ -65,12 +98,12 @@ const ContactForm = () => {
                 <div>
                   <p className="text-sm text-muted-foreground font-medium">واتساب الدعم الفني</p>
                   <a 
-                    href="https://wa.me/972594596906" 
+                    href={`https://wa.me/${settings.whatsapp.replace('+', '')}`} 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="font-bold hover:text-green-600 transition-colors ltr inline-block"
                   >
-                    +972 594 596 906
+                    {settings.whatsapp}
                   </a>
                 </div>
               </div>
@@ -81,7 +114,7 @@ const ContactForm = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground font-medium">رقم التواصل الرسمي</p>
-                  <p className="font-bold ltr inline-block">0569945677</p>
+                  <p className="font-bold ltr inline-block">{settings.phone}</p>
                 </div>
               </div>
             </div>

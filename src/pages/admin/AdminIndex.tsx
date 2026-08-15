@@ -43,6 +43,9 @@ export default function AdminIndex() {
   const [mills, setMills] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [contactLink, setContactLink] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
+  const [contactWhatsapp, setContactWhatsapp] = useState("");
   const [updatingLink, setUpdatingLink] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const navigate = useNavigate();
@@ -193,33 +196,49 @@ export default function AdminIndex() {
       }
     };
 
-    const fetchContactLink = async () => {
+    const fetchContactSettings = async () => {
       const { data } = await supabase
         .from("system_settings")
-        .select("value")
-        .eq("key", "contact_link")
-        .single();
-      if (data) setContactLink(data.value);
+        .select("key, value");
+      
+      if (data) {
+        data.forEach(setting => {
+          if (setting.key === "contact_link") setContactLink(setting.value);
+          if (setting.key === "contact_email") setContactEmail(setting.value);
+          if (setting.key === "contact_phone") setContactPhone(setting.value);
+          if (setting.key === "contact_whatsapp") setContactWhatsapp(setting.value);
+        });
+      }
     };
 
     fetchData();
-    fetchContactLink();
+    fetchContactSettings();
   }, []);
 
-  const handleUpdateContactLink = async () => {
+  const handleUpdateContactSettings = async () => {
     setUpdatingLink(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    const settings = [
+      { key: "contact_link", value: contactLink },
+      { key: "contact_email", value: contactEmail },
+      { key: "contact_phone", value: contactPhone },
+      { key: "contact_whatsapp", value: contactWhatsapp },
+    ];
+
     const { error } = await supabase
       .from("system_settings")
-      .upsert({ 
-        key: "contact_link", 
-        value: contactLink,
+      .upsert(settings.map(s => ({ 
+        ...s,
         updated_at: new Date().toISOString(),
-        updated_by: (await supabase.auth.getUser()).data.user?.id
-      });
+        updated_by: user?.id
+      })));
     
     setUpdatingLink(false);
     if (!error) {
-      alert("تم تحديث رابط التواصل بنجاح");
+      toast.success("تم تحديث إعدادات التواصل بنجاح");
+    } else {
+      toast.error("حدث خطأ أثناء التحديث");
     }
   };
 
@@ -375,25 +394,54 @@ export default function AdminIndex() {
           <CardTitle className="text-right">إعدادات النظام العالمية</CardTitle>
         </CardHeader>
         <CardContent className="text-right">
-          <div className="flex flex-col space-y-4">
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium">رابط التواصل (واتساب، مسنجر، إلخ)</label>
-              <div className="flex gap-2">
-                <input
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">رابط التواصل العام (زر اطلب اشتراكك)</label>
+                <Input
                   type="text"
                   value={contactLink}
                   onChange={(e) => setContactLink(e.target.value)}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   placeholder="https://wa.me/..."
                   dir="ltr"
                 />
-                <Button onClick={handleUpdateContactLink} disabled={updatingLink}>
-                  {updatingLink ? "جاري الحفظ..." : "حفظ الرابط"}
-                </Button>
               </div>
-              <p className="text-xs text-muted-foreground">
-                هذا الرابط سيظهر لجميع المستخدمين في الصفحة الرئيسية عند النقر على "اطلب اشتراكك".
-              </p>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">البريد الإلكتروني للدعم</label>
+                <Input
+                  type="email"
+                  value={contactEmail}
+                  onChange={(e) => setContactEmail(e.target.value)}
+                  placeholder="email@example.com"
+                  dir="ltr"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">رقم الهاتف للتواصل</label>
+                <Input
+                  type="text"
+                  value={contactPhone}
+                  onChange={(e) => setContactPhone(e.target.value)}
+                  placeholder="05xxxxxxx"
+                  dir="ltr"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">رقم واتساب (مع رمز الدولة)</label>
+                <Input
+                  type="text"
+                  value={contactWhatsapp}
+                  onChange={(e) => setContactWhatsapp(e.target.value)}
+                  placeholder="+972xxxxxxxxx"
+                  dir="ltr"
+                />
+              </div>
+            </div>
+            
+            <div className="flex justify-start">
+              <Button onClick={handleUpdateContactSettings} disabled={updatingLink}>
+                {updatingLink ? "جاري الحفظ..." : "حفظ إعدادات التواصل"}
+              </Button>
             </div>
           </div>
         </CardContent>
