@@ -8,7 +8,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Settings as SettingsIcon, Save, Plus, Trash2, Key, Link as LinkIcon, LogOut } from "lucide-react";
+import { Settings as SettingsIcon, Save, Plus, Trash2, Key, Link as LinkIcon, LogOut, ShieldCheck } from "lucide-react";
 import { useSettings } from "@/hooks/useSettings";
 import { useInventory } from "@/hooks/useInventory";
 import { useToast } from "@/hooks/use-toast";
@@ -57,6 +57,23 @@ export default function Settings() {
   const [employeePin, setEmployeePin] = useState("");
   const [isUpdatingEmployeePin, setIsUpdatingEmployeePin] = useState(false);
   const [employeeLoginUrl, setEmployeeLoginUrl] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .single();
+      if (data) setUserRole(data.role);
+    };
+    fetchUserRole();
+  }, [user]);
 
   useEffect(() => {
     if (!loading) {
@@ -217,6 +234,43 @@ export default function Settings() {
     }
   };
 
+  const updatePassword = async () => {
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "خطأ",
+        description: "كلمات المرور غير متطابقة",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast({
+        title: "خطأ",
+        description: "يجب أن تكون كلمة المرور 6 أحرف على الأقل",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsUpdatingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      toast({ title: "تم التحديث", description: "تم تغيير كلمة المرور بنجاح" });
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (error: any) {
+      toast({
+        title: "خطأ",
+        description: error.message || "حدث خطأ أثناء تحديث كلمة المرور",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUpdatingPassword(false);
+    }
+  };
+
   const generateEmployeeUrl = () => {
     if (!user) return;
     const url = `${window.location.origin}/auth?employee=${user.id}`;
@@ -239,6 +293,43 @@ export default function Settings() {
           <h1 className="text-3xl font-bold text-foreground">الإعدادات</h1>
         </div>
       </div>
+
+      {userRole === 'mill_owner' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ShieldCheck className="h-5 w-5 text-primary" />
+              الأمان — تغيير كلمة المرور
+            </CardTitle>
+            <CardDescription>تحديث كلمة المرور الخاصة بحساب صاحب المعصرة</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label>كلمة المرور الجديدة</Label>
+                <Input 
+                  type="password" 
+                  value={newPassword} 
+                  onChange={(e) => setNewPassword(e.target.value)} 
+                  placeholder="6 أحرف على الأقل..."
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>تأكيد كلمة المرور</Label>
+                <Input 
+                  type="password" 
+                  value={confirmPassword} 
+                  onChange={(e) => setConfirmPassword(e.target.value)} 
+                  placeholder="أعد إدخال كلمة المرور..."
+                />
+              </div>
+            </div>
+            <Button onClick={updatePassword} disabled={isUpdatingPassword || !newPassword}>
+              {isUpdatingPassword ? "جارٍ التحديث..." : "تحديث كلمة المرور"}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>
