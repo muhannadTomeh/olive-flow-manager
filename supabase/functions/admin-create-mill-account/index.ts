@@ -17,8 +17,18 @@ serve(async (req) => {
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') || '';
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
 
+    // Log environment check (don't log the keys themselves)
+    console.log("Checking environment variables...");
+    if (!supabaseUrl || !serviceRoleKey) {
+      throw new Error('Server configuration error: Missing environment variables');
+    }
+
     // Create a client with the user's token to check roles
-    const authHeader = req.headers.get('Authorization')!;
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('Missing Authorization header');
+    }
+
     const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } }
     });
@@ -26,6 +36,7 @@ serve(async (req) => {
     // Check if user is platform_admin
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
     if (userError || !user) {
+      console.error('Auth error:', userError);
       throw new Error('Unauthorized');
     }
 
@@ -38,13 +49,14 @@ serve(async (req) => {
     }
 
     // Get request body
-    const { email, password, mill_name, owner_name, phone } = await req.json();
+    const body = await req.json();
+    const { email, password, mill_name, owner_name, phone } = body;
 
     if (!email || !password || !mill_name || !owner_name) {
       throw new Error('Missing required fields');
     }
 
-    // Create admin client with service role to bypass RLS and perform auth actions
+    // Create admin client with service role
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
       auth: {
         autoRefreshToken: false,
@@ -66,40 +78,33 @@ serve(async (req) => {
       }
     });
 
-    if (createError) throw createError;
+    if (createError) {
+      console.error('Create user error:', createError);
+      throw createError;
+    }
+
     const newUserId = newUser.user.id;
     console.log(`User created: ${newUserId}`);
 
-    // 2. Ensure Profile exists and is active
-    // The handle_new_user_setup trigger might take a moment
-    // We'll upsert to be safe and override subscription status
-    const { error: profileError } = await supabaseAdmin
-      .from('profiles')
-      .upsert({
+    // 2. Profile and Role
+    // We'll perform multiple operations in parallel where possible
+    const [profileResult, roleResult] = await Promise.all([
+      supabaseAdmin.from('profiles').upsert({
         user_id: newUserId,
         display_name: owner_name,
         mill_name: mill_name,
         phone: phone || null,
         subscription_status: 'active',
         created_at: new Date().toISOString()
-      });
-
-    if (profileError) {
-      console.error('Error with profile upsert:', profileError);
-      // We don't fail here because the user is created, but it's not ideal
-    }
-
-    // 3. Assign mill_owner role
-    const { error: roleAssignError } = await supabaseAdmin
-      .from('user_roles')
-      .insert({
+      }),
+      supabaseAdmin.from('user_roles').insert({
         user_id: newUserId,
         role: 'mill_owner'
-      });
-    
-    if (roleAssignError) {
-      console.error('Error assigning role:', roleAssignError);
-    }
+      })
+    ]);
+
+    if (profileResult.error) console.error('Profile upsert error:', profileResult.error);
+    if (roleResult.error) console.error('Role assign error:', roleResult.error);
 
     return new Response(
       JSON.stringify({ message: 'Account created successfully', user: newUser.user }),
