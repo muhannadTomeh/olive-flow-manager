@@ -18,8 +18,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Users, Building2, Receipt, Droplets, CalendarCheck, Filter } from "lucide-react";
+import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Users, Building2, Receipt, Droplets, CalendarCheck, Filter, UserPlus, Copy, RefreshCw, CheckCircle2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 export default function AdminIndex() {
   const [stats, setStats] = useState({
@@ -36,6 +46,65 @@ export default function AdminIndex() {
   const [updatingLink, setUpdatingLink] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const navigate = useNavigate();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [createLoading, setCreateLoading] = useState(false);
+  const [newAccountData, setNewAccountData] = useState({
+    email: "",
+    password: "",
+    mill_name: "",
+    owner_name: "",
+    phone: ""
+  });
+  const [createdCredentials, setCreatedCredentials] = useState<{email: string, password: string} | null>(null);
+
+  const generatePassword = () => {
+    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+    let retVal = "";
+    for (let i = 0, n = charset.length; i < 12; ++i) {
+      retVal += charset.charAt(Math.floor(Math.random() * n));
+    }
+    setNewAccountData(prev => ({ ...prev, password: retVal }));
+  };
+
+  const handleCreateAccount = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreateLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-create-mill-account', {
+        body: newAccountData
+      });
+
+      if (error) throw error;
+
+      setCreatedCredentials({
+        email: newAccountData.email,
+        password: newAccountData.password
+      });
+      toast.success("تم إنشاء الحساب بنجاح");
+      
+      // Clear form but don't close modal until they copy credentials
+      setNewAccountData({
+        email: "",
+        password: "",
+        mill_name: "",
+        owner_name: "",
+        phone: ""
+      });
+      
+      // Refresh list
+      window.location.reload(); 
+    } catch (error: any) {
+      console.error("Error creating account:", error);
+      toast.error(error.message || "حدث خطأ أثناء إنشاء الحساب");
+    } finally {
+      setCreateLoading(false);
+    }
+  };
+
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success(`تم نسخ ${label}`);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -165,9 +234,124 @@ export default function AdminIndex() {
     <div className="space-y-6" dir="rtl">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">لوحة تحكم المشرف</h1>
-        <Button variant="outline" onClick={() => navigate("/dashboard")}>
-          العودة للرئيسية
-        </Button>
+        <div className="flex gap-2">
+          <Dialog open={isCreateModalOpen} onOpenChange={(open) => {
+            setIsCreateModalOpen(open);
+            if (!open) setCreatedCredentials(null);
+          }}>
+            <DialogTrigger asChild>
+              <Button className="bg-green-600 hover:bg-green-700 text-white">
+                <UserPlus className="ml-2 h-4 w-4" />
+                إنشاء حساب معصرة جديد
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px] text-right" dir="rtl">
+              <DialogHeader>
+                <DialogTitle className="text-right">إنشاء حساب معصرة جديد</DialogTitle>
+              </DialogHeader>
+              
+              {!createdCredentials ? (
+                <form onSubmit={handleCreateAccount} className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="mill_name">اسم المعصرة</Label>
+                    <Input 
+                      id="mill_name" 
+                      required 
+                      value={newAccountData.mill_name}
+                      onChange={e => setNewAccountData(prev => ({...prev, mill_name: e.target.value}))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="owner_name">اسم صاحب المعصرة</Label>
+                    <Input 
+                      id="owner_name" 
+                      required 
+                      value={newAccountData.owner_name}
+                      onChange={e => setNewAccountData(prev => ({...prev, owner_name: e.target.value}))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">البريد الإلكتروني (للتسجيل)</Label>
+                    <Input 
+                      id="email" 
+                      type="email" 
+                      required 
+                      dir="ltr"
+                      value={newAccountData.email}
+                      onChange={e => setNewAccountData(prev => ({...prev, email: e.target.value}))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">رقم الهاتف</Label>
+                    <Input 
+                      id="phone" 
+                      value={newAccountData.phone}
+                      onChange={e => setNewAccountData(prev => ({...prev, phone: e.target.value}))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">كلمة المرور</Label>
+                    <div className="flex gap-2">
+                      <Input 
+                        id="password" 
+                        type="text" 
+                        required 
+                        dir="ltr"
+                        value={newAccountData.password}
+                        onChange={e => setNewAccountData(prev => ({...prev, password: e.target.value}))}
+                      />
+                      <Button type="button" variant="outline" onClick={generatePassword}>
+                        <RefreshCw className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  <Button type="submit" className="w-full" disabled={createLoading}>
+                    {createLoading ? "جاري الإنشاء..." : "إنشاء الحساب الآن"}
+                  </Button>
+                </form>
+              ) : (
+                <div className="space-y-6 py-4">
+                  <div className="flex flex-col items-center justify-center text-green-600 gap-2 mb-4">
+                    <CheckCircle2 className="h-12 w-12" />
+                    <h3 className="text-xl font-bold">تم إنشاء الحساب بنجاح!</h3>
+                  </div>
+                  
+                  <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 text-sm mb-4">
+                    ⚠️ <strong>هام:</strong> احفظ هذه البيانات الآن، لن تظهر مرة أخرى.
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>البريد الإلكتروني</Label>
+                      <div className="flex gap-2">
+                        <Input value={createdCredentials.email} readOnly dir="ltr" />
+                        <Button variant="outline" onClick={() => copyToClipboard(createdCredentials.email, "البريد الإلكتروني")}>
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>كلمة المرور</Label>
+                      <div className="flex gap-2">
+                        <Input value={createdCredentials.password} readOnly dir="ltr" />
+                        <Button variant="outline" onClick={() => copyToClipboard(createdCredentials.password, "كلمة المرور")}>
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Button onClick={() => setIsCreateModalOpen(false)} className="w-full mt-4">
+                    إغلاق
+                  </Button>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
+          <Button variant="outline" onClick={() => navigate("/dashboard")}>
+            العودة للرئيسية
+          </Button>
+        </div>
       </div>
 
       {/* Global Settings */}
