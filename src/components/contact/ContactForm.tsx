@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Mail, MessageSquare, Phone, Send } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
 
 const ContactForm = () => {
   const [name, setName] = useState("");
@@ -14,6 +15,40 @@ const ContactForm = () => {
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  
+  const [settings, setSettings] = useState({
+    email: "muhannad.tomeh22@gmail.com",
+    phone: "0569945677",
+    whatsapp: "+972594596906"
+  });
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      const { data } = await supabase
+        .from("system_settings")
+        .select("key, value");
+      
+      if (data) {
+        const newSettings = { ...settings };
+        data.forEach(s => {
+          if (s.key === "contact_email") newSettings.email = s.value;
+          if (s.key === "contact_phone") newSettings.phone = s.value;
+          if (s.key === "contact_whatsapp") newSettings.whatsapp = s.value;
+        });
+        setSettings(newSettings);
+      }
+    };
+
+    const fetchUserEmail = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.email) {
+        setEmail(user.email);
+      }
+    };
+
+    fetchSettings();
+    fetchUserEmail();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
