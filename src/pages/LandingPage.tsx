@@ -4,8 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import ContactForm from "@/components/contact/ContactForm";
 import {
-  Leaf,
+  Sprout,
   BarChart3,
   Users,
   Clock,
