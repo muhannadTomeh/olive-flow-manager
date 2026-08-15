@@ -215,20 +215,28 @@ export default function AdminIndex() {
     fetchContactSettings();
   }, []);
 
-  const handleUpdateContactLink = async () => {
+  const handleUpdateContactSettings = async () => {
     setUpdatingLink(true);
+    const settings = [
+      { key: "contact_link", value: contactLink },
+      { key: "contact_email", value: contactEmail },
+      { key: "contact_phone", value: contactPhone },
+      { key: "contact_whatsapp", value: contactWhatsapp },
+    ];
+
     const { error } = await supabase
       .from("system_settings")
-      .upsert({ 
-        key: "contact_link", 
-        value: contactLink,
+      .upsert(settings.map(s => ({ 
+        ...s,
         updated_at: new Date().toISOString(),
-        updated_by: (await supabase.auth.getUser()).data.user?.id
-      });
+        updated_by: user_id // We should get the user id correctly
+      })));
     
     setUpdatingLink(false);
     if (!error) {
-      alert("تم تحديث رابط التواصل بنجاح");
+      toast.success("تم تحديث إعدادات التواصل بنجاح");
+    } else {
+      toast.error("حدث خطأ أثناء التحديث");
     }
   };
 
