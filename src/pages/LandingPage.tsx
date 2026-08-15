@@ -200,11 +200,14 @@ const LandingPage = () => {
         </div>
       </section>
 
+      {/* Contact Section */}
+      <ContactForm />
+
       {/* Footer */}
       <footer className="border-t border-border py-8">
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-muted-foreground text-sm">
-            <Leaf className="h-4 w-4 text-primary" />
+            <Sprout className="h-4 w-4 text-primary" />
             نظام إدارة معاصر الزيتون المعصرة الذكية © {new Date().getFullYear()}
           </div>
           <p className="text-muted-foreground text-sm">صُنع بعناية لأصحاب المعاصر في فلسطين والوطن العربي</p>
