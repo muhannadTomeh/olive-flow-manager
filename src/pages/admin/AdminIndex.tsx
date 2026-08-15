@@ -43,6 +43,9 @@ export default function AdminIndex() {
   const [mills, setMills] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [contactLink, setContactLink] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
+  const [contactWhatsapp, setContactWhatsapp] = useState("");
   const [updatingLink, setUpdatingLink] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const navigate = useNavigate();
