@@ -8,7 +8,6 @@ import {
   Receipt,
   Settings,
   Clock,
-  FileText,
   Calendar,
   BarChart3,
   TrendingUp,
