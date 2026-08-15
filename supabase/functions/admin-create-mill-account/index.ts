@@ -72,8 +72,8 @@ serve(async (req) => {
       password,
       email_confirm: true,
       user_metadata: {
-        millName: mill_name,
-        ownerName: owner_name,
+        display_name: owner_name,
+        mill_name: mill_name,
         phone: phone || ''
       }
     });
@@ -95,8 +95,8 @@ serve(async (req) => {
         mill_name: mill_name,
         phone: phone || null,
         subscription_status: 'active',
-        created_at: new Date().toISOString()
-      }),
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'user_id' }),
       supabaseAdmin.from('user_roles').insert({
         user_id: newUserId,
         role: 'mill_owner'
