@@ -116,6 +116,12 @@ export default function AdminIndex() {
         const { data: profiles, error: profilesError } = await supabase
           .from("profiles")
           .select("*");
+        
+        // Fetch last payments for each mill
+        const { data: lastPayments } = await supabase
+          .from("subscription_payments")
+          .select("mill_user_id, payment_date")
+          .order("payment_date", { ascending: false });
 
         if (profilesError) throw profilesError;
 
@@ -163,6 +169,9 @@ export default function AdminIndex() {
             ? new Date(Math.max(...userInvoices.map(inv => new Date(inv.created_at).getTime())))
             : new Date(profile.created_at);
 
+          const millPayments = lastPayments?.filter(p => p.mill_user_id === profile.user_id) || [];
+          const lastPaymentDate = millPayments.length > 0 ? millPayments[0].payment_date : null;
+
           return {
             id: profile.user_id,
             name: profile.display_name || "معصرة غير مسمى",
@@ -172,6 +181,7 @@ export default function AdminIndex() {
             subscriptionStatus: profile.subscription_status || 'pending',
             invoiceCount: userInvoices.length,
             lastActivity,
+            lastPaymentDate,
           };
         });
 
