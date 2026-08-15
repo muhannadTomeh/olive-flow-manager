@@ -8,7 +8,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Settings as SettingsIcon, Save, Plus, Trash2, Key, Link as LinkIcon, LogOut } from "lucide-react";
+import { Settings as SettingsIcon, Save, Plus, Trash2, Key, Link as LinkIcon, LogOut, ShieldCheck } from "lucide-react";
 import { useSettings } from "@/hooks/useSettings";
 import { useInventory } from "@/hooks/useInventory";
 import { useToast } from "@/hooks/use-toast";
@@ -57,6 +57,23 @@ export default function Settings() {
   const [employeePin, setEmployeePin] = useState("");
   const [isUpdatingEmployeePin, setIsUpdatingEmployeePin] = useState(false);
   const [employeeLoginUrl, setEmployeeLoginUrl] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .single();
+      if (data) setUserRole(data.role);
+    };
+    fetchUserRole();
+  }, [user]);
 
   useEffect(() => {
     if (!loading) {
@@ -214,6 +231,43 @@ export default function Settings() {
       toast({ title: "خطأ", description: "فشل تحديث الرمز", variant: "destructive" });
     } finally {
       setIsUpdatingEmployeePin(false);
+    }
+  };
+
+  const updatePassword = async () => {
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "خطأ",
+        description: "كلمات المرور غير متطابقة",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast({
+        title: "خطأ",
+        description: "يجب أن تكون كلمة المرور 6 أحرف على الأقل",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsUpdatingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      toast({ title: "تم التحديث", description: "تم تغيير كلمة المرور بنجاح" });
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (error: any) {
+      toast({
+        title: "خطأ",
+        description: error.message || "حدث خطأ أثناء تحديث كلمة المرور",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUpdatingPassword(false);
     }
   };
 
