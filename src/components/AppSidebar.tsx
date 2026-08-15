@@ -8,7 +8,7 @@ import {
   Receipt,
   Settings,
   Clock,
-  Leaf,
+  FileText,
   Calendar,
   BarChart3,
   TrendingUp,
@@ -16,6 +16,7 @@ import {
   Cog,
   Warehouse,
   ShieldCheck,
+  MessageSquare,
 } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 import { useRole } from "@/contexts/RoleContext"
