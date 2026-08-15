@@ -130,7 +130,7 @@ export default function SeasonSetup() {
         </Button>
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 olive-gradient rounded-lg flex items-center justify-center">
-            <Leaf className="h-4 w-4 text-primary-foreground" />
+            <Sprout className="h-4 w-4 text-primary-foreground" />
           </div>
           <h1 className="text-lg font-bold text-foreground">
             {isEdit ? "تعديل الموسم" : "إنشاء موسم جديد"}
