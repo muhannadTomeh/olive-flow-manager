@@ -394,25 +394,54 @@ export default function AdminIndex() {
           <CardTitle className="text-right">إعدادات النظام العالمية</CardTitle>
         </CardHeader>
         <CardContent className="text-right">
-          <div className="flex flex-col space-y-4">
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium">رابط التواصل (واتساب، مسنجر، إلخ)</label>
-              <div className="flex gap-2">
-                <input
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">رابط التواصل العام (زر اطلب اشتراكك)</label>
+                <Input
                   type="text"
                   value={contactLink}
                   onChange={(e) => setContactLink(e.target.value)}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   placeholder="https://wa.me/..."
                   dir="ltr"
                 />
-                <Button onClick={handleUpdateContactLink} disabled={updatingLink}>
-                  {updatingLink ? "جاري الحفظ..." : "حفظ الرابط"}
-                </Button>
               </div>
-              <p className="text-xs text-muted-foreground">
-                هذا الرابط سيظهر لجميع المستخدمين في الصفحة الرئيسية عند النقر على "اطلب اشتراكك".
-              </p>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">البريد الإلكتروني للدعم</label>
+                <Input
+                  type="email"
+                  value={contactEmail}
+                  onChange={(e) => setContactEmail(e.target.value)}
+                  placeholder="email@example.com"
+                  dir="ltr"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">رقم الهاتف للتواصل</label>
+                <Input
+                  type="text"
+                  value={contactPhone}
+                  onChange={(e) => setContactPhone(e.target.value)}
+                  placeholder="05xxxxxxx"
+                  dir="ltr"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">رقم واتساب (مع رمز الدولة)</label>
+                <Input
+                  type="text"
+                  value={contactWhatsapp}
+                  onChange={(e) => setContactWhatsapp(e.target.value)}
+                  placeholder="+972xxxxxxxxx"
+                  dir="ltr"
+                />
+              </div>
+            </div>
+            
+            <div className="flex justify-start">
+              <Button onClick={handleUpdateContactSettings} disabled={updatingLink}>
+                {updatingLink ? "جاري الحفظ..." : "حفظ إعدادات التواصل"}
+              </Button>
             </div>
           </div>
         </CardContent>
