@@ -3,9 +3,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Warehouse, Droplets, Wallet, ArrowUp, ArrowDown,
   Receipt, ShoppingCart, Sprout, UserCheck, Calendar, Eye,
+  Package, Save
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -13,9 +16,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSeason } from "@/contexts/SeasonContext";
 import { useInventory } from "@/hooks/useInventory";
+import { useDailyInventory } from "@/hooks/useDailyInventory";
 import { useRole } from "@/contexts/RoleContext";
 import { Navigate } from "react-router-dom";
 import { InvoicePreview, InvoicePreviewData } from "@/components/invoices/InvoicePreview";
+import { toast } from "sonner";
 
 type MovementKind = "invoice" | "oil_buy" | "oil_sell" | "expense" | "worker_payment";
 
@@ -44,11 +49,28 @@ const Inventory = () => {
   const { user } = useAuth();
   const { activeSeason } = useSeason();
   const { inventory, loading: invLoading } = useInventory();
+  const { dailyInv, loading: dailyLoading, updateDailyInv } = useDailyInventory();
 
   const [movements, setMovements] = useState<Movement[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | MovementKind>("all");
   const [preview, setPreview] = useState<InvoicePreviewData | null>(null);
+
+  const [dailyForm, setDailyForm] = useState({
+    oil: "0",
+    cash: "0",
+    containers: "0"
+  });
+
+  useEffect(() => {
+    if (dailyInv) {
+      setDailyForm({
+        oil: String(dailyInv.oil_amount),
+        cash: String(dailyInv.cash_amount),
+        containers: String(dailyInv.container_count)
+      });
+    }
+  }, [dailyInv]);
 
   useEffect(() => {
     if (user && activeSeason) fetchAll();
@@ -154,6 +176,76 @@ const Inventory = () => {
           <p className="text-sm text-muted-foreground">رصيد الزيت والكاش وكل الحركات في الموسم</p>
         </div>
       </div>
+
+      {/* Daily Inventory (Resets daily) */}
+      <Card className="border-primary/20 bg-primary/5">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Clock className="h-5 w-5 text-primary" />
+            المخزن اليومي (يُصفر تلقائياً كل يوم)
+          </CardTitle>
+          <CardDescription>تتبع حركة الزيت والكاش والتنك خلال اليوم الحالي فقط</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <div className="space-y-2">
+              <Label className="text-xs">زيت اليوم (كغم)</Label>
+              <Input 
+                type="number" 
+                value={dailyForm.oil} 
+                onChange={e => setDailyForm(f => ({ ...f, oil: e.target.value }))}
+                className="bg-background"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs">كاش اليوم (₪)</Label>
+              <Input 
+                type="number" 
+                value={dailyForm.cash} 
+                onChange={e => setDailyForm(f => ({ ...f, cash: e.target.value }))}
+                className="bg-background"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs">عدد التنك اليوم</Label>
+              <Input 
+                type="number" 
+                value={dailyForm.containers} 
+                onChange={e => setDailyForm(f => ({ ...f, containers: e.target.value }))}
+                className="bg-background"
+              />
+            </div>
+            <Button 
+              className="gap-2 shadow-olive"
+              onClick={async () => {
+                const { error } = await updateDailyInv({
+                  oil_amount: Number(dailyForm.oil),
+                  cash_amount: Number(dailyForm.cash),
+                  container_count: Number(dailyForm.containers)
+                });
+                if (!error) toast.success("تم تحديث المخزن اليومي بنجاح");
+              }}
+            >
+              <Save className="h-4 w-4" />
+              حفظ اليومية
+            </Button>
+          </div>
+          <div className="grid grid-cols-3 gap-4 mt-6">
+            <div className="bg-background/50 rounded-xl p-3 border border-primary/10">
+              <p className="text-[10px] text-muted-foreground mb-1 uppercase tracking-wider">إجمالي الزيت</p>
+              <p className="text-xl font-bold text-primary">{Number(dailyForm.oil).toFixed(1)} كغم</p>
+            </div>
+            <div className="bg-background/50 rounded-xl p-3 border border-primary/10">
+              <p className="text-[10px] text-muted-foreground mb-1 uppercase tracking-wider">إجمالي الكاش</p>
+              <p className="text-xl font-bold text-primary">{Number(dailyForm.cash).toFixed(0)} ₪</p>
+            </div>
+            <div className="bg-background/50 rounded-xl p-3 border border-primary/10">
+              <p className="text-[10px] text-muted-foreground mb-1 uppercase tracking-wider">عدد التنك</p>
+              <p className="text-xl font-bold text-primary">{dailyForm.containers} تنكة</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Live balances */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

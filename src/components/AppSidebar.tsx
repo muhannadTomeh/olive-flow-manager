@@ -118,7 +118,7 @@ export function AppSidebar() {
               <Sprout className="h-5 w-5 text-sidebar-primary-foreground" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-sidebar-foreground tracking-tight leading-tight">المعصرة الذكية</h2>
+              <h2 className="text-base font-bold text-sidebar-foreground tracking-tight leading-tight">معصرة الإيمان</h2>
               <p className="text-[11px] text-sidebar-foreground/50">إدارة المعصرة</p>
             </div>
           </div>
