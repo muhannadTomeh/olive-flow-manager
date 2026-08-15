@@ -124,7 +124,7 @@ export default function QueueDisplay() {
               <p className="text-xl font-bold tracking-widest uppercase"
                 style={{ color: "#6ee7b7", letterSpacing: "0.3em" }}
               >
-                 قيد العصر
+                قيد العصر
               </p>
 
               <div className="w-full max-w-lg rounded-[2.5rem] p-6 pb-8 flex flex-col items-center"

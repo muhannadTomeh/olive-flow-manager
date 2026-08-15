@@ -152,7 +152,7 @@ export default function PublicQueueDisplay() {
                 className="text-xl font-bold tracking-widest uppercase"
                 style={{ color: "#6ee7b7", letterSpacing: "0.3em" }}
               >
-                 الدور الحالي
+                الدور الحالي
               </p>
 
               <div
