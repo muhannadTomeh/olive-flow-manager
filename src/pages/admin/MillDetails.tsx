@@ -11,11 +11,23 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info, ArrowRight, Receipt, Package, Calendar, ShieldCheck, ShieldAlert, Save } from "lucide-react";
+import { Info, ArrowRight, Receipt, Package, Calendar, ShieldCheck, ShieldAlert, Save, Plus, History, Banknote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { formatDistanceToNow } from "date-fns";
+import { ar } from "date-fns/locale";
 
 export default function MillDetails() {
   const { id: millId } = useParams();
@@ -24,6 +36,10 @@ export default function MillDetails() {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [notes, setNotes] = useState("");
+  const [monthlyFee, setMonthlyFee] = useState<string>("0");
+  const [payments, setPayments] = useState<any[]>([]);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [newPayment, setNewPayment] = useState({ amount: "", date: new Date().toISOString().split('T')[0], notes: "" });
   const { toast } = useToast();
 
   useEffect(() => {
@@ -77,6 +93,16 @@ export default function MillDetails() {
           inventory: inventory?.[0] || null
         });
         setNotes(profile.subscription_notes || "");
+        setMonthlyFee(profile.monthly_fee?.toString() || "0");
+
+        // Fetch payments
+        const { data: paymentsData } = await supabase
+          .from("subscription_payments")
+          .select("*")
+          .eq("mill_user_id", millId)
+          .order("payment_date", { ascending: false });
+        
+        setPayments(paymentsData || []);
       } catch (error) {
         console.error("Error fetching mill details:", error);
       } finally {
@@ -155,6 +181,89 @@ export default function MillDetails() {
       setUpdating(false);
     }
   };
+
+  const saveMonthlyFee = async () => {
+    if (!millId) return;
+    setUpdating(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ monthly_fee: parseFloat(monthlyFee) || 0 })
+        .eq("user_id", millId);
+
+      if (error) throw error;
+
+      await supabase.rpc('log_admin_access', {
+        target_user_id: millId,
+        admin_action: 'updated_monthly_fee'
+      });
+
+      toast({
+        title: "تم الحفظ",
+        description: "تم تحديث قيمة الاشتراك الشهري",
+      });
+    } catch (error) {
+      console.error("Error saving fee:", error);
+      toast({
+        variant: "destructive",
+        title: "خطأ",
+        description: "فشل حفظ قيمة الاشتراك",
+      });
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleAddPayment = async () => {
+    if (!millId) return;
+    setUpdating(true);
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error("Not authenticated");
+
+      const { data, error } = await supabase
+        .from("subscription_payments")
+        .insert({
+          mill_user_id: millId,
+          amount: parseFloat(newPayment.amount),
+          payment_date: newPayment.date,
+          notes: newPayment.notes,
+          recorded_by: userData.user.id
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      await supabase.rpc('log_admin_access', {
+        target_user_id: millId,
+        admin_action: `recorded_payment_of_${newPayment.amount}`
+      });
+
+      setPayments([data, ...payments]);
+      setIsPaymentModalOpen(false);
+      setNewPayment({ amount: "", date: new Date().toISOString().split('T')[0], notes: "" });
+
+      toast({
+        title: "تم التسجيل",
+        description: "تم تسجيل الدفعة بنجاح",
+      });
+    } catch (error: any) {
+      console.error("Error recording payment:", error);
+      toast({
+        variant: "destructive",
+        title: "خطأ",
+        description: error.message || "فشل تسجيل الدفعة",
+      });
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const lastPayment = payments.length > 0 ? payments[0] : null;
+  const monthsSinceLastPayment = lastPayment 
+    ? Math.floor((new Date().getTime() - new Date(lastPayment.payment_date).getTime()) / (1000 * 60 * 60 * 24 * 30.44))
+    : null;
 
   if (loading) return <div className="p-8 text-center">جارٍ تحميل بيانات المعصرة...</div>;
   if (!millData) return <div className="p-8 text-center">لم يتم العثور على بيانات.</div>;
@@ -322,6 +431,130 @@ export default function MillDetails() {
               <span className="text-muted-foreground">ID المستخدم:</span>
               <span className="text-[10px] font-mono opacity-50">{millData.profile.user_id}</span>
             </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Subscription Payments & Debt */}
+        <Card className="md:col-span-2 border-t-4 border-t-green-500">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Banknote className="h-5 w-5 text-green-600" />
+              <CardTitle className="text-lg">سجل الدفعات والديون</CardTitle>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Label htmlFor="monthlyFee" className="text-sm whitespace-nowrap">الاشتراك الشهري:</Label>
+                <div className="flex gap-1">
+                  <Input 
+                    id="monthlyFee"
+                    type="number" 
+                    value={monthlyFee} 
+                    onChange={e => setMonthlyFee(e.target.value)}
+                    className="w-24 h-8"
+                  />
+                  <Button size="sm" variant="outline" onClick={saveMonthlyFee} disabled={updating} className="h-8">
+                    حفظ
+                  </Button>
+                </div>
+              </div>
+              <Dialog open={isPaymentModalOpen} onOpenChange={setIsPaymentModalOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm" className="bg-green-600 hover:bg-green-700">
+                    <Plus className="ml-2 h-4 w-4" />
+                    تسجيل دفعة جديدة
+                  </Button>
+                </DialogTrigger>
+                <DialogContent dir="rtl" className="text-right">
+                  <DialogHeader>
+                    <DialogTitle>تسجيل دفعة اشتراك جديدة</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label>المبلغ (₪)</Label>
+                      <Input 
+                        type="number" 
+                        value={newPayment.amount}
+                        onChange={e => setNewPayment({...newPayment, amount: e.target.value})}
+                        placeholder="0.00"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>تاريخ الدفع</Label>
+                      <Input 
+                        type="date" 
+                        value={newPayment.date}
+                        onChange={e => setNewPayment({...newPayment, date: e.target.value})}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>ملاحظات</Label>
+                      <Textarea 
+                        value={newPayment.notes}
+                        onChange={e => setNewPayment({...newPayment, notes: e.target.value})}
+                        placeholder="أي تفاصيل إضافية..."
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button onClick={handleAddPayment} disabled={updating || !newPayment.amount} className="w-full">
+                      {updating ? "جاري التسجيل..." : "تأكيد تسجيل الدفعة"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <p className="text-sm text-muted-foreground">آخر دفعة كانت بتاريخ</p>
+                <p className="text-lg font-bold">
+                  {lastPayment ? new Date(lastPayment.payment_date).toLocaleDateString("ar-EG") : "لا يوجد"}
+                </p>
+              </div>
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <p className="text-sm text-muted-foreground">عدد الأشهر منذ آخر دفعة</p>
+                <p className={`text-lg font-bold ${monthsSinceLastPayment !== null && monthsSinceLastPayment > 1 ? 'text-red-600' : ''}`}>
+                  {monthsSinceLastPayment !== null ? `${monthsSinceLastPayment} شهر` : "---"}
+                </p>
+              </div>
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <p className="text-sm text-muted-foreground">إجمالي المدفوعات</p>
+                <p className="text-lg font-bold">
+                  {payments.reduce((sum, p) => sum + Number(p.amount), 0)} ₪
+                </p>
+              </div>
+            </div>
+
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-right">التاريخ</TableHead>
+                  <TableHead className="text-right">المبلغ</TableHead>
+                  <TableHead className="text-right">ملاحظات</TableHead>
+                  <TableHead className="text-right">بواسطة</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {payments.map((p) => (
+                  <TableRow key={p.id}>
+                    <TableCell>{new Date(p.payment_date).toLocaleDateString("ar-EG")}</TableCell>
+                    <TableCell className="font-bold text-green-700">{p.amount} ₪</TableCell>
+                    <TableCell className="text-sm max-w-[200px] truncate" title={p.notes}>{p.notes || "-"}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">مشرف</TableCell>
+                  </TableRow>
+                ))}
+                {payments.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center py-4 text-muted-foreground">
+                      لا يوجد سجل مدفوعات لهذه المعصرة
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
       </div>

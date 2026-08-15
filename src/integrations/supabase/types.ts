@@ -333,6 +333,7 @@ export type Database = {
           display_name: string | null
           id: string
           mill_name: string | null
+          monthly_fee: number | null
           phone: string | null
           report_pin: string | null
           subscription_notes: string | null
@@ -348,6 +349,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           mill_name?: string | null
+          monthly_fee?: number | null
           phone?: string | null
           report_pin?: string | null
           subscription_notes?: string | null
@@ -363,6 +365,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           mill_name?: string | null
+          monthly_fee?: number | null
           phone?: string | null
           report_pin?: string | null
           subscription_notes?: string | null
@@ -469,6 +472,36 @@ export type Database = {
           status?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      subscription_payments: {
+        Row: {
+          amount: number
+          created_at: string | null
+          id: string
+          mill_user_id: string
+          notes: string | null
+          payment_date: string
+          recorded_by: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          id?: string
+          mill_user_id: string
+          notes?: string | null
+          payment_date?: string
+          recorded_by: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          id?: string
+          mill_user_id?: string
+          notes?: string | null
+          payment_date?: string
+          recorded_by?: string
         }
         Relationships: []
       }
