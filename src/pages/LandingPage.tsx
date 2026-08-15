@@ -90,7 +90,7 @@ const LandingPage = () => {
         <div className="max-w-6xl mx-auto flex items-center justify-between px-6 h-16">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 olive-gradient rounded-lg flex items-center justify-center">
-              <Leaf className="h-5 w-5 text-primary-foreground" />
+              <Sprout className="h-5 w-5 text-primary-foreground" />
             </div>
             <span className="text-lg font-bold text-foreground">المعصرة الذكية</span>
           </div>
