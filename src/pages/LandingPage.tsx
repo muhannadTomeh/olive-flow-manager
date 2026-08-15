@@ -110,7 +110,7 @@ const LandingPage = () => {
         <div className="absolute inset-0 subtle-gradient opacity-60" />
         <div className="relative max-w-6xl mx-auto px-6 py-24 md:py-36 text-center">
           <div className="inline-flex items-center gap-2 bg-primary/10 text-primary rounded-full px-4 py-1.5 text-sm font-medium mb-8">
-            <Leaf className="h-4 w-4" />
+            <Sprout className="h-4 w-4" />
             نظام إدارة معاصر الزيتون الحديث
           </div>
           <h1 className="text-4xl md:text-6xl font-extrabold text-foreground leading-tight mb-6 max-w-3xl mx-auto">
