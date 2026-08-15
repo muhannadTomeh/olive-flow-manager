@@ -90,15 +90,6 @@ const LoginForm = ({ loading, onSubmit, onNavigate }: LoginFormProps) => {
         </Button>
       </form>
 
-      <p className="text-center text-sm text-muted-foreground mt-8">
-        ليس لديك حساب؟{" "}
-        <button
-          onClick={() => onNavigate("register")}
-          className="text-primary font-semibold hover:underline"
-        >
-          إنشاء حساب جديد
-        </button>
-      </p>
     </div>
   );
 };
