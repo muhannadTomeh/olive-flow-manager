@@ -93,7 +93,7 @@ export default function Seasons() {
           </Button>
           <Separator orientation="vertical" className="h-6 hidden sm:block" />
           <div className="w-9 h-9 olive-gradient rounded-xl flex items-center justify-center shadow-sm">
-            <Leaf className="h-5 w-5 text-primary-foreground" />
+            <Sprout className="h-5 w-5 text-primary-foreground" />
           </div>
           <div className="hidden sm:block">
             <h1 className="text-lg font-bold text-foreground leading-tight">المعصرة الذكية</h1>
