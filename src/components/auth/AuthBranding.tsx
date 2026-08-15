@@ -1,4 +1,5 @@
 import authIllustration from "@/assets/auth-illustration.jpg";
+import { Sprout } from "lucide-react";
 
 const AuthBranding = () => {
   return (
