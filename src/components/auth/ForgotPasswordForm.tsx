@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { KeyRound, Mail, ArrowRight } from "lucide-react";
+import { KeyRound, Mail, ArrowRight, Sprout } from "lucide-react";
 import type { AuthView } from "@/pages/Auth";
 
 interface ForgotPasswordFormProps {
