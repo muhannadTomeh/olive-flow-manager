@@ -7,47 +7,66 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
-    )
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') || '';
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
+
+    // Log environment check (don't log the keys themselves)
+    console.log("Checking environment variables...");
+    if (!supabaseUrl || !serviceRoleKey) {
+      throw new Error('Server configuration error: Missing environment variables');
+    }
+
+    // Create a client with the user's token to check roles
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('Missing Authorization header');
+    }
+
+    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
 
     // Check if user is platform_admin
-    const {
-      data: { user },
-    } = await supabaseClient.auth.getUser()
-
-    if (!user) {
-      throw new Error('Unauthorized')
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+    if (userError || !user) {
+      console.error('Auth error:', userError);
+      throw new Error('Unauthorized');
     }
 
     const { data: roleData, error: roleError } = await supabaseClient
-      .rpc('has_role', { _user_id: user.id, _role: 'platform_admin' })
+      .rpc('has_role', { _user_id: user.id, _role: 'platform_admin' });
 
     if (roleError || !roleData) {
-      throw new Error('Forbidden: Only platform_admin can create accounts')
+      console.error('Role check failed:', roleError, roleData);
+      throw new Error('Forbidden: Only platform_admin can create accounts');
     }
 
     // Get request body
-    const { email, password, mill_name, owner_name, phone } = await req.json()
+    const body = await req.json();
+    const { email, password, mill_name, owner_name, phone } = body;
 
     if (!email || !password || !mill_name || !owner_name) {
-      throw new Error('Missing required fields')
+      throw new Error('Missing required fields');
     }
 
     // Create admin client with service role
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
 
-    // 1. Create User
+    console.log(`Creating user for ${email}...`);
+
+    // 1. Create User in Auth
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
@@ -57,55 +76,45 @@ serve(async (req) => {
         ownerName: owner_name,
         phone: phone || ''
       }
-    })
+    });
 
-    if (createError) throw createError
-
-    // 2. Profile is usually created by trigger handle_new_user_setup
-    // But let's ensure it has the correct active status and additional info
-    // Wait a bit for the trigger to fire
-    await new Promise(resolve => setTimeout(resolve, 1000))
-
-    const { error: updateError } = await supabaseAdmin
-      .from('profiles')
-      .update({
-        display_name: owner_name,
-        mill_name: mill_name,
-        phone: phone,
-        subscription_status: 'active'
-      })
-      .eq('user_id', newUser.user.id)
-
-    if (updateError) {
-      console.error('Error updating profile:', updateError)
-      // Attempt to insert if update failed (though trigger should have inserted)
-      await supabaseAdmin.from('profiles').upsert({
-        user_id: newUser.user.id,
-        display_name: owner_name,
-        mill_name: mill_name,
-        phone: phone,
-        subscription_status: 'active'
-      })
+    if (createError) {
+      console.error('Create user error:', createError);
+      throw createError;
     }
-    
-    // 3. Assign mill_owner role
-    const { error: roleAssignError } = await supabaseAdmin
-      .from('user_roles')
-      .insert({
-        user_id: newUser.user.id,
+
+    const newUserId = newUser.user.id;
+    console.log(`User created: ${newUserId}`);
+
+    // 2. Profile and Role
+    // We'll perform multiple operations in parallel where possible
+    const [profileResult, roleResult] = await Promise.all([
+      supabaseAdmin.from('profiles').upsert({
+        user_id: newUserId,
+        display_name: owner_name,
+        mill_name: mill_name,
+        phone: phone || null,
+        subscription_status: 'active',
+        created_at: new Date().toISOString()
+      }),
+      supabaseAdmin.from('user_roles').insert({
+        user_id: newUserId,
         role: 'mill_owner'
       })
-    
-    if (roleAssignError) console.error('Error assigning role:', roleAssignError)
+    ]);
+
+    if (profileResult.error) console.error('Profile upsert error:', profileResult.error);
+    if (roleResult.error) console.error('Role assign error:', roleResult.error);
 
     return new Response(
       JSON.stringify({ message: 'Account created successfully', user: newUser.user }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
-    )
+    );
   } catch (error) {
+    console.error('Edge Function Error:', error.message);
     return new Response(
       JSON.stringify({ error: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-    )
+    );
   }
-})
+});
