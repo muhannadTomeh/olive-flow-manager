@@ -70,11 +70,15 @@ export default function AdminIndex() {
     e.preventDefault();
     setCreateLoading(true);
     try {
+      console.log("Invoking admin-create-mill-account...");
       const { data, error } = await supabase.functions.invoke('admin-create-mill-account', {
         body: newAccountData
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Function error details:", error);
+        throw error;
+      }
 
       setCreatedCredentials({
         email: newAccountData.email,
@@ -82,7 +86,6 @@ export default function AdminIndex() {
       });
       toast.success("تم إنشاء الحساب بنجاح");
       
-      // Clear form but don't close modal until they copy credentials
       setNewAccountData({
         email: "",
         password: "",
@@ -91,8 +94,7 @@ export default function AdminIndex() {
         phone: ""
       });
       
-      // Refresh list
-      window.location.reload(); 
+      // We'll defer the reload to when they close the success view
     } catch (error: any) {
       console.error("Error creating account:", error);
       toast.error(error.message || "حدث خطأ أثناء إنشاء الحساب");
