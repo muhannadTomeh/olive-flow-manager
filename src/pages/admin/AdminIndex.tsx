@@ -46,6 +46,65 @@ export default function AdminIndex() {
   const [updatingLink, setUpdatingLink] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const navigate = useNavigate();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [createLoading, setCreateLoading] = useState(false);
+  const [newAccountData, setNewAccountData] = useState({
+    email: "",
+    password: "",
+    mill_name: "",
+    owner_name: "",
+    phone: ""
+  });
+  const [createdCredentials, setCreatedCredentials] = useState<{email: string, password: string} | null>(null);
+
+  const generatePassword = () => {
+    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+    let retVal = "";
+    for (let i = 0, n = charset.length; i < 12; ++i) {
+      retVal += charset.charAt(Math.floor(Math.random() * n));
+    }
+    setNewAccountData(prev => ({ ...prev, password: retVal }));
+  };
+
+  const handleCreateAccount = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreateLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-create-mill-account', {
+        body: newAccountData
+      });
+
+      if (error) throw error;
+
+      setCreatedCredentials({
+        email: newAccountData.email,
+        password: newAccountData.password
+      });
+      toast.success("تم إنشاء الحساب بنجاح");
+      
+      // Clear form but don't close modal until they copy credentials
+      setNewAccountData({
+        email: "",
+        password: "",
+        mill_name: "",
+        owner_name: "",
+        phone: ""
+      });
+      
+      // Refresh list
+      window.location.reload(); 
+    } catch (error: any) {
+      console.error("Error creating account:", error);
+      toast.error(error.message || "حدث خطأ أثناء إنشاء الحساب");
+    } finally {
+      setCreateLoading(false);
+    }
+  };
+
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success(`تم نسخ ${label}`);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
