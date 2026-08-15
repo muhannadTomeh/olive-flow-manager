@@ -478,6 +478,7 @@ export default function AdminIndex() {
                 <TableHead className="text-right">اسم المعصرة</TableHead>
                 <TableHead className="text-right">تاريخ التسجيل</TableHead>
                 <TableHead className="text-right">حالة الاشتراك</TableHead>
+                <TableHead className="text-right">آخر دفعة</TableHead>
                 <TableHead className="text-right">موسم نشط</TableHead>
                 <TableHead className="text-right">عدد الفواتير</TableHead>
                 <TableHead className="text-right">الإجراءات</TableHead>
@@ -491,7 +492,13 @@ export default function AdminIndex() {
                   <TableCell>
                     {getStatusBadge(mill.subscriptionStatus)}
                   </TableCell>
-                  <TableCell>{mill.invoiceCount}</TableCell>
+                  <TableCell>
+                    {mill.lastPaymentDate ? (
+                      <span className="text-xs">{new Date(mill.lastPaymentDate).toLocaleDateString("ar-EG")}</span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">لا يوجد</span>
+                    )}
+                  </TableCell>
                   <TableCell>
                     {mill.isActive ? (
                       <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">نعم</Badge>
@@ -499,6 +506,7 @@ export default function AdminIndex() {
                       <Badge variant="secondary">لا</Badge>
                     )}
                   </TableCell>
+                  <TableCell>{mill.invoiceCount}</TableCell>
                   <TableCell>
                     <Button 
                       variant="outline" 
