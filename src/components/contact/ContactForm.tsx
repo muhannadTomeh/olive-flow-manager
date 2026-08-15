@@ -54,12 +54,10 @@ const ContactForm = () => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate sending email
-    // In a real app, this would call an Edge Function or Email API
-    const mailtoLink = `mailto:muhannad.tomeh22@gmail.com?subject=${encodeURIComponent(
+    const mailtoLink = `mailto:${settings.email}?subject=${encodeURIComponent(
       subject || "رسالة من موقع المعصرة الذكية"
     )}&body=${encodeURIComponent(
-      `الاسم: ${name}\nالبريد الإلكتروني: ${email}\n\nالوصف:\n${message}`
+      `الاسم: ${name}\nالبريد الإلكتروني: ${email}\n\nالموضوع: ${subject}\n\nالوصف:\n${message}`
     )}`;
     
     window.location.href = mailtoLink;
@@ -89,7 +87,7 @@ const ContactForm = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground font-medium">البريد الإلكتروني الرسمي</p>
-                  <p className="font-bold">muhannad.tomeh22@gmail.com</p>
+                  <p className="font-bold">{settings.email}</p>
                 </div>
               </div>
               
@@ -100,12 +98,12 @@ const ContactForm = () => {
                 <div>
                   <p className="text-sm text-muted-foreground font-medium">واتساب الدعم الفني</p>
                   <a 
-                    href="https://wa.me/972594596906" 
+                    href={`https://wa.me/${settings.whatsapp.replace('+', '')}`} 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="font-bold hover:text-green-600 transition-colors ltr inline-block"
                   >
-                    +972 594 596 906
+                    {settings.whatsapp}
                   </a>
                 </div>
               </div>
@@ -116,7 +114,7 @@ const ContactForm = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground font-medium">رقم التواصل الرسمي</p>
-                  <p className="font-bold ltr inline-block">0569945677</p>
+                  <p className="font-bold ltr inline-block">{settings.phone}</p>
                 </div>
               </div>
             </div>
