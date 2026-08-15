@@ -22,7 +22,7 @@ const AuthBranding = () => {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-primary-foreground tracking-tight">
-                Smart Mill
+                المعصرة الذكية
               </h1>
               <p className="text-sm text-primary-foreground/70">
                 Olive Mill Management
@@ -62,7 +62,7 @@ const AuthBranding = () => {
       {/* Footer */}
       <div className="relative z-20 p-10 xl:p-14 pt-0">
         <p className="text-xs text-primary-foreground/40">
-          © {new Date().getFullYear()} Smart Mill. جميع الحقوق محفوظة.
+          © {new Date().getFullYear()} المعصرة الذكية. جميع الحقوق محفوظة.
         </p>
       </div>
     </div>

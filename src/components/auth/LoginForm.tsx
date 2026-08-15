@@ -27,7 +27,7 @@ const LoginForm = ({ loading, onSubmit, onNavigate }: LoginFormProps) => {
       <div className="lg:hidden text-center mb-8">
         <div className="flex items-center justify-center gap-2 mb-2">
           <span className="text-3xl">🫒</span>
-          <h1 className="text-2xl font-bold text-foreground">Smart Mill</h1>
+          <h1 className="text-2xl font-bold text-foreground">المعصرة الذكية</h1>
         </div>
         <p className="text-sm text-muted-foreground">نظام إدارة المعاصر</p>
       </div>

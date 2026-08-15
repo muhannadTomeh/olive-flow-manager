@@ -373,7 +373,7 @@ const Invoices = () => {
               <CardContent>
                 <div className="border rounded-lg p-6 space-y-4 bg-card">
                   <div className="text-center space-y-1">
-                    <h2 className="text-xl font-bold text-foreground">فاتورة Smart Mill</h2>
+                    <h2 className="text-xl font-bold text-foreground">فاتورة المعصرة الذكية</h2>
                     <p className="text-sm text-muted-foreground">{today}</p>
                   </div>
 

@@ -57,7 +57,7 @@ const howItWorks = [
 const LandingPage = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
-  const [contactLink, setContactLink] = useState("https://wa.me/970598326014?text=" + encodeURIComponent("مرحباً، أريد الاشتراك بنظام Smart Mill"));
+  const [contactLink, setContactLink] = useState("https://wa.me/970569945677?text=" + encodeURIComponent("مرحباً، أريد الاشتراك بنظام المعصرة الذكية"));
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -91,7 +91,7 @@ const LandingPage = () => {
             <div className="w-9 h-9 olive-gradient rounded-lg flex items-center justify-center">
               <Leaf className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="text-lg font-bold text-foreground">Smart Mill</span>
+            <span className="text-lg font-bold text-foreground">المعصرة الذكية</span>
           </div>
           <div className="flex items-center gap-3">
             <Button variant="ghost" onClick={() => navigate("/auth")}>
@@ -204,7 +204,7 @@ const LandingPage = () => {
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-muted-foreground text-sm">
             <Leaf className="h-4 w-4 text-primary" />
-            نظام إدارة معاصر الزيتون Smart Mill © {new Date().getFullYear()}
+            نظام إدارة معاصر الزيتون المعصرة الذكية © {new Date().getFullYear()}
           </div>
           <p className="text-muted-foreground text-sm">صُنع بعناية لأصحاب المعاصر في فلسطين والوطن العربي</p>
         </div>

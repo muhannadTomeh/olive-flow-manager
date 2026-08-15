@@ -115,7 +115,7 @@ export default function PublicQueueDisplay() {
         <div className="flex items-center gap-3">
           <span className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
           <span className="text-white/40 text-lg font-medium">
-            {season?.name || "Smart Mill"}
+            {season?.name || "المعصرة الذكية"}
           </span>
         </div>
         <div className="font-mono">

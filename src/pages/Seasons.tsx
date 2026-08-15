@@ -96,7 +96,7 @@ export default function Seasons() {
             <Leaf className="h-5 w-5 text-primary-foreground" />
           </div>
           <div className="hidden sm:block">
-            <h1 className="text-lg font-bold text-foreground leading-tight">Smart Mill</h1>
+            <h1 className="text-lg font-bold text-foreground leading-tight">المعصرة الذكية</h1>
             <p className="text-xs text-muted-foreground leading-tight">نظام إدارة المعصرة</p>
           </div>
         </div>
