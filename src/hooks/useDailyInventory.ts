@@ -29,13 +29,14 @@ export function useDailyInventory() {
     if (!user || !activeSeason) return;
     setLoading(true);
     
-    const { data, error } = await supabase
+    // Using any to bypass type errors temporarily for new table
+    const { data, error } = await (supabase
       .from("daily_inventory" as any)
       .select("*")
       .eq("user_id", user.id)
       .eq("season_id", activeSeason.id)
       .eq("inventory_date", today)
-      .maybeSingle();
+      .maybeSingle() as any);
 
     if (error) {
       console.error("Error fetching daily inventory:", error);
@@ -45,7 +46,7 @@ export function useDailyInventory() {
       setDailyInv(data as DailyInventory);
     } else {
       // Initialize for today if not exists
-      const { data: newData } = await supabase
+      const { data: newData } = await (supabase
         .from("daily_inventory" as any)
         .insert({
           user_id: user.id,
@@ -56,7 +57,7 @@ export function useDailyInventory() {
           container_count: 0
         })
         .select()
-        .single();
+        .single() as any);
       
       if (newData) setDailyInv(newData as DailyInventory);
     }
