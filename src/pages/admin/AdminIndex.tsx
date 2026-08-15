@@ -217,6 +217,8 @@ export default function AdminIndex() {
 
   const handleUpdateContactSettings = async () => {
     setUpdatingLink(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    
     const settings = [
       { key: "contact_link", value: contactLink },
       { key: "contact_email", value: contactEmail },
@@ -229,7 +231,7 @@ export default function AdminIndex() {
       .upsert(settings.map(s => ({ 
         ...s,
         updated_at: new Date().toISOString(),
-        updated_by: user_id // We should get the user id correctly
+        updated_by: user?.id
       })));
     
     setUpdatingLink(false);
