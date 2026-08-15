@@ -114,7 +114,7 @@ export function InvoicePreview({ data, millName = "المعصرة الذكية" 
 
       <Separator />
       <p className="text-center text-[11px] text-muted-foreground">
-        شكراً لزيارتكم — نتمنى لكم موسماً مباركاً 🫒
+        شكراً لزيارتكم — نتمنى لكم موسماً مباركاً 
       </p>
     </div>
   );
