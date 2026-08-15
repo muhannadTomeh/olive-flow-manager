@@ -58,7 +58,7 @@ const howItWorks = [
 const LandingPage = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
-  const [contactLink, setContactLink] = useState("https://wa.me/970569945677?text=" + encodeURIComponent("مرحباً، أريد الاشتراك بنظام المعصرة الذكية"));
+  const [contactLink, setContactLink] = useState("https://wa.me/972594596906?text=" + encodeURIComponent("مرحباً، أريد الاشتراك بنظام المعصرة الذكية"));
 
   useEffect(() => {
     const fetchSettings = async () => {
