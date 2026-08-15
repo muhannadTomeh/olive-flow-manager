@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { LogIn, Mail, Lock } from "lucide-react";
+import { LogIn, Mail, Lock, Sprout } from "lucide-react";
 import type { AuthView } from "@/pages/Auth";
 
 interface LoginFormProps {
