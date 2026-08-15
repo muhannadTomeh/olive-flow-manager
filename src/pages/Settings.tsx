@@ -294,6 +294,43 @@ export default function Settings() {
         </div>
       </div>
 
+      {userRole === 'mill_owner' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ShieldCheck className="h-5 w-5 text-primary" />
+              الأمان — تغيير كلمة المرور
+            </CardTitle>
+            <CardDescription>تحديث كلمة المرور الخاصة بحساب صاحب المعصرة</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label>كلمة المرور الجديدة</Label>
+                <Input 
+                  type="password" 
+                  value={newPassword} 
+                  onChange={(e) => setNewPassword(e.target.value)} 
+                  placeholder="6 أحرف على الأقل..."
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>تأكيد كلمة المرور</Label>
+                <Input 
+                  type="password" 
+                  value={confirmPassword} 
+                  onChange={(e) => setConfirmPassword(e.target.value)} 
+                  placeholder="أعد إدخال كلمة المرور..."
+                />
+              </div>
+            </div>
+            <Button onClick={updatePassword} disabled={isUpdatingPassword || !newPassword}>
+              {isUpdatingPassword ? "جارٍ التحديث..." : "تحديث كلمة المرور"}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle>إعدادات المعصرة والثوابت</CardTitle>
