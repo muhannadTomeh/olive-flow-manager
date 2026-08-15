@@ -329,6 +329,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          country: string | null
           created_at: string
           display_name: string | null
           id: string
@@ -336,6 +337,7 @@ export type Database = {
           monthly_fee: number | null
           phone: string | null
           report_pin: string | null
+          secondary_phone: string | null
           subscription_notes: string | null
           subscription_status:
             | Database["public"]["Enums"]["subscription_status"]
@@ -345,6 +347,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          country?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
@@ -352,6 +355,7 @@ export type Database = {
           monthly_fee?: number | null
           phone?: string | null
           report_pin?: string | null
+          secondary_phone?: string | null
           subscription_notes?: string | null
           subscription_status?:
             | Database["public"]["Enums"]["subscription_status"]
@@ -361,6 +365,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          country?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
@@ -368,6 +373,7 @@ export type Database = {
           monthly_fee?: number | null
           phone?: string | null
           report_pin?: string | null
+          secondary_phone?: string | null
           subscription_notes?: string | null
           subscription_status?:
             | Database["public"]["Enums"]["subscription_status"]
