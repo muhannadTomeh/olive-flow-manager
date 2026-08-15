@@ -343,7 +343,10 @@ export default function AdminIndex() {
                     </div>
                   </div>
 
-                  <Button onClick={() => setIsCreateModalOpen(false)} className="w-full mt-4">
+                  <Button onClick={() => {
+                    setIsCreateModalOpen(false);
+                    window.location.reload();
+                  }} className="w-full mt-4">
                     إغلاق
                   </Button>
                 </div>
