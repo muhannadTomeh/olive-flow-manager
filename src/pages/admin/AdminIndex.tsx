@@ -196,17 +196,23 @@ export default function AdminIndex() {
       }
     };
 
-    const fetchContactLink = async () => {
+    const fetchContactSettings = async () => {
       const { data } = await supabase
         .from("system_settings")
-        .select("value")
-        .eq("key", "contact_link")
-        .single();
-      if (data) setContactLink(data.value);
+        .select("key, value");
+      
+      if (data) {
+        data.forEach(setting => {
+          if (setting.key === "contact_link") setContactLink(setting.value);
+          if (setting.key === "contact_email") setContactEmail(setting.value);
+          if (setting.key === "contact_phone") setContactPhone(setting.value);
+          if (setting.key === "contact_whatsapp") setContactWhatsapp(setting.value);
+        });
+      }
     };
 
     fetchData();
-    fetchContactLink();
+    fetchContactSettings();
   }, []);
 
   const handleUpdateContactLink = async () => {
