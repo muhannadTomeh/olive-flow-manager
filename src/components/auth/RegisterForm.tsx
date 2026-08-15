@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { UserPlus, Mail, Lock, User, Phone, Building2 } from "lucide-react";
+import { UserPlus, Mail, Lock, User, Phone, Building2, Sprout } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { AuthView } from "@/pages/Auth";
 
