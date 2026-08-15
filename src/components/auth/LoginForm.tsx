@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { LogIn, Mail, Lock } from "lucide-react";
+import { LogIn, Mail, Lock, Sprout } from "lucide-react";
 import type { AuthView } from "@/pages/Auth";
 
 interface LoginFormProps {
@@ -26,8 +26,10 @@ const LoginForm = ({ loading, onSubmit, onNavigate }: LoginFormProps) => {
       {/* Mobile branding */}
       <div className="lg:hidden text-center mb-8">
         <div className="flex items-center justify-center gap-2 mb-2">
-          <span className="text-3xl">🫒</span>
-          <h1 className="text-2xl font-bold text-foreground">Smart Mill</h1>
+          <div className="w-9 h-9 olive-gradient rounded-lg flex items-center justify-center">
+            <Sprout className="h-5 w-5 text-primary-foreground" />
+          </div>
+          <h1 className="text-2xl font-bold text-foreground">المعصرة الذكية</h1>
         </div>
         <p className="text-sm text-muted-foreground">نظام إدارة المعاصر</p>
       </div>

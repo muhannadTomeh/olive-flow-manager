@@ -4,8 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import ContactForm from "@/components/contact/ContactForm";
 import {
-  Leaf,
+  Sprout,
   BarChart3,
   Users,
   Clock,
@@ -57,7 +58,7 @@ const howItWorks = [
 const LandingPage = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
-  const [contactLink, setContactLink] = useState("https://wa.me/970598326014?text=" + encodeURIComponent("مرحباً، أريد الاشتراك بنظام Smart Mill"));
+  const [contactLink, setContactLink] = useState("https://wa.me/972594596906?text=" + encodeURIComponent("مرحباً، أريد الاشتراك بنظام المعصرة الذكية"));
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -89,9 +90,9 @@ const LandingPage = () => {
         <div className="max-w-6xl mx-auto flex items-center justify-between px-6 h-16">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 olive-gradient rounded-lg flex items-center justify-center">
-              <Leaf className="h-5 w-5 text-primary-foreground" />
+              <Sprout className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="text-lg font-bold text-foreground">Smart Mill</span>
+            <span className="text-lg font-bold text-foreground">المعصرة الذكية</span>
           </div>
           <div className="flex items-center gap-3">
             <Button variant="ghost" onClick={() => navigate("/auth")}>
@@ -109,7 +110,7 @@ const LandingPage = () => {
         <div className="absolute inset-0 subtle-gradient opacity-60" />
         <div className="relative max-w-6xl mx-auto px-6 py-24 md:py-36 text-center">
           <div className="inline-flex items-center gap-2 bg-primary/10 text-primary rounded-full px-4 py-1.5 text-sm font-medium mb-8">
-            <Leaf className="h-4 w-4" />
+            <Sprout className="h-4 w-4" />
             نظام إدارة معاصر الزيتون الحديث
           </div>
           <h1 className="text-4xl md:text-6xl font-extrabold text-foreground leading-tight mb-6 max-w-3xl mx-auto">
@@ -199,12 +200,15 @@ const LandingPage = () => {
         </div>
       </section>
 
+      {/* Contact Section */}
+      <ContactForm />
+
       {/* Footer */}
       <footer className="border-t border-border py-8">
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-muted-foreground text-sm">
-            <Leaf className="h-4 w-4 text-primary" />
-            نظام إدارة معاصر الزيتون Smart Mill © {new Date().getFullYear()}
+            <Sprout className="h-4 w-4 text-primary" />
+            نظام إدارة معاصر الزيتون المعصرة الذكية © {new Date().getFullYear()}
           </div>
           <p className="text-muted-foreground text-sm">صُنع بعناية لأصحاب المعاصر في فلسطين والوطن العربي</p>
         </div>

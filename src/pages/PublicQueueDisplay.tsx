@@ -115,7 +115,7 @@ export default function PublicQueueDisplay() {
         <div className="flex items-center gap-3">
           <span className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
           <span className="text-white/40 text-lg font-medium">
-            {season?.name || "Smart Mill"}
+            {season?.name || "المعصرة الذكية"}
           </span>
         </div>
         <div className="font-mono">
@@ -152,7 +152,7 @@ export default function PublicQueueDisplay() {
                 className="text-xl font-bold tracking-widest uppercase"
                 style={{ color: "#6ee7b7", letterSpacing: "0.3em" }}
               >
-                🫒 الدور الحالي
+                الدور الحالي
               </p>
 
               <div
@@ -192,7 +192,7 @@ export default function PublicQueueDisplay() {
                 className="w-32 h-32 rounded-full flex items-center justify-center"
                 style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
               >
-                <span className="text-5xl">🫒</span>
+                <span className="text-5xl"></span>
               </div>
               <p className="text-white/15 text-3xl font-light">لا يوجد عصر حالياً</p>
             </div>

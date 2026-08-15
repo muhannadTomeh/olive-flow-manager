@@ -89,7 +89,7 @@ export default function QueueDisplay() {
       <div className="flex items-center justify-between px-10 pt-6 pb-4">
         <div className="flex items-center gap-3">
           <span className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
-          <span className="text-white/40 text-lg font-medium">Smart Mill</span>
+          <span className="text-white/40 text-lg font-medium">المعصرة الذكية</span>
         </div>
         <div className="flex items-baseline gap-1 font-mono">
           <span className="text-white/80 text-5xl font-bold tracking-widest"
@@ -124,7 +124,7 @@ export default function QueueDisplay() {
               <p className="text-xl font-bold tracking-widest uppercase"
                 style={{ color: "#6ee7b7", letterSpacing: "0.3em" }}
               >
-                🫒 قيد العصر
+                قيد العصر
               </p>
 
               <div className="w-full max-w-lg rounded-[2.5rem] p-6 pb-8 flex flex-col items-center"
@@ -163,7 +163,7 @@ export default function QueueDisplay() {
               <div className="w-32 h-32 rounded-full flex items-center justify-center"
                 style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
               >
-                <span className="text-5xl">🫒</span>
+                <span className="text-5xl"></span>
               </div>
               <p className="text-white/15 text-3xl font-light">لا يوجد عصر حالياً</p>
             </div>

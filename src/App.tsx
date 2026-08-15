@@ -186,7 +186,7 @@ const SubscriptionGate = ({ children }: { children: React.ReactNode }) => {
             <Phone className="h-5 w-5 text-primary" />
             <div className="text-right">
               <p className="text-xs text-muted-foreground">للمساعدة والتفعيل اتصل بنا:</p>
-              <p className="font-bold text-lg ltr">059-832-6014</p>
+              <p className="font-bold text-lg ltr">0569945677</p>
             </div>
           </div>
 

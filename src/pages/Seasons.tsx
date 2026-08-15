@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
-  Plus, LogIn, Pencil, Lock, Users, Package, DollarSign, Calendar, Leaf,
+  Plus, LogIn, Pencil, Lock, Users, Package, DollarSign, Calendar, Sprout,
   LogOut, BarChart3, AlertTriangle, Copy, ArrowRight,
 } from "lucide-react";
 import { useSeason, Season } from "@/contexts/SeasonContext";
@@ -93,10 +93,10 @@ export default function Seasons() {
           </Button>
           <Separator orientation="vertical" className="h-6 hidden sm:block" />
           <div className="w-9 h-9 olive-gradient rounded-xl flex items-center justify-center shadow-sm">
-            <Leaf className="h-5 w-5 text-primary-foreground" />
+            <Sprout className="h-5 w-5 text-primary-foreground" />
           </div>
           <div className="hidden sm:block">
-            <h1 className="text-lg font-bold text-foreground leading-tight">Smart Mill</h1>
+            <h1 className="text-lg font-bold text-foreground leading-tight">المعصرة الذكية</h1>
             <p className="text-xs text-muted-foreground leading-tight">نظام إدارة المعصرة</p>
           </div>
         </div>

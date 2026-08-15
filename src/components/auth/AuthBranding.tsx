@@ -1,4 +1,5 @@
 import authIllustration from "@/assets/auth-illustration.jpg";
+import { Sprout } from "lucide-react";
 
 const AuthBranding = () => {
   return (
@@ -17,12 +18,12 @@ const AuthBranding = () => {
       <div className="relative z-20 flex flex-col justify-center h-full p-10 xl:p-14">
         <div className="mb-10">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 rounded-xl bg-primary-foreground/20 backdrop-blur-sm flex items-center justify-center text-2xl">
-              🫒
+            <div className="w-12 h-12 rounded-xl bg-primary-foreground/20 backdrop-blur-sm flex items-center justify-center">
+              <Sprout className="h-6 w-6 text-primary-foreground" />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-primary-foreground tracking-tight">
-                Smart Mill
+                المعصرة الذكية
               </h1>
               <p className="text-sm text-primary-foreground/70">
                 Olive Mill Management
@@ -62,7 +63,7 @@ const AuthBranding = () => {
       {/* Footer */}
       <div className="relative z-20 p-10 xl:p-14 pt-0">
         <p className="text-xs text-primary-foreground/40">
-          © {new Date().getFullYear()} Smart Mill. جميع الحقوق محفوظة.
+          © {new Date().getFullYear()} المعصرة الذكية. جميع الحقوق محفوظة.
         </p>
       </div>
     </div>

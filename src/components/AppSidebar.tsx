@@ -8,7 +8,6 @@ import {
   Receipt,
   Settings,
   Clock,
-  Leaf,
   Calendar,
   BarChart3,
   TrendingUp,
@@ -16,6 +15,7 @@ import {
   Cog,
   Warehouse,
   ShieldCheck,
+  MessageSquare,
 } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 import { useRole } from "@/contexts/RoleContext"
@@ -115,16 +115,16 @@ export function AppSidebar() {
         {!isCollapsed ? (
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-sidebar-primary flex items-center justify-center shadow-olive">
-              <Leaf className="h-5 w-5 text-sidebar-primary-foreground" />
+              <Sprout className="h-5 w-5 text-sidebar-primary-foreground" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-sidebar-foreground tracking-tight leading-tight">Smart Mill</h2>
+              <h2 className="text-base font-bold text-sidebar-foreground tracking-tight leading-tight">معصرة الإيمان</h2>
               <p className="text-[11px] text-sidebar-foreground/50">إدارة المعصرة</p>
             </div>
           </div>
         ) : (
           <div className="w-10 h-10 rounded-2xl bg-sidebar-primary flex items-center justify-center mx-auto shadow-olive">
-            <Leaf className="h-5 w-5 text-sidebar-primary-foreground" />
+            <Sprout className="h-5 w-5 text-sidebar-primary-foreground" />
           </div>
         )}
       </SidebarHeader>
@@ -150,7 +150,7 @@ export function AppSidebar() {
       <SidebarFooter className="p-4 border-t border-sidebar-border/60">
         {!isCollapsed && (
           <div className="rounded-2xl bg-sidebar-primary/10 px-4 py-3">
-            <p className="text-[11px] font-semibold text-sidebar-primary">Smart Mill v2.0</p>
+            <p className="text-[11px] font-semibold text-sidebar-primary">المعصرة الذكية v2.0</p>
             <p className="text-[10px] text-sidebar-foreground/40 mt-0.5">نظام إدارة المعصرة</p>
           </div>
         )}

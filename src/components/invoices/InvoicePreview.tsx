@@ -25,7 +25,7 @@ interface Props {
   millName?: string;
 }
 
-export function InvoicePreview({ data, millName = "Smart Mill" }: Props) {
+export function InvoicePreview({ data, millName = "المعصرة الذكية" }: Props) {
   const dateStr = data.created_at
     ? new Date(data.created_at).toLocaleString("ar-SA", {
         year: "numeric",
@@ -114,7 +114,7 @@ export function InvoicePreview({ data, millName = "Smart Mill" }: Props) {
 
       <Separator />
       <p className="text-center text-[11px] text-muted-foreground">
-        شكراً لزيارتكم — نتمنى لكم موسماً مباركاً 🫒
+        شكراً لزيارتكم — نتمنى لكم موسماً مباركاً 
       </p>
     </div>
   );
