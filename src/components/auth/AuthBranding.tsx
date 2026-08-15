@@ -18,8 +18,8 @@ const AuthBranding = () => {
       <div className="relative z-20 flex flex-col justify-center h-full p-10 xl:p-14">
         <div className="mb-10">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 rounded-xl bg-primary-foreground/20 backdrop-blur-sm flex items-center justify-center text-2xl">
-              🫒
+            <div className="w-12 h-12 rounded-xl bg-primary-foreground/20 backdrop-blur-sm flex items-center justify-center">
+              <Sprout className="h-6 w-6 text-primary-foreground" />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-primary-foreground tracking-tight">
