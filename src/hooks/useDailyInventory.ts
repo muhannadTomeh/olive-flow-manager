@@ -42,7 +42,7 @@ export function useDailyInventory() {
     }
 
     if (data) {
-      setDailyInv(data);
+      setDailyInv(data as DailyInventory);
     } else {
       // Initialize for today if not exists
       const { data: newData } = await supabase
@@ -58,7 +58,7 @@ export function useDailyInventory() {
         .select()
         .single();
       
-      if (newData) setDailyInv(newData);
+      if (newData) setDailyInv(newData as DailyInventory);
     }
     setLoading(false);
   };
