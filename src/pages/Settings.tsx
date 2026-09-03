@@ -3,19 +3,53 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Settings as SettingsIcon, Save, Plus, Trash2, Key, Link as LinkIcon, LogOut, ShieldCheck } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { 
+  Settings as SettingsIcon, Save, Plus, Trash2, Key, Link as LinkIcon, LogOut, 
+  ShieldCheck, Building2, MapPin, User, Phone, Globe, UserCheck,
+  Tv, ExternalLink, Copy, HelpCircle, Eye, Sparkles, Clock
+} from "lucide-react";
 import { useSettings } from "@/hooks/useSettings";
 import { useInventory } from "@/hooks/useInventory";
 import { useToast } from "@/hooks/use-toast";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSeason } from "@/contexts/SeasonContext";
+
+export interface DisplaySettings {
+  show_estimated_time: boolean;
+  show_oil_prices: boolean;
+  show_sell_price: boolean;
+  show_buy_price: boolean;
+  show_clock: boolean;
+  show_bags_count: boolean;
+  show_faqs: boolean;
+  ticker_text: string;
+  custom_faqs: Array<{ id: string; q: string; a: string }>;
+}
+
+export const defaultDisplaySettings: DisplaySettings = {
+  show_estimated_time: true,
+  show_oil_prices: true,
+  show_sell_price: true,
+  show_buy_price: true,
+  show_clock: true,
+  show_bags_count: true,
+  show_faqs: true,
+  ticker_text: "",
+  custom_faqs: [
+    { id: "1", q: "كيف يُحسب الرد؟", a: "نسبة مئوية من كمية الزيت المنتج" },
+    { id: "2", q: "سعر تنكة البلاستيك والحديد؟", a: "متوفرة بجودة عالية ومطابقة للمواصفات" },
+    { id: "3", q: "هل يمكن تأجيل الدور؟", a: "نعم، بالتنسيق مع مسؤول الطابور" },
+  ],
+};
 
 interface ContainerType {
   id: string;
@@ -23,12 +57,36 @@ interface ContainerType {
   price: number;
 }
 
+const COUNTRIES = [
+  "فلسطين",
+  "الأردن",
+  "سوريا",
+  "لبنان",
+  "تونس",
+  "المغرب",
+  "الجزائر",
+  "السعودية",
+  "تركيا",
+  "دولة أخرى"
+];
+
 export default function Settings() {
-  const { user } = useAuth();
+  const { user, profile, refreshProfile, effectiveUserId } = useAuth();
+  const targetUserId = effectiveUserId || user?.id;
   const { activeSeason, refetch: refetchSeasons } = useSeason();
   const { settings, loading } = useSettings();
   const { inventory, updateInventory } = useInventory();
   const { toast } = useToast();
+
+  const [profileForm, setProfileForm] = useState({
+    mill_name: "",
+    display_name: "",
+    country: "فلسطين",
+    mill_location: "",
+    phone: "",
+    secondary_phone: ""
+  });
+  const [savingProfile, setSavingProfile] = useState(false);
 
   const [form, setForm] = useState({
     return_percent: "",
@@ -53,14 +111,214 @@ export default function Settings() {
   const [containerDeleteTarget, setContainerDeleteTarget] = useState<ContainerType | null>(null);
   const [expenseDeleteTarget, setExpenseDeleteTarget] = useState<{ id: string, name: string } | null>(null);
   const [reportPin, setReportPin] = useState("");
-  const [isUpdatingPin, setIsUpdatingPin] = useState(false);
-  const [employeePin, setEmployeePin] = useState("");
-  const [isUpdatingEmployeePin, setIsUpdatingEmployeePin] = useState(false);
-  const [employeeLoginUrl, setEmployeeLoginUrl] = useState("");
+  const [isUpdatingPin, setIsUpdatingPin] = useState(false);  // Cashier Sub-Accounts (read-only — management done by Admin panel)
+  const [employees, setEmployees] = useState<any[]>([]);
+
+  // Screen display settings
+  const [displaySettings, setDisplaySettings] = useState<DisplaySettings>(defaultDisplaySettings);
+  const [savingDisplay, setSavingDisplay] = useState(false);
+  const [newFaqQ, setNewFaqQ] = useState("");
+  const [newFaqA, setNewFaqA] = useState("");
+  const loadedSeasonIdRef = useRef<string | null>(null);
+
+  const displayUrl = activeSeason ? `${window.location.origin}/display/${activeSeason.id}` : "";
+
+  // Load display settings once per active season without resetting during render
+  useEffect(() => {
+    if (!activeSeason?.id) return;
+    if (loadedSeasonIdRef.current === activeSeason.id) return;
+    loadedSeasonIdRef.current = activeSeason.id;
+
+    // 1. Try local storage cache first
+    const savedLocal = localStorage.getItem(`display_settings_${activeSeason.id}`);
+    if (savedLocal) {
+      try {
+        const parsed = JSON.parse(savedLocal);
+        setDisplaySettings({
+          ...defaultDisplaySettings,
+          ...parsed,
+          custom_faqs: Array.isArray(parsed.custom_faqs) ? parsed.custom_faqs : defaultDisplaySettings.custom_faqs,
+        });
+      } catch {}
+    } else if ((activeSeason as any).display_settings) {
+      const raw = (activeSeason as any).display_settings;
+      setDisplaySettings({
+        ...defaultDisplaySettings,
+        ...raw,
+        custom_faqs: Array.isArray(raw.custom_faqs) ? raw.custom_faqs : defaultDisplaySettings.custom_faqs,
+      });
+    }
+
+    // 2. Fetch from DB if available
+    supabase
+      .from("seasons")
+      .select("display_settings")
+      .eq("id", activeSeason.id)
+      .single()
+      .then(({ data }) => {
+        if (data && (data as any).display_settings) {
+          const ds = (data as any).display_settings;
+          setDisplaySettings((prev) => {
+            const merged = {
+              ...defaultDisplaySettings,
+              ...ds,
+              ...prev,
+              custom_faqs: Array.isArray(prev.custom_faqs) && prev.custom_faqs.length > 0
+                ? prev.custom_faqs
+                : (Array.isArray(ds.custom_faqs) ? ds.custom_faqs : defaultDisplaySettings.custom_faqs),
+            };
+            if (activeSeason?.id) {
+              localStorage.setItem(`display_settings_${activeSeason.id}`, JSON.stringify(merged));
+            }
+            return merged;
+          });
+        }
+      });
+  }, [activeSeason?.id]);
+
+  // Instantly persist any toggle change so it never reverts
+  const updateDisplaySetting = <K extends keyof DisplaySettings>(key: K, value: DisplaySettings[K]) => {
+    setDisplaySettings((prev) => {
+      const updated = { ...prev, [key]: value };
+      if (activeSeason?.id) {
+        localStorage.setItem(`display_settings_${activeSeason.id}`, JSON.stringify(updated));
+      }
+      return updated;
+    });
+  };
+
+  const handleSaveDisplaySettings = async () => {
+    if (!activeSeason) {
+      toast({ title: "تنبيه", description: "يرجى تفعيل موسم أولاً", variant: "destructive" });
+      return;
+    }
+    setSavingDisplay(true);
+    try {
+      localStorage.setItem(`display_settings_${activeSeason.id}`, JSON.stringify(displaySettings));
+
+      const { error } = await supabase
+        .from("seasons")
+        .update({ display_settings: displaySettings } as any)
+        .eq("id", activeSeason.id);
+
+      if (error && !error.message?.includes("display_settings")) {
+        throw error;
+      }
+
+      toast({ title: "تم الحفظ بنجاح", description: "تم تحديث إعدادات شاشة العرض العامة" });
+      if (refetchSeasons) refetchSeasons();
+    } catch (err: any) {
+      toast({ title: "خطأ", description: err.message || "تعذر حفظ إعدادات الشاشة", variant: "destructive" });
+    } finally {
+      setSavingDisplay(false);
+    }
+  };
+
+  const addCustomFaq = () => {
+    if (!newFaqQ.trim() || !newFaqA.trim()) {
+      toast({ title: "تنبيه", description: "يرجى كتابة السؤال/العنوان والتفاصيل", variant: "destructive" });
+      return;
+    }
+    const newFaq = { id: Date.now().toString(), q: newFaqQ.trim(), a: newFaqA.trim() };
+    setDisplaySettings((prev) => {
+      const updated = {
+        ...prev,
+        custom_faqs: [...(prev.custom_faqs || []), newFaq],
+      };
+      if (activeSeason?.id) {
+        localStorage.setItem(`display_settings_${activeSeason.id}`, JSON.stringify(updated));
+      }
+      return updated;
+    });
+    setNewFaqQ("");
+    setNewFaqA("");
+  };
+
+  const removeCustomFaq = (id: string) => {
+    setDisplaySettings((prev) => {
+      const updated = {
+        ...prev,
+        custom_faqs: (prev.custom_faqs || []).filter((f) => f.id !== id),
+      };
+      if (activeSeason?.id) {
+        localStorage.setItem(`display_settings_${activeSeason.id}`, JSON.stringify(updated));
+      }
+      return updated;
+    });
+  };
+
+  const clearAllFaqs = () => {
+    setDisplaySettings((prev) => {
+      const updated = {
+        ...prev,
+        custom_faqs: [],
+      };
+      if (activeSeason?.id) {
+        localStorage.setItem(`display_settings_${activeSeason.id}`, JSON.stringify(updated));
+      }
+      return updated;
+    });
+  };
+
+  useEffect(() => {
+    if (user) {
+      supabase
+        .from("profiles")
+        .select("id, display_name, phone, created_at")
+        .eq("parent_mill_id", targetUserId)
+        .order("created_at", { ascending: false })
+        .then(({ data }) => setEmployees(data || []));
+    }
+  }, [user, targetUserId]);
+
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (profile) {
+      setProfileForm({
+        mill_name: profile.mill_name || "",
+        display_name: profile.display_name || "",
+        country: profile.country || "فلسطين",
+        mill_location: profile.mill_location || "",
+        phone: profile.phone || "",
+        secondary_phone: profile.secondary_phone || ""
+      });
+    }
+  }, [profile]);
+
+  const handleSaveProfile = async () => {
+    if (!user) return;
+    if (!profileForm.mill_name.trim()) {
+      toast({ title: "خطأ", description: "اسم المعصرة مطلوب", variant: "destructive" });
+      return;
+    }
+    setSavingProfile(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          mill_name: profileForm.mill_name.trim(),
+          display_name: profileForm.display_name.trim(),
+          country: profileForm.country,
+          mill_location: profileForm.mill_location.trim(),
+          phone: profileForm.phone.trim(),
+          secondary_phone: profileForm.secondary_phone.trim() || null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+      await refreshProfile();
+      toast({ title: "تم الحفظ بنجاح", description: "تم تحديث بيانات المعصرة بنجاح" });
+    } catch (err: any) {
+      toast({ title: "خطأ", description: err.message || "فشل حفظ بيانات المعصرة", variant: "destructive" });
+    } finally {
+      setSavingProfile(false);
+    }
+  };
 
   useEffect(() => {
     const fetchUserRole = async () => {
@@ -91,27 +349,27 @@ export default function Settings() {
   }, [loading, settings, inventory]);
 
   useEffect(() => {
-    if (user && activeSeason) {
+    if (targetUserId && activeSeason) {
       fetchContainerTypes();
       fetchExpenseCategories();
     }
-  }, [user, activeSeason]);
+  }, [targetUserId, activeSeason]);
 
   const fetchExpenseCategories = async () => {
-    if (!user || !activeSeason) return;
+    if (!targetUserId || !activeSeason) return;
     const { data } = await supabase
       .from("expense_categories")
       .select("*")
-      .eq("user_id", user.id)
+      .eq("user_id", targetUserId)
       .eq("season_id", activeSeason.id)
       .order("name", { ascending: true });
     setExpenseCategories(data || []);
   };
 
   const addExpenseCategory = async () => {
-    if (!user || !activeSeason || !newExpenseCategoryName.trim()) return;
+    if (!targetUserId || !activeSeason || !newExpenseCategoryName.trim()) return;
     const { error } = await supabase.from("expense_categories").insert({
-      user_id: user.id,
+      user_id: targetUserId,
       season_id: activeSeason.id,
       name: newExpenseCategoryName.trim()
     });
@@ -131,20 +389,20 @@ export default function Settings() {
   };
 
   const fetchContainerTypes = async () => {
-    if (!user || !activeSeason) return;
+    if (!targetUserId || !activeSeason) return;
     const { data } = await supabase.
     from("container_types").
     select("*").
-    eq("user_id", user.id).
+    eq("user_id", targetUserId).
     eq("season_id", activeSeason.id).
     order("created_at", { ascending: true });
     setContainerTypes(data as ContainerType[] || []);
   };
 
   const addContainerType = async () => {
-    if (!user || !activeSeason || !newContainerName.trim() || !newContainerPrice) return;
+    if (!targetUserId || !activeSeason || !newContainerName.trim() || !newContainerPrice) return;
     const { error } = await supabase.from("container_types").insert({
-      user_id: user.id,
+      user_id: targetUserId,
       season_id: activeSeason.id,
       name: newContainerName.trim(),
       price: parseFloat(newContainerPrice)
@@ -213,26 +471,6 @@ export default function Settings() {
     }
   };
 
-  const updateEmployeePin = async () => {
-    if (!employeePin || employeePin.length < 4) {
-      toast({ title: "خطأ", description: "يجب أن يكون الرمز 4 أرقام على الأقل", variant: "destructive" });
-      return;
-    }
-    setIsUpdatingEmployeePin(true);
-    try {
-      const { error } = await supabase.rpc("set_employee_pin" as any, {
-        new_pin: employeePin
-      });
-      if (error) throw error;
-      toast({ title: "تم التحديث", description: "تم تحديث رمز دخول الموظف" });
-      setEmployeePin("");
-    } catch (error) {
-      console.error("Error:", error);
-      toast({ title: "خطأ", description: "فشل تحديث الرمز", variant: "destructive" });
-    } finally {
-      setIsUpdatingEmployeePin(false);
-    }
-  };
 
   const updatePassword = async () => {
     if (newPassword !== confirmPassword) {
@@ -271,13 +509,6 @@ export default function Settings() {
     }
   };
 
-  const generateEmployeeUrl = () => {
-    if (!user) return;
-    const url = `${window.location.origin}/auth?employee=${user.id}`;
-    setEmployeeLoginUrl(url);
-    toast({ title: "تم التوليد", description: "تم توليد رابط دخول الموظف" });
-  };
-
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast({ title: "تم النسخ", description: "تم نسخ النص إلى الحافظة" });
@@ -293,6 +524,87 @@ export default function Settings() {
           <h1 className="text-3xl font-bold text-foreground">الإعدادات</h1>
         </div>
       </div>
+
+      {/* Mill Profile Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Building2 className="h-5 w-5 text-primary" />
+            بيانات وملف المعصرة
+          </CardTitle>
+          <CardDescription>الاسم، الموقع، وأرقام التواصل التي تظهر في الفواتير والنظام</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label>اسم المعصرة *</Label>
+              <Input 
+                value={profileForm.mill_name} 
+                onChange={(e) => setProfileForm(p => ({ ...p, mill_name: e.target.value }))} 
+                placeholder="اسم المعصرة..." 
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>اسم المالك / المدير</Label>
+              <Input 
+                value={profileForm.display_name} 
+                onChange={(e) => setProfileForm(p => ({ ...p, display_name: e.target.value }))} 
+                placeholder="اسم المالك..." 
+              />
+            </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label>الدولة</Label>
+              <Select value={profileForm.country} onValueChange={(val) => setProfileForm(p => ({ ...p, country: val }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="اختر الدولة" />
+                </SelectTrigger>
+                <SelectContent>
+                  {COUNTRIES.map((c) => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>موقع / مدينة المعصرة</Label>
+              <Input 
+                value={profileForm.mill_location} 
+                onChange={(e) => setProfileForm(p => ({ ...p, mill_location: e.target.value }))} 
+                placeholder="مثال: نابلس - حوارة" 
+              />
+            </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label>رقم الهاتف الأساسي</Label>
+              <Input 
+                type="tel"
+                value={profileForm.phone} 
+                onChange={(e) => setProfileForm(p => ({ ...p, phone: e.target.value }))} 
+                placeholder="05XXXXXXXX" 
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>رقم هاتف إضافي (اختياري)</Label>
+              <Input 
+                type="tel"
+                value={profileForm.secondary_phone} 
+                onChange={(e) => setProfileForm(p => ({ ...p, secondary_phone: e.target.value }))} 
+                placeholder="هاتف أرضي أو رقم آخر" 
+              />
+            </div>
+          </div>
+
+          <Button onClick={handleSaveProfile} disabled={savingProfile} className="gap-2">
+            <Save className="h-4 w-4" />
+            {savingProfile ? "جارٍ الحفظ..." : "حفظ بيانات المعصرة"}
+          </Button>
+        </CardContent>
+      </Card>
 
       {userRole === 'mill_owner' && (
         <Card>
@@ -359,6 +671,277 @@ export default function Settings() {
             </div>
           </div>
           <Button onClick={saveSettings}><Save className="h-4 w-4 me-2" />حفظ الإعدادات</Button>
+        </CardContent>
+      </Card>
+
+      {/* Display Screen Settings Card */}
+      <Card className="border-emerald-500/20 shadow-md">
+        <CardHeader className="bg-gradient-to-r from-emerald-500/10 via-primary/5 to-transparent pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <Tv className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                إعدادات شاشة العرض (شاشة الانتظار والتلفزيون)
+              </CardTitle>
+              <CardDescription className="mt-1">
+                تحكم ديناميكي كامل بالعناصر والمعلومات المعروضة على شاشة صالة الانتظار في المعصرة
+              </CardDescription>
+            </div>
+            {activeSeason && (
+              <div className="flex items-center gap-2 flex-wrap">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  asChild
+                  className="gap-1.5 border-emerald-500/30 hover:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                >
+                  <a
+                    href={`/display/${activeSeason.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center"
+                  >
+                    <ExternalLink className="h-4 w-4 me-1" />
+                    معاينة الشاشة
+                  </a>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => copyToClipboard(displayUrl)}
+                  className="gap-1.5"
+                  title="نسخ الرابط لتشغيله على متصفح التلفزيون الذكي"
+                >
+                  <Copy className="h-4 w-4" />
+                  نسخ الرابط
+                </Button>
+              </div>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6 pt-5">
+          {/* Main Toggles Grid */}
+          <div className="space-y-3">
+            <h3 className="font-semibold text-sm text-foreground flex items-center gap-2">
+              <Eye className="h-4 w-4 text-primary" />
+              التحكم بإظهار وإخفاء عناصر الشاشة
+            </h3>
+            
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {/* Estimated Time Toggle */}
+              <div className="flex items-center justify-between p-3.5 border rounded-xl bg-card hover:bg-muted/30 transition-colors">
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-bold flex items-center gap-1.5 cursor-pointer">
+                    <Clock className="h-4 w-4 text-amber-500" />
+                    الوقت التقديري للأدوار
+                  </Label>
+                  <p className="text-xs text-muted-foreground">عرض الوقت بجانب اسم الدور القادم</p>
+                </div>
+                <Switch
+                  checked={Boolean(displaySettings.show_estimated_time)}
+                  onCheckedChange={(val) => updateDisplaySetting("show_estimated_time", val)}
+                />
+              </div>
+
+              {/* Oil Prices Section Toggle */}
+              <div className="flex items-center justify-between p-3.5 border rounded-xl bg-card hover:bg-muted/30 transition-colors">
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-bold flex items-center gap-1.5 cursor-pointer">
+                    <span>🫒</span>
+                    شريط أسعار الزيت
+                  </Label>
+                  <p className="text-xs text-muted-foreground">عرض شريط الأسعار أسفل الشاشة</p>
+                </div>
+                <Switch
+                  checked={Boolean(displaySettings.show_oil_prices)}
+                  onCheckedChange={(val) => updateDisplaySetting("show_oil_prices", val)}
+                />
+              </div>
+
+              {/* Sell Price Toggle */}
+              <div className={`flex items-center justify-between p-3.5 border rounded-xl bg-card transition-colors ${!displaySettings.show_oil_prices ? 'opacity-50' : 'hover:bg-muted/30'}`}>
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-bold flex items-center gap-1.5 cursor-pointer">
+                    سعر بيع الزيت
+                  </Label>
+                  <p className="text-xs text-muted-foreground">عرض سعر البيع (شيكل/كغم)</p>
+                </div>
+                <Switch
+                  disabled={!displaySettings.show_oil_prices}
+                  checked={Boolean(displaySettings.show_sell_price)}
+                  onCheckedChange={(val) => updateDisplaySetting("show_sell_price", val)}
+                />
+              </div>
+
+              {/* Buy Price Toggle */}
+              <div className={`flex items-center justify-between p-3.5 border rounded-xl bg-card transition-colors ${!displaySettings.show_oil_prices ? 'opacity-50' : 'hover:bg-muted/30'}`}>
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-bold flex items-center gap-1.5 cursor-pointer">
+                    سعر شراء الزيت
+                  </Label>
+                  <p className="text-xs text-muted-foreground">عرض سعر الشراء (شيكل/كغم)</p>
+                </div>
+                <Switch
+                  disabled={!displaySettings.show_oil_prices}
+                  checked={Boolean(displaySettings.show_buy_price)}
+                  onCheckedChange={(val) => updateDisplaySetting("show_buy_price", val)}
+                />
+              </div>
+
+              {/* Clock Toggle */}
+              <div className="flex items-center justify-between p-3.5 border rounded-xl bg-card hover:bg-muted/30 transition-colors">
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-bold flex items-center gap-1.5 cursor-pointer">
+                    الساعة الرقمية
+                  </Label>
+                  <p className="text-xs text-muted-foreground">عرض الساعة الكبيرة أعلى الشاشة</p>
+                </div>
+                <Switch
+                  checked={Boolean(displaySettings.show_clock)}
+                  onCheckedChange={(val) => updateDisplaySetting("show_clock", val)}
+                />
+              </div>
+
+              {/* Bags count Toggle */}
+              <div className="flex items-center justify-between p-3.5 border rounded-xl bg-card hover:bg-muted/30 transition-colors">
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-bold flex items-center gap-1.5 cursor-pointer">
+                    عدد الشوالات
+                  </Label>
+                  <p className="text-xs text-muted-foreground">عرض كمية الشوالات للأدوار</p>
+                </div>
+                <Switch
+                  checked={Boolean(displaySettings.show_bags_count)}
+                  onCheckedChange={(val) => updateDisplaySetting("show_bags_count", val)}
+                />
+              </div>
+
+              {/* FAQs & Rotating Info Toggle */}
+              <div className="flex items-center justify-between p-3.5 border rounded-xl bg-card hover:bg-muted/30 transition-colors">
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-bold flex items-center gap-1.5 cursor-pointer">
+                    المعلومات الدوارة والأسئلة
+                  </Label>
+                  <p className="text-xs text-muted-foreground">عرض بطاقات المعلومات المتبدلة</p>
+                </div>
+                <Switch
+                  checked={Boolean(displaySettings.show_faqs)}
+                  onCheckedChange={(val) => updateDisplaySetting("show_faqs", val)}
+                />
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Ticker text */}
+          <div className="space-y-2">
+            <Label className="font-semibold text-sm flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-amber-500" />
+              شريط إخباري متحرك أسفل الشاشة (Ticker Text - اختياري)
+            </Label>
+            <Input
+              value={displaySettings.ticker_text || ""}
+              onChange={(e) => updateDisplaySetting("ticker_text", e.target.value)}
+              placeholder="مثال: أهلاً وسهلاً بكم في معصرة النور... نرجو من الزبائن الكرام استلام كشوفات الحساب من الكاشير"
+              className="bg-muted/20"
+            />
+            <p className="text-xs text-muted-foreground">
+              إذا تم كتابة نص هنا، سيتحرك بسلاسة أسفل شاشة التلفاز كشريط عاجل وإعلانات للمعصرة.
+            </p>
+          </div>
+
+          <Separator />
+
+          {/* Custom Info & FAQs List */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-sm text-foreground flex items-center gap-2">
+                  <HelpCircle className="h-4 w-4 text-primary" />
+                  المعلومات والإعلانات المخصصة على الشاشة
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  أضف أي معلومات تود عرضها للمنتظرين، أو احذف ما لا ترغب به.
+                </p>
+              </div>
+              {displaySettings.custom_faqs && displaySettings.custom_faqs.length > 0 && (
+                <Button variant="ghost" size="sm" onClick={clearAllFaqs} className="text-destructive text-xs hover:bg-destructive/10">
+                  حذف الكل
+                </Button>
+              )}
+            </div>
+
+            {/* List */}
+            <div className="space-y-2">
+              {displaySettings.custom_faqs?.map((faq, idx) => (
+                <div key={faq.id || idx} className="flex items-start justify-between gap-3 p-3 rounded-lg border bg-muted/20">
+                  <div className="space-y-1 min-w-0">
+                    <p className="font-bold text-sm text-foreground">{faq.q}</p>
+                    <p className="text-xs text-muted-foreground">{faq.a}</p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeCustomFaq(faq.id)}
+                    className="text-destructive hover:bg-destructive/10 shrink-0 h-8 w-8"
+                    title="حذف هذه المعلومة"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+
+              {(!displaySettings.custom_faqs || displaySettings.custom_faqs.length === 0) && (
+                <p className="text-xs text-muted-foreground text-center py-4 bg-muted/10 rounded-lg border border-dashed">
+                  لا توجد معلومات مخصصة مضافة حالياً.
+                </p>
+              )}
+            </div>
+
+            {/* Add New Info Form */}
+            <div className="p-3.5 rounded-xl border bg-muted/10 space-y-3">
+              <Label className="text-xs font-semibold text-foreground">إضافة معلومة أو إعلان جديد:</Label>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <Input
+                  value={newFaqQ}
+                  onChange={(e) => setNewFaqQ(e.target.value)}
+                  placeholder="العنوان أو السؤال (مثال: مواعيد العصر)"
+                  className="bg-background text-sm"
+                />
+                <Input
+                  value={newFaqA}
+                  onChange={(e) => setNewFaqA(e.target.value)}
+                  placeholder="التفاصيل أو الإجابة (مثال: نستقبلكم يومياً 8 ص - 10 م)"
+                  className="bg-background text-sm"
+                />
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={addCustomFaq}
+                disabled={!newFaqQ.trim() || !newFaqA.trim()}
+                className="gap-1.5"
+              >
+                <Plus className="h-4 w-4" />
+                إضافة للقائمة
+              </Button>
+            </div>
+          </div>
+
+          <div className="pt-2 flex items-center justify-between flex-wrap gap-3">
+            <Button
+              onClick={handleSaveDisplaySettings}
+              disabled={savingDisplay || !activeSeason}
+              className="px-6 gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+            >
+              <Save className="h-4 w-4" />
+              {savingDisplay ? "جارٍ الحفظ..." : "حفظ إعدادات الشاشة"}
+            </Button>
+            <p className="text-xs text-muted-foreground">
+              يتم حفظ وتطبيق الإعدادات فوراً على شاشة العرض
+            </p>
+          </div>
         </CardContent>
       </Card>
 
@@ -499,49 +1082,36 @@ export default function Settings() {
 
       <Card>
         <CardHeader>
-          <CardTitle>دخول الموظفين (Employee Login)</CardTitle>
-          <CardDescription>إنشاء رمز ورابط لدخول الموظفين بصلاحيات محدودة (الطابور والفواتير فقط)</CardDescription>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <UserCheck className="h-5 w-5 text-primary" />
+            حسابات موظفي الكاشير (Cashier Sub-Accounts)
+          </CardTitle>
+          <CardDescription>
+            إنشاء وإدارة حسابات الكاشير يتم من خلال مسؤول النظام (Admin) لضمان أمان وتفرد أسماء المستخدمين عبر جميع المعاصر.
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>تعيين رمز دخول جديد (PIN)</Label>
-              <div className="flex gap-2">
-                <Input 
-                  type="password" 
-                  maxLength={6} 
-                  value={employeePin} 
-                  onChange={(e) => setEmployeePin(e.target.value.replace(/\D/g, ""))} 
-                  placeholder="أدخل رمز الموظف..."
-                  className="max-w-[200px]"
-                />
-                <Button onClick={updateEmployeePin} disabled={isUpdatingEmployeePin} size="sm">
-                  {isUpdatingEmployeePin ? "جارٍ التحديث..." : "تحديث الرمز"}
-                </Button>
+        <CardContent>
+          <div className="space-y-3">
+            {employees.map((emp: any) => (
+              <div key={emp.id} className="flex items-center justify-between p-3 border rounded-xl bg-muted/20">
+                <div className="space-y-0.5">
+                  <p className="font-bold text-sm text-foreground">{emp.display_name || "موظف كاشير"}</p>
+                  <p className="text-xs text-primary font-mono font-medium">
+                    {emp.phone || emp.display_name}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-medium">
+                    طابور + فواتير فقط
+                  </span>
+                </div>
               </div>
-            </div>
-
-            <Separator />
-
-            <div className="space-y-2">
-              <Label>رابط دخول الموظف</Label>
-              <div className="flex flex-col gap-3">
-                <Button onClick={generateEmployeeUrl} variant="outline" className="w-fit gap-2">
-                  <LinkIcon className="h-4 w-4" />
-                  توليد رابط الدخول
-                </Button>
-                
-                {employeeLoginUrl && (
-                  <div className="p-3 bg-muted rounded-lg flex items-center justify-between gap-4">
-                    <code className="text-xs break-all text-primary font-mono">{employeeLoginUrl}</code>
-                    <Button size="sm" variant="secondary" onClick={() => copyToClipboard(employeeLoginUrl)}>نسخ</Button>
-                  </div>
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                شارك هذا الرابط مع الموظف ليتمكن من الدخول باستخدام الرمز (PIN) الذي حددته أعلاه.
+            ))}
+            {employees.length === 0 && (
+              <p className="text-xs text-center text-muted-foreground py-4">
+                لا توجد حسابات كاشير حتى الآن. تواصل مع مسؤول النظام لإنشاء حسابات الكاشير الخاصة بمعصرتك.
               </p>
-            </div>
+            )}
           </div>
         </CardContent>
       </Card>

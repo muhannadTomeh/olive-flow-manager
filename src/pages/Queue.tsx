@@ -30,6 +30,71 @@ interface QueueItem {
   position: number;
   created_at: string;
   status: string;
+  estimated_minutes?: number | null;
+  started_at?: string | null;
+}
+
+export function parseEstimatedMinutes(item: { estimated_minutes?: number | null; notes?: string | null; id?: string }): number | null {
+  if (item.estimated_minutes != null && !isNaN(Number(item.estimated_minutes))) {
+    return Number(item.estimated_minutes);
+  }
+  if (item.notes) {
+    const match = item.notes.match(/\[(?:وقت_تقديري|الوقت|est):?\s*(\d+)/i);
+    if (match) return parseInt(match[1]);
+  }
+  if (item.id) {
+    const local = localStorage.getItem(`queue_est_${item.id}`);
+    if (local) {
+      const n = parseInt(local, 10);
+      if (!isNaN(n) && n > 0) return n;
+    }
+  }
+  return null;
+}
+
+export function parseStartedAt(item: { started_at?: string | null; notes?: string | null; id?: string }): number | null {
+  if (item.started_at) {
+    const t = new Date(item.started_at).getTime();
+    if (!isNaN(t)) return t;
+  }
+  if (item.notes) {
+    const match = item.notes.match(/\[بدء_العصر:([^\]]+)\]/);
+    if (match) {
+      const t = new Date(match[1]).getTime();
+      if (!isNaN(t)) return t;
+      const num = Number(match[1]);
+      if (!isNaN(num) && num > 0) return num;
+    }
+  }
+  if (item.id) {
+    const local = localStorage.getItem(`processing_started_${item.id}`);
+    if (local) {
+      const t = new Date(local).getTime();
+      if (!isNaN(t)) return t;
+    }
+  }
+  return null;
+}
+
+export function getRemainingSeconds(item: QueueItem, nowMs: number): number | null {
+  const estMin = parseEstimatedMinutes(item);
+  if (!estMin || estMin <= 0) return null;
+  let startedAt = parseStartedAt(item);
+  if (!startedAt && item.id) {
+    if (item.status === "processing") {
+      startedAt = Date.now();
+      localStorage.setItem(`processing_started_${item.id}`, new Date(startedAt).toISOString());
+    }
+  }
+  if (!startedAt) return null;
+  const elapsed = Math.max(0, Math.floor((nowMs - startedAt) / 1000));
+  return Math.max(0, estMin * 60 - elapsed);
+}
+
+export function formatRemaining(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
 const formatTime = (dateStr: string) => {
@@ -40,26 +105,34 @@ const formatTime = (dateStr: string) => {
 const Queue = () => {
   const [allItems, setAllItems] = useState<QueueItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [nowMs, setNowMs] = useState(Date.now());
   const [newCustomer, setNewCustomer] = useState({ name: "", phone: "", bags: "", notes: "", estimatedMinutes: "" });
   const [showExtra, setShowExtra] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [invoiceSheetOpen, setInvoiceSheetOpen] = useState(false);
   const [selectedForInvoice, setSelectedForInvoice] = useState<QueueItem | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<QueueItem | null>(null);
-  const { user } = useAuth();
+  const { user, effectiveUserId } = useAuth();
   const { activeSeason } = useSeason();
+
+  // Tick every second for live countdown
+  useEffect(() => {
+    const id = setInterval(() => setNowMs(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const targetUserId = effectiveUserId || user?.id;
 
   const processing = allItems.filter((i) => i.status === "processing");
   const waiting = allItems.filter((i) => i.status === "waiting");
   const completed = allItems.filter((i) => i.status === "completed");
 
   useEffect(() => {
-    if (user && activeSeason) fetchQueue();
-  }, [user, activeSeason]);
+    if (targetUserId && activeSeason) fetchQueue();
+  }, [targetUserId, activeSeason]);
 
   // Realtime subscription
   useEffect(() => {
-    if (!user || !activeSeason) return;
+    if (!targetUserId || !activeSeason) return;
     const channel = supabase
       .channel("queue-live")
       .on(
@@ -71,18 +144,22 @@ const Queue = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, activeSeason]);
+  }, [targetUserId, activeSeason]);
 
   const fetchQueue = async () => {
-    if (!user || !activeSeason) return;
+    if (!targetUserId || !activeSeason) return;
     const { data } = await supabase
       .from("queue")
       .select("*")
-      .eq("user_id", user.id)
+      .eq("user_id", targetUserId)
       .eq("season_id", activeSeason.id)
       .order("position", { ascending: true });
-    setAllItems((data as QueueItem[]) || []);
+    const items = (data as QueueItem[]) || [];
+    setAllItems(items);
     setLoading(false);
+    try {
+      localStorage.setItem(`active_queue_${activeSeason.id}`, JSON.stringify(items));
+    } catch {}
   };
 
   const addToQueue = async () => {
@@ -90,23 +167,49 @@ const Queue = () => {
       toast.error("يرجى إدخال الاسم وعدد الشوالات");
       return;
     }
-    const { error } = await supabase.from("queue").insert({
-      user_id: user!.id,
+
+    const estMin = newCustomer.estimatedMinutes ? parseInt(newCustomer.estimatedMinutes) : null;
+    const fallbackNotes = estMin 
+      ? `[وقت_تقديري:${estMin}] ${newCustomer.notes?.trim() || ""}`.trim()
+      : (newCustomer.notes?.trim() || null);
+
+    const basePayload: any = {
+      user_id: targetUserId!,
       season_id: activeSeason!.id,
-      name: newCustomer.name,
-      phone: newCustomer.phone || null,
+      name: newCustomer.name.trim(),
+      phone: newCustomer.phone?.trim() || null,
       bags: parseInt(newCustomer.bags),
-      notes: newCustomer.notes || null,
+      notes: fallbackNotes,
       status: "waiting",
-    });
+    };
+
+    // Try inserting with estimated_minutes column
+    let { data: insertedData, error } = await supabase.from("queue").insert({
+      ...basePayload,
+      ...(estMin ? { estimated_minutes: estMin } : {}),
+    }).select().single();
+
+    // Fallback if estimated_minutes column is not yet migrated in Supabase
+    if (error && (error.message?.includes("estimated_minutes") || error.code === "PGRST204")) {
+      const retry = await supabase.from("queue").insert({
+        ...basePayload,
+        notes: fallbackNotes || null,
+      }).select().single();
+      error = retry.error;
+      insertedData = retry.data;
+    }
+
     if (!error) {
+      if (insertedData?.id && estMin) {
+        localStorage.setItem(`queue_est_${insertedData.id}`, String(estMin));
+      }
       setNewCustomer({ name: "", phone: "", bags: "", notes: "", estimatedMinutes: "" });
       setShowExtra(false);
       setDialogOpen(false);
       toast.success(`تم إضافة ${newCustomer.name} إلى الطابور`);
       await fetchQueue();
     } else {
-      toast.error("تعذر إضافة الزبون");
+      toast.error("تعذر إضافة الزبون: " + error.message);
     }
   };
 
@@ -120,22 +223,45 @@ const Queue = () => {
   };
 
   const startProcessing = async (id: string) => {
-    setAllItems((prev) => prev.map((i) => (i.id === id ? { ...i, status: "processing" } : i)));
-    const { error } = await supabase.from("queue").update({ status: "processing" }).eq("id", id);
-    if (error) toast.error("تعذر بدء العصر");
-    else toast.success("تم بدء العصر");
+    const startedAt = new Date().toISOString();
+    setAllItems((prev) => {
+      const updated = prev.map((i) => (i.id === id ? { ...i, status: "processing", started_at: startedAt } : i));
+      if (activeSeason) {
+        try {
+          localStorage.setItem(`active_queue_${activeSeason.id}`, JSON.stringify(updated));
+        } catch {}
+      }
+      return updated;
+    });
+
+    // Save locally for instant cross-tab sync
+    localStorage.setItem(`processing_started_${id}`, startedAt);
+
+    // Save to database
+    let { error } = await supabase.from("queue").update({
+      status: "processing",
+      started_at: startedAt,
+    } as any).eq("id", id);
+
+    // Fallback if started_at column is not yet migrated in Supabase
+    if (error && (error.message?.includes("started_at") || error.code === "PGRST204")) {
+      const target = allItems.find((i) => i.id === id);
+      const updatedNotes = `[بدء_العصر:${startedAt}] ${target?.notes || ""}`.trim();
+      const retry = await supabase.from("queue").update({
+        status: "processing",
+        notes: updatedNotes,
+      }).eq("id", id);
+      error = retry.error;
+    }
+
+    if (error) toast.error("تعذر بدء العصر: " + error.message);
+    else toast.success("تم بدء العصر وبدء التوقيت التنازلي");
     await fetchQueue();
   };
 
   const openInvoiceFor = (customer: QueueItem) => {
     setSelectedForInvoice(customer);
     setInvoiceSheetOpen(true);
-  };
-
-  const openDisplay = () => {
-    if (activeSeason) {
-      window.open(`/display/${activeSeason.id}`, "_blank", "fullscreen=yes");
-    }
   };
 
   return (
@@ -235,9 +361,16 @@ const Queue = () => {
             </DialogContent>
           </Dialog>
           {activeSeason && (
-            <Button variant="outline" onClick={openDisplay}>
-              <Monitor className="h-4 w-4 me-2" />
-              شاشة العرض
+            <Button variant="outline" asChild>
+              <a
+                href={`/display/${activeSeason.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center"
+              >
+                <Monitor className="h-4 w-4 me-2" />
+                شاشة العرض
+              </a>
             </Button>
           )}
         </div>
@@ -281,7 +414,43 @@ const Queue = () => {
                         #{p.position}
                       </Badge>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-foreground truncate text-lg">{p.name}</h3>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="font-bold text-foreground truncate text-lg">{p.name}</h3>
+                          {(() => {
+                            const remSec = getRemainingSeconds(p, nowMs);
+                            const estMin = parseEstimatedMinutes(p);
+                            if (remSec !== null) {
+                              const isNear = remSec <= 5 * 60;
+                              return (
+                                <Badge
+                                  variant="outline"
+                                  className={`gap-1 text-xs font-mono font-bold transition-all ${
+                                    isNear
+                                      ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/40 animate-pulse"
+                                      : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30"
+                                  }`}
+                                >
+                                  <Clock className="h-3 w-3" />
+                                  {remSec > 0 ? `متبقي: ${formatRemaining(remSec)}` : "أوشك على الانتهاء"}
+                                  {isNear && (
+                                    <span className="text-[10px] bg-emerald-500 text-white px-1.5 py-0.2 rounded ms-1">
+                                      استعد
+                                    </span>
+                                  )}
+                                </Badge>
+                              );
+                            }
+                            if (estMin) {
+                              return (
+                                <Badge variant="outline" className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 gap-1 text-xs">
+                                  <Clock className="h-3 w-3" />
+                                  {estMin} دقيقة
+                                </Badge>
+                              );
+                            }
+                            return null;
+                          })()}
+                        </div>
                         <p className="text-xs text-muted-foreground">
                           🛍️ {p.bags} شوال • ⏰ {formatTime(p.created_at)}
                           {p.phone && ` • ${p.phone}`}
@@ -336,10 +505,21 @@ const Queue = () => {
               </div>
             ) : (
               <div className="space-y-1.5 max-h-[500px] overflow-y-auto">
-                {waiting.map((customer) => (
+                {waiting.map((customer, idx) => {
+                  const isFirst = idx === 0;
+                  const isAnyProcessingNear = processing.some((p) => {
+                    const s = getRemainingSeconds(p, nowMs);
+                    return s !== null && s <= 5 * 60;
+                  });
+
+                  return (
                   <div
                     key={customer.id}
-                    className="flex items-center gap-2 p-2.5 border rounded-lg hover:bg-accent/50 transition-colors"
+                    className={`flex items-center gap-2 p-2.5 border rounded-lg transition-colors ${
+                      isFirst && isAnyProcessingNear
+                        ? "bg-emerald-500/10 border-emerald-500/40 shadow-sm"
+                        : "hover:bg-accent/50"
+                    }`}
                   >
                     <Badge
                       variant="outline"
@@ -348,7 +528,21 @@ const Queue = () => {
                       #{customer.position}
                     </Badge>
                     <div className="min-w-0 flex-1">
-                      <h3 className="font-semibold text-foreground truncate text-sm">{customer.name}</h3>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-semibold text-foreground truncate text-sm">{customer.name}</h3>
+                        {parseEstimatedMinutes(customer) ? (
+                          <Badge variant="outline" className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 gap-1 text-[11px] py-0 px-1.5">
+                            <Clock className="h-2.5 w-2.5" />
+                            {parseEstimatedMinutes(customer)} د
+                          </Badge>
+                        ) : null}
+
+                        {isFirst && isAnyProcessingNear && (
+                          <Badge className="bg-emerald-500 text-white animate-bounce text-[10px] py-0.5 px-2">
+                            🟢 استعد للدخول!
+                          </Badge>
+                        )}
+                      </div>
                       <p className="text-xs text-muted-foreground truncate">
                         🛍️ {customer.bags} • {formatTime(customer.created_at)}
                         {customer.phone && ` • ${customer.phone}`}
@@ -383,9 +577,10 @@ const Queue = () => {
                       </Button>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
+                );
+              })}
+            </div>
+          )}
           </CardContent>
         </Card>
       </div>
